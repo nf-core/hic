@@ -23,6 +23,9 @@ def helpMessage() {
      nf-core/hic v${workflow.manifest.version}
     =======================================================
 
+    This pipeline is a Nextflow version of the HiC-Pro pipeline for Hi-C data processing.
+    See https://github.com/nservant/HiC-Pro for details.
+
     Usage:
 
     The typical command for running the pipeline is as follows:
@@ -30,13 +33,13 @@ def helpMessage() {
     nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --reads                       Path to input data (must be surrounded with quotes)
+      --readsPath                   Path to input data (must be surrounded with quotes)
       --genome                      Name of iGenomes reference
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: conda, docker, singularity, awsbatch, test and more.
 
     Options:
-      --singleEnd                   Specifies that the input is single end reads
+
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
       --fasta                       Path to Fasta reference
@@ -52,7 +55,7 @@ def helpMessage() {
     """.stripIndent()
 }
 
-/*
+/**********************************************************
  * SET UP CONFIGURATION VARIABLES
  */
 
@@ -64,17 +67,11 @@ if (params.help){
 
 // TODO nf-core: Add any reference files that are needed
 // Configurable reference genomes
-fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-if ( params.fasta ){
-    fasta = file(params.fasta)
-    if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
-}
-//
-// NOTE - THIS IS NOT USED IN THIS PIPELINE, EXAMPLE ONLY
-// If you want to use the above in a process, define the following:
-//   input:
-//   file fasta from fasta
-//
+//fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
+//if ( params.fasta ){
+//    fasta = file(params.fasta)
+//    if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
+//}
 
 
 // Has the run name been specified by the user?
@@ -98,30 +95,51 @@ if( workflow.profile == 'awsbatch') {
 ch_multiqc_config = Channel.fromPath(params.multiqc_config)
 ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 
-/*
- * Create a channel for input read files
- */
- if(params.readPaths){
-     if(params.singleEnd){
-         Channel
-             .from(params.readPaths)
-             .map { row -> [ row[0], [file(row[1][0])]] }
-             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-             .into { read_files_fastqc; read_files_trimming }
-     } else {
-         Channel
-             .from(params.readPaths)
-             .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
-             .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-             .into { read_files_fastqc; read_files_trimming }
-     }
- } else {
-     Channel
-         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
-         .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --singleEnd on the command line." }
-         .into { read_files_fastqc; read_files_trimming }
- }
 
+
+
+/**********************************************************
+ * SET UP CHANNELS
+ */
+
+/*
+ * input read files
+ */
+Channel
+        .fromFilePairs( params.readPaths )
+	.ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+        .set { raw_reads_pairs }
+
+raw_reads = Channel.create()
+raw_reads_2 = Channel.create()
+Channel
+        .fromFilePairs( params.readPaths )
+        .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
+
+
+// SPlit fastq files
+// https://www.nextflow.io/docs/latest/operator.html#splitfastq
+
+/*
+ * Other input channels
+ */
+
+// Bowtie2 Index
+bwt2_file = file("${params.bwt2_index}.1.bt2")
+if( !bwt2_file.exists() ) exit 1, "Reference genome Bowtie 2 not found: ${params.bwt2_index}"
+bwt2_index = Channel.value( "${params.bwt2_index}" )
+
+// Restriction fragment
+res_frag_file = Channel.value( "${params.restriction_fragment_bed}" )
+
+// Chromosome size
+chr_size = Channel.value( "${params.chromosome_size}" )
+
+
+
+/**********************************************************
+ * SET UP LOGS
+ */
 
 // Header log info
 log.info """=======================================================
@@ -140,7 +158,7 @@ summary['Run Name']     = custom_runName ?: workflow.runName
 // TODO nf-core: Report custom parameters here
 summary['Reads']        = params.reads
 summary['Fasta Ref']    = params.fasta
-summary['Data Type']    = params.singleEnd ? 'Single-End' : 'Paired-End'
+//summary['Data Type']    = params.singleEnd ? 'Single-End' : 'Paired-End'
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
 summary['Max Time']     = params.max_time
@@ -191,43 +209,174 @@ process get_software_versions {
     file 'software_versions_mqc.yaml' into software_versions_yaml
 
     script:
-    // TODO nf-core: Get all tools to print their version number here
-    """
+     """
     echo $workflow.manifest.version > v_pipeline.txt
     echo $workflow.nextflow.version > v_nextflow.txt
-    fastqc --version > v_fastqc.txt
-    multiqc --version > v_multiqc.txt
+    bowtie2 --version > v_bowtie2.txt
+    python --version > v_python.txt
+    samtools --version > v_samtools.txt
     scrape_software_versions.py > software_versions_mqc.yaml
     """
 }
 
 
+/****************************************************
+ * MAIN WORKFLOW
+ */
 
 /*
- * STEP 1 - FastQC
- */
-process fastqc {
-    tag "$name"
-    publishDir "${params.outdir}/fastqc", mode: 'copy',
-        saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+ * STEP 1 - Two-steps Reads Mapping
+*/
 
-    input:
-    set val(name), file(reads) from read_files_fastqc
+raw_reads = raw_reads.concat( raw_reads_2 )
 
-    output:
-    file "*_fastqc.{zip,html}" into fastqc_results
+process bowtie2_end_to_end {
+   tag "$prefix"
+   input:
+        set val(sample), file(reads) from raw_reads
+        val bt2_index from bwt2_index
+ 
+   output:
+	set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
+     	set val(prefix), file("${prefix}.bam") into end_to_end_bam
 
-    script:
-    """
-    fastqc -q $reads
-    """
+   script:
+	prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
+        def bwt2_opts = params.bwt2_opts_end2end
+	"""
+        bowtie2 --rg-id BMG --rg SM:${prefix} \\
+		${bwt2_opts} \\
+		-p ${task.cpus} \\
+		-x ${bt2_index} \\
+		--un ${prefix}_unmap.fastq \\
+	 	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
+        """
+}
+
+process trim_reads {
+   tag "$prefix"
+   input:
+      set val(prefix), file(reads) from unmapped_end_to_end
+
+   output:
+      set val(prefix), file("${prefix}_trimmed.fastq") into trimmed_reads
+
+   script:
+      """
+      cutsite_trimming --fastq $reads \\
+       		       --cutsite  params.ligation_motifs \\
+                       --out ${prefix}_trimmed.fastq
+      """
+}
+
+process bowtie2_on_trimmed_reads {
+   tag "$prefix"
+   input:
+      set val(prefix), file(reads) from trimmed_reads
+      val bt2_index from bwt2_index
+
+   output:
+      set val(prefix), file("${prefix}_trimmed.bam") into trimmed_bam
+
+   script:
+      prefix = reads.toString() - ~/(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
+      def bwt2_opts = params.bwt2_opts_trimmed
+      """
+      bowtie2 --rg-id BMG --rg SM:${prefix} \\
+      	      ${bwt2_opts} \\
+              -p ${task.cpus} \\
+	      -x ${bt2_index} \\
+	      -U ${reads} | samtools view -bS - > ${prefix}_trimmed.bam
+      """
+}
+
+process merge_mapping_steps{
+   tag "$bam1 + $bam2"
+   input:
+      set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
+
+   output:
+      set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
+
+   script:
+      sample = prefix.toString() - ~/(_R1)?(_R2)?(_val_1)?(_val_2)?$/
+      """
+      samtools merge -@ ${task.cpus} \\
+       	             -f ${prefix}_bwt2merged.bam \\
+	             ${bam1} ${bam2} 
+
+      samtools sort -@ ${task.cpus} -m 800M \\
+      	            -n -T /tmp/ \\
+	            -o ${prefix}_bwt2merged.sorted.bam \\
+	            ${prefix}_bwt2merged.bam
+            
+      mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
+      """
 }
 
 
+process combine_mapped_files{
+   tag "$sample = $r1_prefix + $r2_prefix"
+   input:
+      set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
+
+   output:
+      set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
+
+   script:
+      r1_bam = aligned_bam[0]
+      r1_prefix = r1_bam.toString() - ~/_bwt2merged.bam$/
+      r2_bam = aligned_bam[1]
+      r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
+      """
+      mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam
+      """
+}
 
 /*
- * STEP 2 - MultiQC
- */
+ * STEP2 - DETECT VALID PAIRS
+*/
+
+process get_valid_interaction{
+   tag "$sample"
+   input:
+      set val(sample), file(pe_bam) from paired_bam
+      val frag_file from res_frag_file
+
+   output:
+      set val(sample), file("*.validPairs") into valid_pairs
+
+   script:
+      """
+      mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam}
+      """
+}
+
+
+/*
+ * STEP3 - BUILD MATRIX
+*/
+
+process build_contact_maps{
+   tag "$sample"
+   input:
+      set val(sample), file(vpairs) from valid_pairs
+      val chrsize from chr_size
+
+   output:
+      set val(sample), file("*.matrix") into matrix_file
+
+   script:
+   """
+   build_matrix --matrix-format upper  --binsize 1000000 --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_1000000
+   """
+
+}
+
+
+/*
+ // STEP 2 - MultiQC
+
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
@@ -252,10 +401,8 @@ process multiqc {
 }
 
 
+// STEP 3 - Output Description HTML
 
-/*
- * STEP 3 - Output Description HTML
- */
 process output_documentation {
     publishDir "${params.outdir}/Documentation", mode: 'copy'
 
@@ -270,7 +417,7 @@ process output_documentation {
     markdown_to_html.r $output_docs results_description.html
     """
 }
-
+*/
 
 
 /*
