@@ -6,7 +6,7 @@ channels:
 dependencies:
   - python=2.7.11
   - conda-forge::scipy=1.0.1
-  - conda-forge::numpy=1.16.2
+  - conda-forge::numpy=1.9.3
   - bcbio::bx-python=0.7.3
   - bioconda::pysam=0.14.1
   - cooler=0.8.3
