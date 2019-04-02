@@ -501,9 +501,9 @@ if __name__ == "__main__":
             minInsertSize = arg
         elif opt in ("-l", "--longestInsertSize"):
             maxInsertSize = arg
-        elif opt in ("-t", "--shortestFragmentLength"):
+        elif opt in ("-t", "--shortestFragmentSize"):
             minFragSize = arg
-        elif opt in ("-m", "--longestFragmentLength"):
+        elif opt in ("-m", "--longestFragmentSize"):
             maxFragSize = arg
         elif opt in ("-d", "--minCisDist"):
             minDist = arg

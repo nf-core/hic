@@ -10,8 +10,16 @@
 */
 
 
+/*TOOO
+- outputs
+- env
+- multiqc
+- update version tools
+- install + compile
+*/
+
+
 def helpMessage() {
-    // TODO nf-core: Add to this help message with new command line parameters
     log.info"""
     =======================================================
                                               ,--./,-.
@@ -39,10 +47,33 @@ def helpMessage() {
                                     Available: conda, docker, singularity, awsbatch, test and more.
 
     Options:
+      --bwt2_index		   Path to bowtie2 indexes (including indexes prefix)
+      --bwt2_opts_end2end	   Option for bowtie2 end-to-end mappinf (first mapping step)
+      --bwt2_opts_trimmed	   Option for bowtie2 mapping after ligation site trimming
+      --min_mapq		   Minimum mapping quality values to consider
+
+      --chromosome_size		   Path to chromosome size file
+      --restriction_fragment_bed   Path to restriction fragment file (bed)
+      --ligation-site		   Ligation motifs to trim (comma separated)
+
+      --min_restriction_fragment_size	    Minimum size of restriction fragments to consider
+      --max_restriction_framgnet_size	    Maximum size of restriction fragmants to consider
+      --min_insert_size			    Minimum insert size of mapped reads to consider
+      --max_insert_size			    Maximum insert size of mapped reads to consider
+      --min_cis_dist			    Minimum intra-chromosomal distance to consider
+      --rm_singleton			    Remove singleton reads
+      --rm_multi			    Remove multi-mapped reads
+      --rm_dup				    Remove duplicates
+
+      --bin_size			    Bin size for contact maps (comma separated)
+      --ice_max_iter			    Maximum number of iteration for ICE normalization
+      --ice_filter_low_count_perc	    Percentage of low counts columns/rows to filter before ICE normalization
+      --ice_filter_high_count_perc	    Percentage of high counts columns/rows to filter before ICE normalization
+      --ice_eps				    Convergence criteria for ICE normalization
 
 
-    References                      If not specified in the configuration file or you wish to overwrite any of the references.
-      --fasta                       Path to Fasta reference
+    //References                      If not specified in the configuration file or you wish to overwrite any of the references.
+    //  --fasta                       Path to Fasta reference
 
     Other options:
       --outdir                      The output directory where the results will be saved
@@ -129,11 +160,10 @@ bwt2_file = file("${params.bwt2_index}.1.bt2")
 if( !bwt2_file.exists() ) exit 1, "Reference genome Bowtie 2 not found: ${params.bwt2_index}"
 bwt2_index = Channel.value( "${params.bwt2_index}" )
 
-// Restriction fragment
-res_frag_file = Channel.value( "${params.restriction_fragment_bed}" )
 
-// Chromosome size
+res_frag_file = Channel.value( "${params.restriction_fragment_bed}" )
 chr_size = Channel.value( "${params.chromosome_size}" )
+map_res = Channel.from( params.bins_size.tokenize(',') )
 
 
 
@@ -157,8 +187,7 @@ summary['Pipeline Version'] = workflow.manifest.version
 summary['Run Name']     = custom_runName ?: workflow.runName
 // TODO nf-core: Report custom parameters here
 summary['Reads']        = params.reads
-summary['Fasta Ref']    = params.fasta
-//summary['Data Type']    = params.singleEnd ? 'Single-End' : 'Paired-End'
+//summary['Fasta Ref']    = params.fasta
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
 summary['Max Time']     = params.max_time
@@ -264,7 +293,7 @@ process trim_reads {
    script:
       """
       cutsite_trimming --fastq $reads \\
-       		       --cutsite  params.ligation_motifs \\
+       		       --cutsite  ${params.ligation_site} \\
                        --out ${prefix}_trimmed.fastq
       """
 }
@@ -280,10 +309,9 @@ process bowtie2_on_trimmed_reads {
 
    script:
       prefix = reads.toString() - ~/(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
-      def bwt2_opts = params.bwt2_opts_trimmed
       """
       bowtie2 --rg-id BMG --rg SM:${prefix} \\
-      	      ${bwt2_opts} \\
+      	      ${params.bwt2_opts_trimmed} \\
               -p ${task.cpus} \\
 	      -x ${bt2_index} \\
 	      -U ${reads} | samtools view -bS - > ${prefix}_trimmed.bam
@@ -328,8 +356,12 @@ process combine_mapped_files{
       r1_prefix = r1_bam.toString() - ~/_bwt2merged.bam$/
       r2_bam = aligned_bam[1]
       r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
+      
+      def opts = ""
+      opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
+      opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
       """
-      mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam
+      mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam -q ${params.min_mapq} ${opts}
       """
 }
 
@@ -345,10 +377,18 @@ process get_valid_interaction{
 
    output:
       set val(sample), file("*.validPairs") into valid_pairs
+      set val(sample), file("*.validPairs") into valid_pairs_4cool
 
    script:
+      def opts = ""
+      if (params.min_cis_dist != "") opts="${opts} -d ${params.min_cis_dist}"
+      if (params.min_insert_size != "") opts="${opts} -s ${params.min_insert_size}"
+      if (params.max_insert_size != "") opts="${opts} -l ${params.max_insert_size}"
+      if (params.min_restriction_fragment_size != "") opts="${opts} -t ${params.min_restriction_fragment_size}"
+      if (params.max_restriction_fragment_size != "") opts="${opts} -m ${params.max_restriction_fragment_size}"
+
       """
-      mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam}
+      mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
       """
 }
 
@@ -358,24 +398,64 @@ process get_valid_interaction{
 */
 
 process build_contact_maps{
-   tag "$sample"
+   tag "$sample - $mres"
    input:
-      set val(sample), file(vpairs) from valid_pairs
+      set val(sample), file(vpairs), val(mres) from valid_pairs.combine(map_res)
       val chrsize from chr_size
 
    output:
-      set val(sample), file("*.matrix") into matrix_file
+      file("*.matrix") into raw_maps
 
    script:
    """
-   build_matrix --matrix-format upper  --binsize 1000000 --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_1000000
+   build_matrix --matrix-format upper  --binsize ${mres} --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_${mres}
    """
-
 }
 
+/*
+ * STEP 4 - NORMALIZE MATRIX
+*/
+
+process run_iced{
+   tag "$rmaps"
+   input:
+      file(rmaps) from raw_maps
+
+   output:
+      file("*iced.matrix") into iced_maps
+
+   script:
+   prefix = rmaps.toString() - ~/(\.matrix)?$/
+   """
+   ice --filter_low_counts_perc ${params.ice_filer_low_count_perc} \
+   --results_filename ${prefix}_iced.matrix \
+   --filter_high_counts_perc ${params.ice_filer_high_count_perc} \
+   --max_iter ${params.ice_max_iter} --eps ${params.ice_eps} --remove-all-zeros-loci --output-bias 1 --verbose 1 ${rmaps}
+   """ 
+}
 
 /*
- // STEP 2 - MultiQC
+ * STEP 5 - COOLER FILE
+
+
+process generate_cool{
+   tag "$sample"
+   input:
+      set val(sample), file(vpairs) from valid_pairs_4cool
+      val chrsize from chr_size
+
+   output:
+      file("*mcool") into cool_maps
+
+   script:
+   """
+   hicpro2higlass.sh -i $vpairs -r 5000 -c ${chrsize} -n
+   """ 
+}
+*/
+
+/*
+ // STEP 5 - MultiQC
 
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
@@ -495,5 +575,4 @@ workflow.onComplete {
     output_tf.withWriter { w -> w << email_txt }
 
     log.info "[nf-core/hic] Pipeline Complete"
-
 }
