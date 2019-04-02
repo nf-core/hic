@@ -7,9 +7,9 @@ dependencies:
   - python=2.7.11
   - conda-forge::scipy=0.18.1
   - conda-forge::numpy=1.12.1
-  - bcbio::bx-python=0.5.0
+  - bcbio::bx-python=0.7.3
   - bioconda::pysam=0.8.3
   - cooler=0.8.3
-  - bowtie2=2.2.9
+  - bowtie2=2.3.5
   - samtools=1.9
   - multiqc=1.6
