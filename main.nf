@@ -49,15 +49,15 @@ def helpMessage() {
       --bwt2_index                     	    Path to Bowtie2 index
       --fasta                       	    Path to Fasta reference
       --chromosome_size             	    Path to chromosome size file
-      --restriction_fragment_bed    	    Path to restriction fragment file (bed)
+      --restriction_fragments    	    Path to restriction fragment file (bed)
 
     Options:
       --bwt2_opts_end2end		    Options for bowtie2 end-to-end mappinf (first mapping step)
       --bwt2_opts_trimmed	    	    Options for bowtie2 mapping after ligation site trimming
       --min_mapq		    	    Minimum mapping quality values to consider
 
-      --restriction-site	    	    Cutting motif(s) of restriction enzyme(s) (comma separated)
-      --ligation-site		    	    Ligation motifs to trim (comma separated)
+      --restriction_site	    	    Cutting motif(s) of restriction enzyme(s) (comma separated)
+      --ligation_site		    	    Ligation motifs to trim (comma separated)
 
       --min_restriction_fragment_size	    Minimum size of restriction fragments to consider
       --max_restriction_framgnet_size	    Maximum size of restriction fragmants to consider
@@ -210,6 +210,7 @@ else if ( params.fasta && params.restriction_site ){
    Channel.fromPath(params.fasta)
            .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
            .set { fasta_for_resfrag }
+}
 else {
     exit 1, "No restriction fragments file specified!"
 }
@@ -344,7 +345,7 @@ if(!params.chromosome_size && params.fasta){
       }
  }
 
-if(!params.bwt2_index && params.fasta){
+if(!params.restriction_fragments && params.fasta){
     process makeRestrictionFragments {
         tag "$fasta"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
