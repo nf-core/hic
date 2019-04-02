@@ -41,8 +41,8 @@ def helpMessage() {
     nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --readsPath                   Path to input data (must be surrounded with quotes)
-      --genome                      Name of iGenomes reference
+      --reads                   Path to input data (must be surrounded with quotes)
+     // --genome                      Name of iGenomes reference
       -profile                      Configuration profile to use. Can use multiple (comma separated)
                                     Available: conda, docker, singularity, awsbatch, test and more.
 
@@ -136,17 +136,34 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 /*
  * input read files
  */
-Channel
-        .fromFilePairs( params.readPaths )
-	.ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-        .set { raw_reads_pairs }
 
-raw_reads = Channel.create()
-raw_reads_2 = Channel.create()
-Channel
-        .fromFilePairs( params.readPaths )
-        .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
+if (params.readPaths){
+   Channel
+      .from( params.readPaths )
+      .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
+      .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+      .set { raw_reads_pairs }
 
+   raw_reads = Channel.create()
+   raw_reads_2 = Channel.create()
+
+   Channel
+      .from( params.readPaths )
+      .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
+      .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
+}else{
+   Channel
+      .fromFilePairs( params.reads )
+      .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
+      .set { raw_reads_pairs }
+
+   raw_reads = Channel.create()
+   raw_reads_2 = Channel.create()
+
+   Channel
+      .fromFilePairs( params.reads )
+      .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
+}
 
 // SPlit fastq files
 // https://www.nextflow.io/docs/latest/operator.html#splitfastq
