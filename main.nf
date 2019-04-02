@@ -12,7 +12,6 @@
 
 /*TOOO
 - outputs
-- env
 - multiqc
 - update version tools
 - install + compile
@@ -38,23 +37,27 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -profile docker
+    nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -profile conda
 
     Mandatory arguments:
-      --reads                   Path to input data (must be surrounded with quotes)
-     // --genome                      Name of iGenomes reference
-      -profile                      Configuration profile to use. Can use multiple (comma separated)
-                                    Available: conda, docker, singularity, awsbatch, test and more.
+      --reads				    Path to input data (must be surrounded with quotes)
+      --genome                       	    Name of iGenomes reference
+      -profile                      	    Configuration profile to use. Can use multiple (comma separated)
+                                    	    Available: conda, docker, singularity, awsbatch, test and more.
+
+    References                      	    If not specified in the configuration file or you wish to overwrite any of the references.
+      --bwt2_index                     	    Path to Bowtie2 index
+      --fasta                       	    Path to Fasta reference
+      --chromosome_size             	    Path to chromosome size file
+      --restriction_fragment_bed    	    Path to restriction fragment file (bed)
 
     Options:
-      --bwt2_index		   Path to bowtie2 indexes (including indexes prefix)
-      --bwt2_opts_end2end	   Option for bowtie2 end-to-end mappinf (first mapping step)
-      --bwt2_opts_trimmed	   Option for bowtie2 mapping after ligation site trimming
-      --min_mapq		   Minimum mapping quality values to consider
+      --bwt2_opts_end2end		    Options for bowtie2 end-to-end mappinf (first mapping step)
+      --bwt2_opts_trimmed	    	    Options for bowtie2 mapping after ligation site trimming
+      --min_mapq		    	    Minimum mapping quality values to consider
 
-      --chromosome_size		   Path to chromosome size file
-      --restriction_fragment_bed   Path to restriction fragment file (bed)
-      --ligation-site		   Ligation motifs to trim (comma separated)
+      --restriction-site	    	    Cutting motif(s) of restriction enzyme(s) (comma separated)
+      --ligation-site		    	    Ligation motifs to trim (comma separated)
 
       --min_restriction_fragment_size	    Minimum size of restriction fragments to consider
       --max_restriction_framgnet_size	    Maximum size of restriction fragmants to consider
@@ -71,18 +74,14 @@ def helpMessage() {
       --ice_filter_high_count_perc	    Percentage of high counts columns/rows to filter before ICE normalization
       --ice_eps				    Convergence criteria for ICE normalization
 
-
-    //References                      If not specified in the configuration file or you wish to overwrite any of the references.
-    //  --fasta                       Path to Fasta reference
-
     Other options:
-      --outdir                      The output directory where the results will be saved
-      --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+      --outdir				    The output directory where the results will be saved
+      --email                       	    Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
+      -name                         	    Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
 
     AWSBatch options:
-      --awsqueue                    The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion                   The AWS Region for your AWS Batch job to run on
+      --awsqueue			    The AWSBatch JobQueue that needs to be set when running on AWSBatch
+      --awsregion                   	    The AWS Region for your AWS Batch job to run on
     """.stripIndent()
 }
 
@@ -96,13 +95,15 @@ if (params.help){
     exit 0
 }
 
-// TODO nf-core: Add any reference files that are needed
-// Configurable reference genomes
-//fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-//if ( params.fasta ){
-//    fasta = file(params.fasta)
-//    if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
-//}
+// Check if genome exists in the config file
+if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
+    exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
+}
+
+// Reference index path configuration
+// Define these here - after the profiles are loaded with the iGenomes paths
+params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false
+params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
 
 // Has the run name been specified by the user?
@@ -111,7 +112,6 @@ custom_runName = params.name
 if( !(workflow.runName ==~ /[a-z]+_[a-z]+/) ){
   custom_runName = workflow.runName
 }
-
 
 if( workflow.profile == 'awsbatch') {
   // AWSBatch sanity checking
@@ -172,16 +172,50 @@ if (params.readPaths){
  * Other input channels
  */
 
-// Bowtie2 Index
-bwt2_file = file("${params.bwt2_index}.1.bt2")
-if( !bwt2_file.exists() ) exit 1, "Reference genome Bowtie 2 not found: ${params.bwt2_index}"
-bwt2_index = Channel.value( "${params.bwt2_index}" )
+// Reference genome
 
+if ( params.bwt2_index ){
+   bwt2_file = file("${params.bwt2_index}.1.bt2")
+   if( !bwt2_file.exists() ) exit 1, "Reference genome Bowtie 2 not found: ${params.bwt2_index}"
+   bwt2_index = Channel.value( "${params.bwt2_index}" )
+}
+else if ( params.fasta ) {
+   Channel.fromPath(params.fasta)
+	.ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+        .set { fasta_for_index }
+}
+else {
+   exit 1, "No reference genome specified!"
+}
 
-res_frag_file = Channel.value( "${params.restriction_fragment_bed}" )
-chr_size = Channel.value( "${params.chromosome_size}" )
+// Chromosome size
+
+if ( params.chromosome_size ){
+   chromosome_size = Channel.value( "${params.chromosome_size}" )
+}
+else if ( params.fasta ){
+   Channel.fromPath(params.fasta)
+	.ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+       	.set { fasta_for_chromsize }
+}
+else {
+   exit 1, "No chromosome size specified!"
+}
+
+// Restriction fragments
+if ( params.restriction_fragments ){
+   res_frag_file = Channel.value( "${params.restriction_fragments}" )
+}
+else if ( params.fasta && params.restriction_site ){
+   Channel.fromPath(params.fasta)
+           .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+           .set { fasta_for_resfrag }
+else {
+    exit 1, "No restriction fragments file specified!"
+}
+
+// Resolutions for contact maps
 map_res = Channel.from( params.bins_size.tokenize(',') )
-
 
 
 /**********************************************************
@@ -204,7 +238,8 @@ summary['Pipeline Version'] = workflow.manifest.version
 summary['Run Name']     = custom_runName ?: workflow.runName
 // TODO nf-core: Report custom parameters here
 summary['Reads']        = params.reads
-//summary['Fasta Ref']    = params.fasta
+summary['Fasta Ref']    = params.fasta
+
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
 summary['Max Time']     = params.max_time
@@ -265,6 +300,68 @@ process get_software_versions {
     """
 }
 
+
+/****************************************************
+ * PRE-PROCESSING
+ */
+
+if(!params.bwt2_index && params.fasta){
+    process makeBowtieIndex {
+        tag "$fasta"
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
+
+        input:
+        file fasta from fasta_for_index
+
+        output:
+        file "bowtie2" into bwt2_index
+
+        script:
+        """
+        mkdir bwt2_index
+	"""
+      }
+ }
+
+
+if(!params.chromosome_size && params.fasta){
+    process makeChromSize {
+        tag "$fasta"
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
+
+        input:
+        file fasta from fasta_for_chromsize
+
+        output:
+        file "*.size" into chromosome_size 
+
+        script:
+        """
+	samtools faidx ${fasta} | cut -f1,2 > chrom.size
+   	"""	
+      }
+ }
+
+if(!params.bwt2_index && params.fasta){
+    process makeRestrictionFragments {
+        tag "$fasta"
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
+
+        input:
+        file fasta from fasta_for_resfrag
+
+        output:
+        file "*.bed" into restriction_fragments
+
+        script:
+        """
+	python digest_genome.py -r ${params.restriction_site} -o restriction_fragments.bed ${fasta}
+	"""
+      }
+ }
 
 /****************************************************
  * MAIN WORKFLOW
