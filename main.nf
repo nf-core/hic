@@ -102,9 +102,10 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 
 // Reference index path configuration
 // Define these here - after the profiles are loaded with the iGenomes paths
-params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false
+params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-
+//params.chromosome_size = false
+//params.restriction_fragments = false
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -175,13 +176,20 @@ if (params.readPaths){
 // Reference genome
 
 if ( params.bwt2_index ){
-   bwt2_file = file("${params.bwt2_index}.1.bt2")
-   if( !bwt2_file.exists() ) exit 1, "Reference genome Bowtie 2 not found: ${params.bwt2_index}"
-   bwt2_index = Channel.value( "${params.bwt2_index}" )
+   lastPath = params.bwt2_index.lastIndexOf(File.separator)
+   bwt2_dir =  params.bwt2_index.substring(0,lastPath+1)
+   bwt2_base = params.bwt2_index.substring(lastPath+1)
+
+   Channel.fromPath( bwt2_dir, checkIfExists: true )
+      .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
+      .into { bwt2_index_end2end; bwt2_index_trim } 
 }
 else if ( params.fasta ) {
-   Channel.fromPath(params.fasta)
-	.ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+    lastPath = params.fasta.lastIndexOf(File.separator)
+    bwt2_base = params.fasta.substring(lastPath+1)
+
+   Channel.fromPath( params.fasta, checkIfExists: true )
+	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
         .set { fasta_for_index }
 }
 else {
@@ -191,11 +199,12 @@ else {
 // Chromosome size
 
 if ( params.chromosome_size ){
-   chromosome_size = Channel.value( "${params.chromosome_size}" )
+   Channel.FromPath( params.chromosome_size, checkIfExists: true )
+      .set {chromosome_size}
 }
 else if ( params.fasta ){
-   Channel.fromPath(params.fasta)
-	.ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+   Channel.fromPath( params.fasta, checkIfExists: true )
+	.ifEmpty { exit 1, "Chromosome sizes: Fasta file not found: ${params.fasta}" }
        	.set { fasta_for_chromsize }
 }
 else {
@@ -204,11 +213,12 @@ else {
 
 // Restriction fragments
 if ( params.restriction_fragments ){
-   res_frag_file = Channel.value( "${params.restriction_fragments}" )
+   Channel.FromPath( params.restriction_fragments, checkIfExists: true )
+      .set {res_frag_file}
 }
 else if ( params.fasta && params.restriction_site ){
-   Channel.fromPath(params.fasta)
-           .ifEmpty { exit 1, "Fasta file not found: ${params.fasta}" }
+   Channel.fromPath(params.fasta, checkIfExists: true)
+           .ifEmpty { exit 1, "Restriction fragments: Fasta file not found: ${params.fasta}" }
            .set { fasta_for_resfrag }
 }
 else {
@@ -309,8 +319,8 @@ process get_software_versions {
 if(!params.bwt2_index && params.fasta){
     process makeBowtieIndex {
         tag "$fasta"
-        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+        //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
         file fasta from fasta_for_index
@@ -321,6 +331,7 @@ if(!params.bwt2_index && params.fasta){
         script:
         """
         mkdir bwt2_index
+	
 	"""
       }
  }
@@ -329,8 +340,8 @@ if(!params.bwt2_index && params.fasta){
 if(!params.chromosome_size && params.fasta){
     process makeChromSize {
         tag "$fasta"
-        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+        //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
         file fasta from fasta_for_chromsize
@@ -348,18 +359,18 @@ if(!params.chromosome_size && params.fasta){
 if(!params.restriction_fragments && params.fasta){
     process makeRestrictionFragments {
         tag "$fasta"
-        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+        //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
         file fasta from fasta_for_resfrag
 
         output:
-        file "*.bed" into restriction_fragments
+        file "*.bed" into res_frag_file
 
         script:
         """
-	python digest_genome.py -r ${params.restriction_site} -o restriction_fragments.bed ${fasta}
+	digest_genome.py -r ${params.restriction_site} -o restriction_fragments.bed ${fasta}
 	"""
       }
  }
@@ -378,7 +389,7 @@ process bowtie2_end_to_end {
    tag "$prefix"
    input:
         set val(sample), file(reads) from raw_reads
-        val bt2_index from bwt2_index
+        file index from bwt2_index_end2end
  
    output:
 	set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
@@ -391,7 +402,7 @@ process bowtie2_end_to_end {
         bowtie2 --rg-id BMG --rg SM:${prefix} \\
 		${bwt2_opts} \\
 		-p ${task.cpus} \\
-		-x ${bt2_index} \\
+		-x ${index}/${bwt2_base} \\
 		--un ${prefix}_unmap.fastq \\
 	 	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
         """
@@ -417,7 +428,7 @@ process bowtie2_on_trimmed_reads {
    tag "$prefix"
    input:
       set val(prefix), file(reads) from trimmed_reads
-      val bt2_index from bwt2_index
+      file index from bwt2_index_trim
 
    output:
       set val(prefix), file("${prefix}_trimmed.bam") into trimmed_bam
@@ -428,7 +439,7 @@ process bowtie2_on_trimmed_reads {
       bowtie2 --rg-id BMG --rg SM:${prefix} \\
       	      ${params.bwt2_opts_trimmed} \\
               -p ${task.cpus} \\
-	      -x ${bt2_index} \\
+	      -x ${index}/${bwt2_base} \\
 	      -U ${reads} | samtools view -bS - > ${prefix}_trimmed.bam
       """
 }
@@ -516,7 +527,7 @@ process build_contact_maps{
    tag "$sample - $mres"
    input:
       set val(sample), file(vpairs), val(mres) from valid_pairs.combine(map_res)
-      val chrsize from chr_size
+      val chrsize from chromosome_size
 
    output:
       file("*.matrix") into raw_maps
@@ -557,7 +568,7 @@ process generate_cool{
    tag "$sample"
    input:
       set val(sample), file(vpairs) from valid_pairs_4cool
-      val chrsize from chr_size
+      val chrsize from chromosome_size
 
    output:
       file("*mcool") into cool_maps
