@@ -362,7 +362,7 @@ if(!params.chromosome_size && params.fasta){
 
 if(!params.restriction_fragments && params.fasta){
     process makeRestrictionFragments {
-        tag "$fasta"
+        tag "$fasta - ${params.restriction_site}"
         //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
         //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
@@ -521,12 +521,10 @@ process get_valid_interaction{
       """
 }
 
-
 /*
  * STEP3 - BUILD MATRIX
 */
 
-/*
 process build_contact_maps{
    tag "$sample - $mres"
    input:
@@ -541,13 +539,11 @@ process build_contact_maps{
    build_matrix --matrix-format upper  --binsize ${mres} --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_${mres}
    """
 }
-*/
 
 /*
  * STEP 4 - NORMALIZE MATRIX
 */
 
-/*
 process run_iced{
    tag "$rmaps"
    input:
@@ -565,7 +561,7 @@ process run_iced{
    --max_iter ${params.ice_max_iter} --eps ${params.ice_eps} --remove-all-zeros-loci --output-bias 1 --verbose 1 ${rmaps}
    """ 
 }
-*/
+
 
 /*
  * STEP 5 - COOLER FILE
