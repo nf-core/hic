@@ -160,7 +160,13 @@ if (params.readPaths){
       .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
 }
 
-raw_reads = raw_reads.concat( raw_reads_2 )
+if ( params.splitFastq ){
+   raw_reads_full = raw_reads.concat( raw_reads_2 )
+   raw_reads = raw_reads_full.splitFastq( by: params.splitFastq , file: true)
+ }else{
+   raw_reads = raw_reads.concat( raw_reads_2 )
+}
+
 
 // SPlit fastq files
 // https://www.nextflow.io/docs/latest/operator.html#splitfastq
@@ -191,9 +197,6 @@ else if ( params.fasta ) {
 else {
    exit 1, "No reference genome specified!"
 }
-
-//println (bwt2_dir)
-//println (bwt2_base)
 
 
 // Chromosome size
@@ -228,6 +231,9 @@ else {
 // Resolutions for contact maps
 map_res = Channel.from( params.bins_size.tokenize(',') )
 
+// Stage config files
+ch_multiqc_config = Channel.fromPath(params.multiqc_config)
+ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
 
 /**********************************************************
  * SET UP LOGS
@@ -320,8 +326,8 @@ process get_software_versions {
 if(!params.bwt2_index && params.fasta){
     process makeBowtie2Index {
         tag "$bwt2_base"
-        //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-        //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
         file fasta from fasta_for_index
@@ -343,8 +349,8 @@ if(!params.bwt2_index && params.fasta){
 if(!params.chromosome_size && params.fasta){
     process makeChromSize {
         tag "$fasta"
-        //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-        //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
         file fasta from fasta_for_chromsize
@@ -363,8 +369,8 @@ if(!params.chromosome_size && params.fasta){
 if(!params.restriction_fragments && params.fasta){
     process makeRestrictionFragments {
         tag "$fasta - ${params.restriction_site}"
-        //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
-        //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
+        publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
+                   saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
         input:
         file fasta from fasta_for_resfrag
@@ -389,6 +395,9 @@ if(!params.restriction_fragments && params.fasta){
 
 process bowtie2_end_to_end {
    tag "$prefix"
+   publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+   	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
    input:
         set val(sample), file(reads) from raw_reads
         file index from bwt2_index_end2end.collect()
@@ -412,6 +421,9 @@ process bowtie2_end_to_end {
 
 process trim_reads {
    tag "$prefix"
+   publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+   	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
    input:
       set val(prefix), file(reads) from unmapped_end_to_end
 
@@ -428,6 +440,9 @@ process trim_reads {
 
 process bowtie2_on_trimmed_reads {
    tag "$prefix"
+   publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+   	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
    input:
       set val(prefix), file(reads) from trimmed_reads
       file index from bwt2_index_trim.collect()
@@ -447,7 +462,10 @@ process bowtie2_on_trimmed_reads {
 }
 
 process merge_mapping_steps{
-   tag "$bam1 + $bam2"
+   tag "$sample = $bam1 + $bam2"
+   publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+   	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
    input:
       set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
 
@@ -455,7 +473,7 @@ process merge_mapping_steps{
       set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
 
    script:
-      sample = prefix.toString() - ~/(_R1)?(_R2)?(_val_1)?(_val_2)?$/
+      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
       """
       samtools merge -@ ${task.cpus} \\
        	             -f ${prefix}_bwt2merged.bam \\
@@ -472,11 +490,15 @@ process merge_mapping_steps{
 
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
+   publishDir "${params.outdir}/mapping", mode: 'copy',
+   	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}	      
+
    input:
       set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
 
    output:
       set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
+      file "*.pairstat" into combine_mapping_results
 
    script:
       r1_bam = aligned_bam[0]
@@ -484,7 +506,7 @@ process combine_mapped_files{
       r2_bam = aligned_bam[1]
       r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
       
-      def opts = ""
+      def opts = "-t"
       opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
       opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
       """
@@ -500,15 +522,24 @@ process combine_mapped_files{
 
 process get_valid_interaction{
    tag "$sample"
+   publishDir "${params.outdir}/hic_results/data", mode: 'copy',
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
+
    input:
       set val(sample), file(pe_bam) from paired_bam
-      val frag_file from res_frag_file
+      file frag_file from res_frag_file.collect()
 
    output:
       set val(sample), file("*.validPairs") into valid_pairs
       set val(sample), file("*.validPairs") into valid_pairs_4cool
+      file "*stat" into valid_interaction_results
 
    script:
+	
+      if (params.splitFastq){
+      	 sample = sample.toString() - ~/(\.[0-9]+)$/
+      }
+
       def opts = ""
       if (params.min_cis_dist != "") opts="${opts} -d ${params.min_cis_dist}"
       if (params.min_insert_size != "") opts="${opts} -s ${params.min_insert_size}"
@@ -525,14 +556,39 @@ process get_valid_interaction{
  * STEP3 - BUILD MATRIX
 */
 
+if ( params.splitFastq ){
+   process merge_sample {
+      tag "$sample"
+      publishDir "${params.outdir}/hic_results/data", mode: 'copy'
+
+      input:
+	set val(sample), file(vpairs) from valid_pairs.groupTuple()
+	
+      output:
+            set val(sample), file("*.allValidPairs") into all_valid_pairs
+	    set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
+      	    
+      script:
+      """
+      cat $vpairs > test.allValidPairs
+      """
+   }
+}else{
+   all_valid_pairs = valid_pairs
+   all_valid_pairs_4cool = valid_pairs	
+}
+
 process build_contact_maps{
    tag "$sample - $mres"
+   publishDir "${params.outdir}/hic_results/maps/iced", mode: 'copy'
+
    input:
-      set val(sample), file(vpairs), val(mres) from valid_pairs.combine(map_res)
-      val chrsize from chromosome_size
+      set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
+      file chrsize from chromosome_size.collect()
 
    output:
       file("*.matrix") into raw_maps
+      file "*.bed"
 
    script:
    """
@@ -544,10 +600,13 @@ process build_contact_maps{
  * STEP 4 - NORMALIZE MATRIX
 */
 
-process run_iced{
+process run_ice{
    tag "$rmaps"
+   publishDir "${params.outdir}/hic_results/matrix/iced", mode: 'copy'
+
    input:
       file(rmaps) from raw_maps
+      file "*.biases"
 
    output:
       file("*iced.matrix") into iced_maps
@@ -568,8 +627,10 @@ process run_iced{
 
 process generate_cool{
    tag "$sample"
+   publishDir "${params.outdir}/export/cool", mode: 'copy'
+
    input:
-      set val(sample), file(vpairs) from valid_pairs_4cool
+      set val(sample), file(vpairs) from all_valid_pairs_4cool
       val chrsize from chromosome_size
 
    output:
@@ -583,15 +644,15 @@ process generate_cool{
 */
 
 /*
- // STEP 5 - MultiQC
+ * STEP 5 - MultiQC
 
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
     input:
     file multiqc_config from ch_multiqc_config
-    // TODO nf-core: Add in log files from your new processes for MultiQC to find!
-    file ('fastqc/*') from fastqc_results.collect().ifEmpty([])
+    file ('mapping/stats/*') from combine_mapping_results.collect()
+    file ('hic_results/data/stats/*') from valid_interaction_results.collect()
     file ('software_versions/*') from software_versions_yaml
     file workflow_summary from create_workflow_summary(summary)
 
@@ -602,14 +663,19 @@ process multiqc {
     script:
     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-    // TODO nf-core: Specify which MultiQC modules to use with -m for a faster run time
     """
     multiqc -f $rtitle $rfilename --config $multiqc_config .
     """
 }
+*/
 
+/****************************************************
+ * POST-PROCESSING
+ */
 
-// STEP 3 - Output Description HTML
+/* 
+ * Output Description HTML
+ */
 
 process output_documentation {
     publishDir "${params.outdir}/Documentation", mode: 'copy'
@@ -625,12 +691,13 @@ process output_documentation {
     markdown_to_html.r $output_docs results_description.html
     """
 }
-*/
+
 
 
 /*
  * Completion e-mail notification
  */
+
 workflow.onComplete {
 
     // Set up the e-mail variables
