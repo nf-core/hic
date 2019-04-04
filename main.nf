@@ -104,6 +104,8 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 // Define these here - after the profiles are loaded with the iGenomes paths
 params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
+
+
 //params.chromosome_size = false
 //params.restriction_fragments = false
 
@@ -139,11 +141,6 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
  */
 
 if (params.readPaths){
-   Channel
-      .from( params.readPaths )
-      .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
-      .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-      .set { raw_reads_pairs }
 
    raw_reads = Channel.create()
    raw_reads_2 = Channel.create()
@@ -152,11 +149,8 @@ if (params.readPaths){
       .from( params.readPaths )
       .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
       .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
+      .println()
 }else{
-   Channel
-      .fromFilePairs( params.reads )
-      .ifEmpty { exit 1, "params.readPaths was empty - no input files supplied" }
-      .set { raw_reads_pairs }
 
    raw_reads = Channel.create()
    raw_reads_2 = Channel.create()
@@ -165,6 +159,8 @@ if (params.readPaths){
       .fromFilePairs( params.reads )
       .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
 }
+
+raw_reads = raw_reads.concat( raw_reads_2 )
 
 // SPlit fastq files
 // https://www.nextflow.io/docs/latest/operator.html#splitfastq
@@ -174,21 +170,21 @@ if (params.readPaths){
  */
 
 // Reference genome
-
 if ( params.bwt2_index ){
    lastPath = params.bwt2_index.lastIndexOf(File.separator)
    bwt2_dir =  params.bwt2_index.substring(0,lastPath+1)
    bwt2_base = params.bwt2_index.substring(lastPath+1)
 
-   Channel.fromPath( bwt2_dir, checkIfExists: true )
+   Channel.fromPath( bwt2_dir , checkIfExists: true)
       .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
-      .into { bwt2_index_end2end; bwt2_index_trim } 
+      .into { bwt2_index_end2end; bwt2_index_trim }
+      
 }
 else if ( params.fasta ) {
     lastPath = params.fasta.lastIndexOf(File.separator)
     bwt2_base = params.fasta.substring(lastPath+1)
 
-   Channel.fromPath( params.fasta, checkIfExists: true )
+   Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
         .set { fasta_for_index }
 }
@@ -196,14 +192,18 @@ else {
    exit 1, "No reference genome specified!"
 }
 
+//println (bwt2_dir)
+//println (bwt2_base)
+
+
 // Chromosome size
 
 if ( params.chromosome_size ){
-   Channel.FromPath( params.chromosome_size, checkIfExists: true )
-      .set {chromosome_size}
+   Channel.fromPath( params.chromosome_size , checkIfExists: true)
+         .set {chromosome_size}
 }
 else if ( params.fasta ){
-   Channel.fromPath( params.fasta, checkIfExists: true )
+   Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Chromosome sizes: Fasta file not found: ${params.fasta}" }
        	.set { fasta_for_chromsize }
 }
@@ -213,11 +213,11 @@ else {
 
 // Restriction fragments
 if ( params.restriction_fragments ){
-   Channel.FromPath( params.restriction_fragments, checkIfExists: true )
+   Channel.fromPath( params.restriction_fragments, checkIfExists: true )
       .set {res_frag_file}
 }
 else if ( params.fasta && params.restriction_site ){
-   Channel.fromPath(params.fasta, checkIfExists: true)
+   Channel.fromPath( params.fasta )
            .ifEmpty { exit 1, "Restriction fragments: Fasta file not found: ${params.fasta}" }
            .set { fasta_for_resfrag }
 }
@@ -247,9 +247,10 @@ def summary = [:]
 summary['Pipeline Name']  = 'nf-core/hic'
 summary['Pipeline Version'] = workflow.manifest.version
 summary['Run Name']     = custom_runName ?: workflow.runName
-// TODO nf-core: Report custom parameters here
+
 summary['Reads']        = params.reads
 summary['Fasta Ref']    = params.fasta
+
 
 summary['Max Memory']   = params.max_memory
 summary['Max CPUs']     = params.max_cpus
@@ -302,13 +303,13 @@ process get_software_versions {
 
     script:
      """
-    echo $workflow.manifest.version > v_pipeline.txt
-    echo $workflow.nextflow.version > v_nextflow.txt
-    bowtie2 --version > v_bowtie2.txt
-    python --version > v_python.txt
-    samtools --version > v_samtools.txt
-    scrape_software_versions.py > software_versions_mqc.yaml
-    """
+     echo $workflow.manifest.version > v_pipeline.txt
+     echo $workflow.nextflow.version > v_nextflow.txt
+     bowtie2 --version > v_bowtie2.txt
+     python --version > v_python.txt
+     samtools --version > v_samtools.txt
+     scrape_software_versions.py > software_versions_mqc.yaml
+     """
 }
 
 
@@ -317,8 +318,8 @@ process get_software_versions {
  */
 
 if(!params.bwt2_index && params.fasta){
-    process makeBowtieIndex {
-        tag "$fasta"
+    process makeBowtie2Index {
+        tag "$bwt2_base"
         //publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
         //           saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
@@ -326,12 +327,14 @@ if(!params.bwt2_index && params.fasta){
         file fasta from fasta_for_index
 
         output:
-        file "bowtie2" into bwt2_index
+        file "bowtie2_index" into bwt2_index_end2end
+	file "bowtie2_index" into bwt2_index_trim
 
         script:
+        bwt2_base = fasta.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?$/
         """
-        mkdir bwt2_index
-	
+        mkdir bowtie2_index
+	bowtie2-build ${fasta} bowtie2_index/${bwt2_base}
 	"""
       }
  }
@@ -351,7 +354,8 @@ if(!params.chromosome_size && params.fasta){
 
         script:
         """
-	samtools faidx ${fasta} | cut -f1,2 > chrom.size
+	samtools faidx ${fasta}
+	cut -f1,2 ${fasta}.fai > chrom.size
    	"""	
       }
  }
@@ -383,13 +387,11 @@ if(!params.restriction_fragments && params.fasta){
  * STEP 1 - Two-steps Reads Mapping
 */
 
-raw_reads = raw_reads.concat( raw_reads_2 )
-
 process bowtie2_end_to_end {
    tag "$prefix"
    input:
         set val(sample), file(reads) from raw_reads
-        file index from bwt2_index_end2end
+        file index from bwt2_index_end2end.collect()
  
    output:
 	set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
@@ -428,7 +430,7 @@ process bowtie2_on_trimmed_reads {
    tag "$prefix"
    input:
       set val(prefix), file(reads) from trimmed_reads
-      file index from bwt2_index_trim
+      file index from bwt2_index_trim.collect()
 
    output:
       set val(prefix), file("${prefix}_trimmed.bam") into trimmed_bam
@@ -468,7 +470,6 @@ process merge_mapping_steps{
       """
 }
 
-
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
    input:
@@ -491,9 +492,11 @@ process combine_mapped_files{
       """
 }
 
+
 /*
  * STEP2 - DETECT VALID PAIRS
 */
+
 
 process get_valid_interaction{
    tag "$sample"
@@ -523,6 +526,7 @@ process get_valid_interaction{
  * STEP3 - BUILD MATRIX
 */
 
+/*
 process build_contact_maps{
    tag "$sample - $mres"
    input:
@@ -537,11 +541,13 @@ process build_contact_maps{
    build_matrix --matrix-format upper  --binsize ${mres} --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_${mres}
    """
 }
+*/
 
 /*
  * STEP 4 - NORMALIZE MATRIX
 */
 
+/*
 process run_iced{
    tag "$rmaps"
    input:
@@ -559,10 +565,10 @@ process run_iced{
    --max_iter ${params.ice_max_iter} --eps ${params.ice_eps} --remove-all-zeros-loci --output-bias 1 --verbose 1 ${rmaps}
    """ 
 }
+*/
 
 /*
  * STEP 5 - COOLER FILE
-
 
 process generate_cool{
    tag "$sample"
