@@ -475,6 +475,8 @@ process merge_mapping_steps{
 
    script:
       sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+      tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+
       """
       samtools merge -@ ${task.cpus} \\
        	             -f ${prefix}_bwt2merged.bam \\
@@ -486,9 +488,16 @@ process merge_mapping_steps{
 	            ${prefix}_bwt2merged.bam
             
       mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
-      
-      if [[ "${prefix}" =~ _R1|_val_1 ]]; then mapping_stat.sh ${bam1} ${bam2} ${prefix}_bwt2merged.bam "R1" > ${prefix}.mapstat; fi
-      if [[ "${prefix}" =~ _R2|_val_2 ]]; then mapping_stat.sh ${bam1} ${bam2} ${prefix}_bwt2merged.bam "R2" > ${prefix}.mapstat; fi
+
+      echo "## ${prefix}" > ${prefix}.mapstat
+      echo -n "total_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+      echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+      echo -n "global_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+      echo -n "local_${tag}\t"  >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
       """
 }
 
