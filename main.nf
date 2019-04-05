@@ -367,8 +367,8 @@ if(!params.chromosome_size && params.fasta){
  }
 
 if(!params.restriction_fragments && params.fasta){
-    process makeRestrictionFragments {
-        tag "$fasta - ${params.restriction_site}"
+    process getRestrictionFragments {
+        tag "$fasta [${params.restriction_site}]"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
@@ -471,6 +471,7 @@ process merge_mapping_steps{
 
    output:
       set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
+      set val(prefix), file("${prefix}.mapstat") into all_mapstat
 
    script:
       sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
@@ -485,6 +486,9 @@ process merge_mapping_steps{
 	            ${prefix}_bwt2merged.bam
             
       mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
+      
+      if [[ "${prefix}" =~ _R1|_val_1 ]]; then mapping_stat.sh ${bam1} ${bam2} ${prefix}_bwt2merged.bam "R1" > ${prefix}.mapstat; fi
+      if [[ "${prefix}" =~ _R2|_val_2 ]]; then mapping_stat.sh ${bam1} ${bam2} ${prefix}_bwt2merged.bam "R2" > ${prefix}.mapstat; fi
       """
 }
 
@@ -498,7 +502,7 @@ process combine_mapped_files{
 
    output:
       set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
-      file "*.pairstat" into combine_mapping_results
+      file "*.pairstat" into all_pairstat
 
    script:
       r1_bam = aligned_bam[0]
@@ -509,8 +513,9 @@ process combine_mapped_files{
       def opts = "-t"
       opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
       opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
+      if ("$params.min_mapq".isInteger()) opts="${opts} -q ${params.min_mapq}"
       """
-      mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam -q ${params.min_mapq} ${opts}
+      mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam ${opts}
       """
 }
 
@@ -532,7 +537,7 @@ process get_valid_interaction{
    output:
       set val(sample), file("*.validPairs") into valid_pairs
       set val(sample), file("*.validPairs") into valid_pairs_4cool
-      file "*stat" into valid_interaction_results
+      file "*RSstat" into all_rsstat
 
    script:
 	
@@ -541,11 +546,11 @@ process get_valid_interaction{
       }
 
       def opts = ""
-      if (params.min_cis_dist != "") opts="${opts} -d ${params.min_cis_dist}"
-      if (params.min_insert_size != "") opts="${opts} -s ${params.min_insert_size}"
-      if (params.max_insert_size != "") opts="${opts} -l ${params.max_insert_size}"
-      if (params.min_restriction_fragment_size != "") opts="${opts} -t ${params.min_restriction_fragment_size}"
-      if (params.max_restriction_fragment_size != "") opts="${opts} -m ${params.max_restriction_fragment_size}"
+      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+      if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
+      if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
+      if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
+      if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
 
       """
       mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
@@ -580,7 +585,7 @@ if ( params.splitFastq ){
 
 process build_contact_maps{
    tag "$sample - $mres"
-   publishDir "${params.outdir}/hic_results/maps/iced", mode: 'copy'
+   publishDir "${params.outdir}/hic_results/matrix/raw", mode: 'copy'
 
    input:
       set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
@@ -651,8 +656,8 @@ process multiqc {
 
     input:
     file multiqc_config from ch_multiqc_config
-    file ('mapping/stats/*') from combine_mapping_results.collect()
-    file ('hic_results/data/stats/*') from valid_interaction_results.collect()
+    //file ('mapping/stats/*') from combine_mapping_results.collect()
+    //file ('hic_results/data/stats/*') from valid_interaction_results.collect()
     file ('software_versions/*') from software_versions_yaml
     file workflow_summary from create_workflow_summary(summary)
 
