@@ -10,14 +10,6 @@
 */
 
 
-/*TOOO
-- outputs
-- multiqc
-- update version tools
-- install + compile
-*/
-
-
 def helpMessage() {
     log.info"""
     =======================================================
@@ -75,6 +67,7 @@ def helpMessage() {
       --ice_eps				    Convergence criteria for ICE normalization
 
     Other options:
+      --splitFastq			    Size of read chuncks to use to speed up the workflow
       --outdir				    The output directory where the results will be saved
       --email                       	    Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
       -name                         	    Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
@@ -101,13 +94,9 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 }
 
 // Reference index path configuration
-// Define these here - after the profiles are loaded with the iGenomes paths
 params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
-
-//params.chromosome_size = false
-//params.restriction_fragments = false
 
 // Has the run name been specified by the user?
 //  this has the bonus effect of catching both -name and --name
@@ -203,7 +192,7 @@ else {
 
 if ( params.chromosome_size ){
    Channel.fromPath( params.chromosome_size , checkIfExists: true)
-         .set {chromosome_size}
+         .into {chromosome_size; chromosome_size_cool}
 }
 else if ( params.fasta ){
    Channel.fromPath( params.fasta )
@@ -356,7 +345,7 @@ if(!params.chromosome_size && params.fasta){
         file fasta from fasta_for_chromsize
 
         output:
-        file "*.size" into chromosome_size 
+        file "*.size" into chromosome_size, chromosome_size_cool 
 
         script:
         """
@@ -680,14 +669,14 @@ process run_ice{
 
 /*
  * STEP 5 - COOLER FILE
-
+ */
 process generate_cool{
    tag "$sample"
    publishDir "${params.outdir}/export/cool", mode: 'copy'
 
    input:
       set val(sample), file(vpairs) from all_valid_pairs_4cool
-      val chrsize from chromosome_size
+      file chrsize from chromosome_size_cool.collect()
 
    output:
       file("*mcool") into cool_maps
@@ -697,7 +686,7 @@ process generate_cool{
    hicpro2higlass.sh -i $vpairs -r 5000 -c ${chrsize} -n
    """ 
 }
-*/
+
 
 /*
  * STEP 5 - MultiQC
