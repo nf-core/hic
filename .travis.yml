@@ -11,9 +11,9 @@ before_install:
   # PRs to master are only ok if coming from dev branch
   - '[ $TRAVIS_PULL_REQUEST = "false" ] || [ $TRAVIS_BRANCH != "master" ] || ([ $TRAVIS_PULL_REQUEST_SLUG = $TRAVIS_REPO_SLUG ] && [ $TRAVIS_PULL_REQUEST_BRANCH = "dev" ])'
   # Pull the docker image first so the test doesn't wait for this
-  - docker pull nservant/nf-core-hic:dev
+  - docker pull nfcore/hic:dev
   # Fake the tag locally so that the pipeline runs properly
-  - docker tag nservant/nf-core-hic:dev nservant/nf-core-hic:latest
+  - docker tag nfcore/hic:dev nfcore/hic:latest
 
 install:
   # Install Nextflow

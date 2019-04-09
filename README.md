@@ -1,4 +1,5 @@
-# nf-core/hic
+# ![nf-core/hic](docs/images/nfcore-rnaseq_logo.png)
+
 **Analysis of Chromosome Conformation Capture data (Hi-C)**
 
 [![Build Status](https://travis-ci.org/nf-core/hic.svg?branch=master)](https://travis-ci.org/nf-core/hic)
@@ -10,8 +11,20 @@
 https://img.shields.io/badge/singularity-available-7E4C74.svg)
 
 ### Introduction
+This pipeline is based on the [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
+It was designed to process Hi-C data from raw fastq files (paired-end Illumina data) to normalized contact maps. The current version supports digestion protocols.
+Support for other protocols is ongoing.
+
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
 
+### Pipeline summary
+1. Mapping using a two steps strategy to rescue reads spanning the ligation sites (bowtie2)
+2. Detection of valid interaction products
+3. Duplicates removal
+4. Create genome-wide contact maps at various resolution
+5. Contact maps normalization using the ICE algorithm (iced)
+6. Quality controls and report (MultiQC)
+7. Addition export for visualisation and downstream analysis (cooler)
 
 ### Documentation
 The nf-core/hic pipeline comes with documentation about the pipeline, found in the `docs/` directory:
@@ -24,8 +37,6 @@ The nf-core/hic pipeline comes with documentation about the pipeline, found in t
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](docs/troubleshooting.md)
-
-<!-- TODO nf-core: Add a brief overview of what the pipeline does and how it works -->
 
 ### Credits
 nf-core/hic was originally written by Nicolas Servant.
