@@ -471,11 +471,12 @@ process merge_mapping_steps{
 
    output:
       set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
-      set val(prefix), file("${prefix}.mapstat") into all_mapstat
+      set val(oname), file("${prefix}.mapstat") into all_mapstat
 
    script:
       sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
       tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+      oname = prefix.toString() - ~/(\.[0-9]+)$/
 
       """
       samtools merge -@ ${task.cpus} \\
@@ -505,20 +506,21 @@ process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
    publishDir "${params.outdir}/mapping", mode: 'copy',
    	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}	      
-
+ 
    input:
       set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
 
    output:
       set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
-      file "*.pairstat" into all_pairstat
+      set val(oname), file("*.pairstat") into all_pairstat
 
    script:
       r1_bam = aligned_bam[0]
       r1_prefix = r1_bam.toString() - ~/_bwt2merged.bam$/
       r2_bam = aligned_bam[1]
       r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
-      
+      oname = sample.toString() - ~/(\.[0-9]+)$/
+ 
       def opts = "-t"
       opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
       opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
@@ -546,7 +548,7 @@ process get_valid_interaction{
    output:
       set val(sample), file("*.validPairs") into valid_pairs
       set val(sample), file("*.validPairs") into valid_pairs_4cool
-      file "*RSstat" into all_rsstat
+      set val(sample), file("*RSstat") into all_rsstat
 
    script:
 	
@@ -570,27 +572,67 @@ process get_valid_interaction{
  * STEP3 - BUILD MATRIX
 */
 
-if ( params.splitFastq ){
-   process merge_sample {
-      tag "$sample"
-      publishDir "${params.outdir}/hic_results/data", mode: 'copy'
+process remove_duplicates {
+   tag "$sample"
+   publishDir "${params.outdir}/hic_results/data", mode: 'copy',
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}	      
 
-      input:
-	set val(sample), file(vpairs) from valid_pairs.groupTuple()
-	
-      output:
-            set val(sample), file("*.allValidPairs") into all_valid_pairs
-	    set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
-      	    
-      script:
-      """
-      cat $vpairs > test.allValidPairs
-      """
+   input:
+     set val(sample), file(vpairs) from valid_pairs.groupTuple()
+
+   output:
+     set val(sample), file("*.allValidPairs") into all_valid_pairs
+     set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
+     file("stats/") into all_mergestat
+
+   script:
+   if ( params.rm_dup ){
+   """
+   mkdir -p stats/${sample}
+   sort -T /tmp/ -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
+   awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs                   
+   echo -n "valid_interaction\t" > stats/${sample}/${sample}_allValidPairs.mergestat
+   cat ${vpairs} | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
+   echo -n "valid_interaction_rmdup\t" >> stats/${sample}/${sample}_allValidPairs.mergestat
+   cat ${sample}.allValidPairs | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
+   awk 'BEGIN{cis=0;trans=0;sr=0;lr=0} \$2 == \$5{cis=cis+1; d=\$6>\$3?\$6-\$3:\$3-\$6; if (d<=20000){sr=sr+1}else{lr=lr+1}} \$2!=\$5{trans=trans+1}END{print "trans_interaction\\t"trans"\\ncis_interaction\\t"cis"\\ncis_shortRange\\t"sr"\\ncis_longRange\\t"lr}' ${sample}.allValidPairs >> stats/${sample}/${sample}_allValidPairs.mergestat
+
+   """
+   }else{
+   """
+   mkdir -p stats/${sample}
+   cat ${vpairs} > ${sample}.allValidPairs
+   echo -n "valid_interaction\t" > stats/${sample}/${sample}_allValidPairs.mergestat
+   cat ${vpairs} | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
+   echo -n "valid_interaction_rmdup\t" >> stats/${sample}/${sample}_allValidPairs.mergestat
+   cat ${sample}.allValidPairs | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
+   awk 'BEGIN{cis=0;trans=0;sr=0;lr=0} \$2 == \$5{cis=cis+1; d=\$6>\$3?\$6-\$3:\$3-\$6; if (d<=20000){sr=sr+1}else{lr=lr+1}} \$2!=\$5{trans=trans+1}END{print "trans_interaction\\t"trans"\\ncis_interaction\\t"cis"\\ncis_shortRange\\t"sr"\\ncis_longRange\\t"lr}' ${sample}.allValidPairs >> stats/${sample}/${sample}_allValidPairs.mergestat
+   """
    }
-}else{
-   all_valid_pairs = valid_pairs
-   all_valid_pairs_4cool = valid_pairs	
 }
+
+process merge_sample {
+   tag "$ext"
+   publishDir "${params.outdir}/hic_results/stats/${sample}", mode: 'copy'
+
+   input:
+     set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
+
+  output:
+     file("mstats/") into all_mstats
+
+  script:
+     sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+     if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
+     if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
+     if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
+
+     """
+     mkdir -p mstats/${sample}
+     merge_statfiles.py -f ${fstat} > mstats/${sample}/${prefix}.${ext}
+     """
+}
+
 
 process build_contact_maps{
    tag "$sample - $mres"
@@ -659,14 +701,13 @@ process generate_cool{
 
 /*
  * STEP 5 - MultiQC
-
+ */ 
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
     input:
     file multiqc_config from ch_multiqc_config
-    //file ('mapping/stats/*') from combine_mapping_results.collect()
-    //file ('hic_results/data/stats/*') from valid_interaction_results.collect()
+    file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
     file ('software_versions/*') from software_versions_yaml
     file workflow_summary from create_workflow_summary(summary)
 
@@ -677,11 +718,12 @@ process multiqc {
     script:
     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
+   
     """
     multiqc -f $rtitle $rfilename --config $multiqc_config .
     """
 }
-*/
+
 
 /****************************************************
  * POST-PROCESSING
