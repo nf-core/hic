@@ -33,11 +33,11 @@ def helpMessage() {
 
     Mandatory arguments:
       --reads				    Path to input data (must be surrounded with quotes)
-      --genome                       	    Name of iGenomes reference
       -profile                      	    Configuration profile to use. Can use multiple (comma separated)
                                     	    Available: conda, docker, singularity, awsbatch, test and more.
 
     References                      	    If not specified in the configuration file or you wish to overwrite any of the references.
+      --genome                              Name of iGenomes reference
       --bwt2_index                     	    Path to Bowtie2 index
       --fasta                       	    Path to Fasta reference
       --chromosome_size             	    Path to chromosome size file
@@ -71,6 +71,10 @@ def helpMessage() {
       --outdir				    The output directory where the results will be saved
       --email                       	    Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
       -name                         	    Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+
+    Step options:
+      --skip_cool			    Skip generation of cool files
+      --skip_multiQC			    Skip MultiQC
 
     AWSBatch options:
       --awsqueue			    The AWSBatch JobQueue that needs to be set when running on AWSBatch
@@ -138,8 +142,7 @@ if (params.readPaths){
       .from( params.readPaths )
       .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
       .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
-      .println()
-}else{
+ }else{
 
    raw_reads = Channel.create()
    raw_reads_2 = Channel.create()
@@ -674,6 +677,9 @@ process generate_cool{
    tag "$sample"
    publishDir "${params.outdir}/export/cool", mode: 'copy'
 
+   when:
+      !params.skip_cool
+
    input:
       set val(sample), file(vpairs) from all_valid_pairs_4cool
       file chrsize from chromosome_size_cool.collect()
@@ -694,15 +700,18 @@ process generate_cool{
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
+    when:
+       !params.skip_multiqc
+
     input:
-    file multiqc_config from ch_multiqc_config
-    file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
-    file ('software_versions/*') from software_versions_yaml
-    file workflow_summary from create_workflow_summary(summary)
+       file multiqc_config from ch_multiqc_config
+       file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
+       file ('software_versions/*') from software_versions_yaml
+       file workflow_summary from create_workflow_summary(summary)
 
     output:
-    file "*multiqc_report.html" into multiqc_report
-    file "*_data"
+       file "*multiqc_report.html" into multiqc_report
+       file "*_data"
 
     script:
     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
