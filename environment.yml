@@ -10,6 +10,7 @@ dependencies:
   - conda-forge::r-markdown=0.8
   - bcbio::bx-python=0.7.3
   - bioconda::pysam=0.14.1
+  - bioconda::iced=0.5.0
   - cooler=0.8.3
   - bowtie2=2.3.5
   - samtools=1.9
