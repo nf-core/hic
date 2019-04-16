@@ -7,7 +7,7 @@ dependencies:
   - python=2.7.13
   - conda-forge::scipy=1.0.1
   - conda-forge::numpy=1.9.3
-  - conda-forge::r-markdown=0.9
+  - conda-forge::r-markdown=0.8
   - bcbio::bx-python=0.7.3
   - bioconda::pysam=0.14.1
   - cooler=0.8.3
