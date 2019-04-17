@@ -34,7 +34,9 @@
         * [`--max_restriction_fragment_size`](#--max_restriction_fragment_size)
         * [`--min_insert_size`](#--min_insert_size)
         * [`--max_insert_size`](#--max_insert_size)
-    * [Hi-C Processing](#hi-c-processing)
+   * [DNase Hi-C](#dnase-hi-c)
+        * [`--dnase`](#--dnase)
+   * [Hi-C Processing](#hi-c-processing)
         * [`--min_cis_dist`](#--min_cis_dist)
         * [`--rm_singleton`](#--rm_singleton)
         * [`--rm_dup`](#--rm_dup)
@@ -149,7 +151,7 @@ Please note the following requirements:
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-## Reference genomes
+## Reference genomes and annotation files
 
 The pipeline config files come bundled with paths to the illumina iGenomes reference index files. If running with docker or AWS, the configuration is set up to use the [AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
 
@@ -223,7 +225,7 @@ If not specified, this file will be automatically created by the pipeline. In th
 ```
 
 ```bash
---bwt2_index '[path to chromosome size file]'
+--chromosome_size '[path to chromosome size file]'
 ```
 
 ### `--restriction_fragments`
@@ -251,7 +253,7 @@ Note that the `--restriction_site` parameter is mandatory to create this file.
 
 The following options are defined in the `hicpro.config` file, and can be updated either using a custom configuration file (see `-c` option) or using command line parameter.
 
-## Reads mapping
+### Reads mapping
 
 The reads mapping is currently based on the two-steps strategy implemented in the HiC-pro pipeline. The idea is to first align reads from end-to-end.
 Reads that do not aligned are then trimmed at the ligation site, and their 5' end is re-aligned to the reference genome.
@@ -281,7 +283,7 @@ Minimum mapping quality. Reads with lower quality are discarded. Default: 10
 --min_mapq '[Minimum quality value]'
 ```
 
-## Digestion Hi-C
+### Digestion Hi-C
 
 #### `--restriction_site`
 
@@ -340,7 +342,18 @@ Maximum reads insert size. Longer 3C products are discarded. Default: ''
 --max_insert_size '[numeric]'
 ```
 
-## Hi-C processing
+### DNAse Hi-C
+
+#### `--dnase`
+
+In DNAse Hi-C mode, all options related to digestion Hi-C (see previous section) are ignored.
+In this case, it is highly recommanded to use the `--min_cis_dist` parameter to remove spurious ligation products.
+
+```bash
+--dnase'
+```
+
+### Hi-C processing
 
 #### `--min_cis_dist`
 
@@ -376,7 +389,7 @@ If specified, reads that aligned multiple times on the genome are discarded. Not
 
 ## Genome-wide contact maps
 
-#### `--bins_size`
+#### `--bin_size`
 
 Resolution of contact maps to generate (space separated). Default:'1000000,500000'
 

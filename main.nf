@@ -36,7 +36,7 @@ def helpMessage() {
       -profile                      	    Configuration profile to use. Can use multiple (comma separated)
                                     	    Available: conda, docker, singularity, awsbatch, test and more.
 
-    References                      	    If not specified in the configuration file or you wish to overwrite any of the references.
+    References:                      	    If not specified in the configuration file or you wish to overwrite any of the references.
       --genome                              Name of iGenomes reference
       --bwt2_index                     	    Path to Bowtie2 index
       --fasta                       	    Path to Fasta reference
@@ -50,11 +50,13 @@ def helpMessage() {
 
       --restriction_site	    	    Cutting motif(s) of restriction enzyme(s) (comma separated)
       --ligation_site		    	    Ligation motifs to trim (comma separated)
-
       --min_restriction_fragment_size	    Minimum size of restriction fragments to consider
       --max_restriction_framgnet_size	    Maximum size of restriction fragmants to consider
       --min_insert_size			    Minimum insert size of mapped reads to consider
       --max_insert_size			    Maximum insert size of mapped reads to consider
+
+      --dnase				    Run DNase Hi-C mode. All options related to restriction fragments are not considered
+
       --min_cis_dist			    Minimum intra-chromosomal distance to consider
       --rm_singleton			    Remove singleton reads
       --rm_multi			    Remove multi-mapped reads
@@ -221,7 +223,7 @@ else {
 }
 
 // Resolutions for contact maps
-map_res = Channel.from( params.bins_size.tokenize(',') )
+map_res = Channel.from( params.bin_size.tokenize(',') )
 
 // Stage config files
 ch_multiqc_config = Channel.fromPath(params.multiqc_config)
@@ -358,7 +360,7 @@ if(!params.chromosome_size && params.fasta){
       }
  }
 
-if(!params.restriction_fragments && params.fasta){
+if(!params.restriction_fragments && params.fasta && !params.dnase){
     process getRestrictionFragments {
         tag "$fasta [${params.restriction_site}]"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
@@ -527,38 +529,65 @@ process combine_mapped_files{
  * STEP2 - DETECT VALID PAIRS
 */
 
-
-process get_valid_interaction{
-   tag "$sample"
-   publishDir "${params.outdir}/hic_results/data", mode: 'copy',
+if (!params.dnase){
+   process get_valid_interaction{
+      tag "$sample"
+      publishDir "${params.outdir}/hic_results/data", mode: 'copy',
    	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
 
-   input:
-      set val(sample), file(pe_bam) from paired_bam
-      file frag_file from res_frag_file.collect()
+      input:
+         set val(sample), file(pe_bam) from paired_bam
+         file frag_file from res_frag_file.collect()
 
-   output:
-      set val(sample), file("*.validPairs") into valid_pairs
-      set val(sample), file("*.validPairs") into valid_pairs_4cool
-      set val(sample), file("*RSstat") into all_rsstat
+      output:
+         set val(sample), file("*.validPairs") into valid_pairs
+         set val(sample), file("*.validPairs") into valid_pairs_4cool
+         set val(sample), file("*RSstat") into all_rsstat
 
-   script:
-	
-      if (params.splitFastq){
-      	 sample = sample.toString() - ~/(\.[0-9]+)$/
-      }
+      script:	
+         if (params.splitFastq){
+      	    sample = sample.toString() - ~/(\.[0-9]+)$/
+         }
 
-      def opts = ""
-      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
-      if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
-      if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
-      if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
-      if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
+         def opts = ""
+         if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+         if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
+         if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
+         if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
+         if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
 
-      """
-      mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
-      """
+         """
+         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
+         """
+   }
 }
+else{
+   process get_valid_interaction_dnase{
+      tag "$sample"
+      publishDir "${params.outdir}/hic_results/data", mode: 'copy',
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
+
+      input:
+         set val(sample), file(pe_bam) from paired_bam
+      
+      output:
+         set val(sample), file("*.validPairs") into valid_pairs
+         set val(sample), file("*.validPairs") into valid_pairs_4cool
+         set val(sample), file("*RSstat") into all_rsstat
+
+      script:	
+         if (params.splitFastq){
+      	    sample = sample.toString() - ~/(\.[0-9]+)$/
+         }
+
+         def opts = ""
+         if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+	 """
+	 mapped_2hic_dnase.py -r ${pe_bam} ${opts}
+         """
+   }
+}
+
 
 /*
  * STEP3 - BUILD MATRIX

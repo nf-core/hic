@@ -12,8 +12,9 @@ https://img.shields.io/badge/singularity-available-7E4C74.svg)
 
 ### Introduction
 This pipeline is based on the [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
-It was designed to process Hi-C data from raw fastq files (paired-end Illumina data) to normalized contact maps. The current version supports digestion protocols.
-Support for other protocols is ongoing.
+It was designed to process Hi-C data from raw fastq files (paired-end Illumina data) to normalized contact maps.
+The current version supports most protocols, including digestion protocols as well as protocols that do not require restriction enzymes such as DNase Hi-C.
+In practice, this workflow was successfully applied to many data-sets including dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or HiChip data.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
 
