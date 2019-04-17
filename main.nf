@@ -99,6 +99,11 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
 }
 
+// Check Digestion or DNase Hi-C mode
+if (!params.dnase && !params.ligation_site) {
+   exit 1, "Ligation motif not found. For DNase Hi-C, please use '--dnase' option"
+}
+
 // Reference index path configuration
 params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false 
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
@@ -403,20 +408,35 @@ process bowtie2_end_to_end {
    script:
 	prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
         def bwt2_opts = params.bwt2_opts_end2end
-	"""
-        bowtie2 --rg-id BMG --rg SM:${prefix} \\
+	
+	if (!params.dnase){
+	   """
+	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
 		${bwt2_opts} \\
 		-p ${task.cpus} \\
 		-x ${index}/${bwt2_base} \\
 		--un ${prefix}_unmap.fastq \\
 	 	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
-        """
+           """
+	}else{
+	   """
+	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
+		${bwt2_opts} \\
+		-p ${task.cpus} \\
+		-x ${index}/${bwt2_base} \\
+		--un ${prefix}_unmap.fastq \\
+	 	-U ${reads} > ${prefix}.bam
+           """
+	}
 }
 
 process trim_reads {
    tag "$prefix"
    publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
+   when:
+      !params.dnase
 
    input:
       set val(prefix), file(reads) from unmapped_end_to_end
@@ -437,6 +457,9 @@ process bowtie2_on_trimmed_reads {
    publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
+   when:
+      !params.dnase
+
    input:
       set val(prefix), file(reads) from trimmed_reads
       file index from bwt2_index_trim.collect()
@@ -455,46 +478,79 @@ process bowtie2_on_trimmed_reads {
       """
 }
 
-process merge_mapping_steps{
-   tag "$sample = $bam1 + $bam2"
-   publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+if (!params.dnase){
+   process merge_mapping_steps{
+      tag "$sample = $bam1 + $bam2"
+      publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
-   input:
-      set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
+      input:
+         set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
 
-   output:
-      set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
-      set val(oname), file("${prefix}.mapstat") into all_mapstat
+      output:
+         set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
+         set val(oname), file("${prefix}.mapstat") into all_mapstat
 
-   script:
-      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
-      tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
-      oname = prefix.toString() - ~/(\.[0-9]+)$/
+      script:
+         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+         tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+         oname = prefix.toString() - ~/(\.[0-9]+)$/
 
-      """
-      samtools merge -@ ${task.cpus} \\
+         """
+         samtools merge -@ ${task.cpus} \\
        	             -f ${prefix}_bwt2merged.bam \\
 	             ${bam1} ${bam2} 
 
-      samtools sort -@ ${task.cpus} -m 800M \\
+         samtools sort -@ ${task.cpus} -m 800M \\
       	            -n -T /tmp/ \\
 	            -o ${prefix}_bwt2merged.sorted.bam \\
 	            ${prefix}_bwt2merged.bam
             
-      mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
+         mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
 
-      echo "## ${prefix}" > ${prefix}.mapstat
-      echo -n "total_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
-      echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
-      echo -n "global_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
-      echo -n "local_${tag}\t"  >> ${prefix}.mapstat
-      samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
-      """
+         echo "## ${prefix}" > ${prefix}.mapstat
+         echo -n "total_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+         echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+         echo -n "global_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+         echo -n "local_${tag}\t"  >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
+         """
+   }
+}else{
+   process dnase_mapping_stats{
+      tag "$sample = $bam1"
+      publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+   	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
+      input:
+         set val(prefix), file(bam1) from end_to_end_bam
+
+      output:
+         set val(sample), file(bam1) into bwt2_merged_bam
+         set val(oname), file("${prefix}.mapstat") into all_mapstat
+
+      script:
+         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+         tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+         oname = prefix.toString() - ~/(\.[0-9]+)$/
+
+         """
+         echo "## ${prefix}" > ${prefix}.mapstat
+         echo -n "total_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c ${bam1} >> ${prefix}.mapstat
+	 echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+         echo -n "global_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+         echo -n "local_${tag}\t0"  >> ${prefix}.mapstat
+         """
+   }
 }
+
+
 
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
