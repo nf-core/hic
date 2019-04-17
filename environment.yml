@@ -15,5 +15,6 @@ dependencies:
   - bowtie2=2.3.5
   - samtools=1.9
   - multiqc=1.6
+  - gcc
   - pip:
     - iced==0.4.2
