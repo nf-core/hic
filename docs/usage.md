@@ -19,6 +19,36 @@
     * [`--genome`](#--genome)
     * [`--fasta`](#--fasta)
     * [`--igenomesIgnore`](#--igenomesignore)
+    * [`--bwt2_index`](#--bwt2_index)
+    * [`--chromosome_size`](#--chromosome_size)
+    * [`--restriction_fragments`](#--restriction_fragments)
+* [Hi-C specific options](#hi-c-specific-options)
+    * [Reads mapping](#reads-mapping)
+        * [`--bwt2_opts_end2end`](#--bwt2_opts_end2end)
+	* [`--bwt2_opts_trimmed`](#--bwt2_opts_trimmed)
+	* [`--min_mapq`](#--min_mapq)
+    * [Digestion Hi-C](#digestion-hi-c)
+        * [`--restriction_site`](#--restriction_site)
+	* [`--ligation_site`](#--ligation_site)
+	* [`--min_restriction_fragment_size`](#--min_restriction_fragment_size)
+	* [`--max_restriction_fragment_size`](#--max_restriction_fragment_size)
+	* [`--min_insert_size`](#--min_insert_size)
+	* [`--max_insert_size`](#--max_insert_size)
+    * [Hi-C Processing](#hi-c-processing)
+	* [`--min_cis_dist`](#--min_cis_dist)
+	* [`--rm_singleton`](#--rm_singleton)
+	* [`--rm_dup`](#--rm_dup)
+	* [`--rm_multi`](#--rm_multi)
+    * [Genome-wide contact maps](#genome-wide-contact-maps)
+	* [`--bins_size`](#--bins_size)
+	* [`--ice_max_iter`](#--ice_max_iter)
+	* [`--ice_filer_low_count_perc`](#--ice_filer_low_count_perc)
+	* [`--ice_filer_high_count_perc`](#--ice_filer_high_count_perc)
+	* [`--ice_eps`](#--ice_eps)
+    * [Inputs/Outputs](#inputs-outputs)
+        * [`--splitFastq`](#--splitFastq)
+	* [`--saveReference`](#--saveReference)
+	* [`--saveAlignedIntermediates`](#--saveAlignedIntermediates)
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
 * [Custom resource requests](#custom-resource-requests)
@@ -48,11 +78,11 @@ It is recommended to limit the Nextflow Java virtual machines memory. We recomme
 ```bash
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
-<!-- TODO nf-core: Document required command line parameters to run the pipeline-->
+
 ## Running the pipeline
 The typical command for running the pipeline is as follows:
 ```bash
-nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -profile docker
+nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -genome GRCh37 -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -119,16 +149,6 @@ Please note the following requirements:
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-### `--singleEnd`
-By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--singleEnd` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--reads`. For example:
-
-```bash
---singleEnd --reads '*.fastq'
-```
-
-It is not possible to run a mixture of single-end and paired-end files in one run.
-
-
 ## Reference genomes
 
 The pipeline config files come bundled with paths to the illumina iGenomes reference index files. If running with docker or AWS, the configuration is set up to use the [AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
@@ -153,19 +173,19 @@ Note that you can use the same configuration setup to save sets of reference fil
 
 The syntax for this reference configuration is as follows:
 
-<!-- TODO nf-core: Update reference genome example according to what is needed -->
+
 ```nextflow
 params {
   genomes {
     'GRCh37' {
-      fasta   = '<path to the genome fasta file>' // Used if no star index given
+      fasta   = '<path to the genome fasta file>' // Used if no annotations are given
+      bowtie2 = '<path to bowtie2 index files>'
     }
     // Any number of additional genomes, key is used with --genome
   }
 }
 ```
 
-<!-- TODO nf-core: Describe reference path flags -->
 ### `--fasta`
 If you prefer, you can specify the full path to your reference genome when you run the pipeline:
 
@@ -175,6 +195,253 @@ If you prefer, you can specify the full path to your reference genome when you r
 
 ### `--igenomesIgnore`
 Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`.
+
+### `--bwt2_index`
+
+The bowtie2 indexes are required to run the Hi-C pipeline. If the `--bwt2_index` is not specified, the pipeline will either use the igenome bowtie2 indexes (see `--genome` option) or build the indexes on-the-fly (see `--fasta` option)
+
+```bash
+--bwt2_index '[path to bowtie2 index (with basename)]'
+```
+
+### `--chromosome_size`
+
+The Hi-C pipeline will also requires a two-columns text file with the chromosome name and its size (tab separated).
+If not specified, this file will be automatically created by the pipeline. In the latter case, the `--fasta` reference genome has to be specified.
+```
+   chr1    249250621
+   chr2    243199373
+   chr3    198022430
+   chr4    191154276
+   chr5    180915260
+   chr6    171115067
+   chr7    159138663
+   chr8    146364022
+   chr9    141213431
+   chr10   135534747
+   (...)
+```
+
+```bash
+--bwt2_index '[path to chromosome size file]'
+```
+
+### `--restriction_fragments`
+
+Finally, Hi-C experiments based on restriction enzyme digestion requires a BED file with coordinates of restriction fragments.
+
+```
+   chr1   0       16007   HIC_chr1_1    0   +
+   chr1   16007   24571   HIC_chr1_2    0   +
+   chr1   24571   27981   HIC_chr1_3    0   +
+   chr1   27981   30429   HIC_chr1_4    0   +
+   chr1   30429   32153   HIC_chr1_5    0   +
+   chr1   32153   32774   HIC_chr1_6    0   +
+   chr1   32774   37752   HIC_chr1_7    0   +
+   chr1   37752   38369   HIC_chr1_8    0   +
+   chr1   38369   38791   HIC_chr1_9    0   +
+   chr1   38791   39255   HIC_chr1_10   0   +
+   (...)
+```
+
+If not specified, this file will be automatically created by the pipline. In this case, the `--fasta` reference genome will be used.
+Note that the `--restriction_site` parameter is mandatory to create this file.
+
+## Hi-C specific options
+
+The following options are defined in the `hicpro.config` file, and can be updated either using a custom configuration file (see `-c` option) or using command line parameter.
+
+## Reads mapping
+
+The reads mapping is currently based on the two-steps strategy implemented in the HiC-pro pipeline. The idea is to first align reads from end-to-end.
+Reads that do not aligned are then trimmed at the ligation site, and their 5' end is re-aligned to the reference genome.
+Note that the default option are quite stringent, and can be updated according to the reads quality or the reference genome.
+
+#### `--bwt2_opts_end2end`
+
+Bowtie2 alignment option for end-to-end mapping. Default: '--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end --reorder'
+
+```bash
+--bwt2_opts_end2end '[Options for bowtie2 step1 mapping on full reads]'
+```
+
+#### `--bwt2_opts_trimmed`
+
+Bowtie2 alignment option for trimmed reads mapping (step 2). Default: '--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end --reorder'
+
+```bash
+--bwt2_opts_trimmed '[Options for bowtie2 step2 mapping on trimmed reads]'
+```
+
+#### `--min_mapq`
+
+Minimum mapping quality. Reads with lower quality are discarded. Default: 10
+
+```bash
+--min_mapq '[Minimum quality value]'
+```
+
+## Digestion Hi-C
+
+#### `--restriction_site`
+
+Restriction motif(s) for Hi-C digestion protocol. The restriction motif(s) is(are) used to generate the list of restriction fragments.
+The precise cutting site of the restriction enzyme has to be specified using the '^' character. Default: 'A^AGCTT'
+Here are a few examples:
+* MboI: '^GATC'
+* DpnII: '^GATC'
+* BglII: 'A^GATCT'
+* HindIII: 'A^AGCTT'
+
+Note that multiples restriction motifs can be provided (comma-separated).
+
+```bash
+--restriction_size '[Cutting motif]'
+```
+
+#### `--ligation_site`
+
+Ligation motif after reads ligation. This motif is used for reads trimming and depends on the fill in strategy.
+Note that multiple ligation sites can be specified. Default: 'AAGCTAGCTT'
+
+```bash
+--ligation_site '[Ligation motif]'
+```
+
+#### `--min_restriction_fragment_size`
+
+Minimum size of restriction fragments to consider for the Hi-C processing. Default: ''
+
+```bash
+--min_restriction_fragment_size '[numeric]'
+```
+
+#### `--max_restriction_fragment_size`
+
+Maximum size of restriction fragments to consider for the Hi-C processing. Default: ''
+
+```bash
+--max_restriction_fragment_size '[numeric]'
+```
+
+#### `--min_insert_size`
+
+Minimum reads insert size. Shorter 3C products are discarded. Default: ''
+
+```bash
+--min_insert_size '[numeric]'
+```
+
+#### `--max_insert_size`
+
+Maximum reads insert size. Longer 3C products are discarded. Default: ''
+
+```bash
+--max_insert_size '[numeric]'
+```
+
+## Hi-C processing
+
+#### `--min_cis_dist`
+
+Filter short range contact below the specified distance. Mainly useful for DNase Hi-C. Default: ''
+
+```bash
+--min_cis_dist '[numeric]'
+```
+
+#### `--rm_singleton`
+
+If specified, singleton reads are discarded at the mapping step.
+
+```bash
+--rm_singleton
+```
+
+#### `--rm_dup`
+
+If specified, duplicates reads are discarded before building contact maps.
+
+```bash
+--rm_dup
+```
+
+#### `--rm_multi`
+
+If specified, reads that aligned multiple times on the genome are discarded. Note the default mapping options are based on random hit assignment, meaning that only one position is kept per read.
+
+```bash
+--rm_multi
+```
+
+## Genome-wide contact maps
+
+#### `--bins_size`
+
+Resolution of contact maps to generate (space separated). Default:'1000000,500000'
+
+```bash
+--bins_size '[numeric]'
+```
+
+#### `--ice_max_iter`
+
+Maximum number of iteration for ICE normalization. Default: 100
+
+```bash
+--ice_max_iter '[numeric]'
+```
+
+#### `--ice_filer_low_count_perc`
+
+Define which pourcentage of bins with low counts should be force to zero. Default: 0.02
+
+```bash
+--ice_filter_low_count_perc '[numeric]'
+```
+
+#### `--ice_filer_high_count_perc`
+
+Define which pourcentage of bins with low counts should be discarded before normalization. Default: 0
+
+```bash
+--ice_filter_high_count_perc '[numeric]'
+```
+
+#### `--ice_eps`
+
+The relative increment in the results before declaring convergence for ICE normalization. Default: 0.1
+
+```bash
+--ice_eps '[numeric]'
+```
+
+## Inputs/Outputs
+
+#### `--splitFastq`
+
+By default, the nf-core Hi-C pipeline expects one read pairs per sample. However, for large Hi-C data processing single fastq files can be very time consuming.
+The `--splitFastq` option allows to automatically split input read pairs into chunks of reads. In this case, all chunks will be processed in parallel and merged before generating the contact maps, thus leading to a significant increase of processing performance.
+
+```bash
+--splitFastq '[Number of reads per chunk]'
+```
+
+#### `--saveReference`
+
+If specified, annotation files automatically generated from the `--fasta` file are exported in the results folder. Default: false
+
+```
+--saveReference
+```
+
+#### `--saveAlignedIntermediates`
+
+If specified, all intermediate mapping files are saved and exported in the results folder. Default: false
+
+```
+--saveReference
+```
 
 ## Job resources
 ### Automatic resubmission
@@ -197,8 +464,6 @@ The AWS region to run your job in. Default is set to `eu-west-1` but can be adju
 Please make sure to also set the `-w/--work-dir` and `--outdir` parameters to a S3 storage bucket of your choice - you'll get an error message notifying you if you didn't.
 
 ## Other command line parameters
-
-<!-- TODO nf-core: Describe any other command line flags here -->
 
 ### `--outdir`
 The output directory where the results will be saved.
