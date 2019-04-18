@@ -36,7 +36,7 @@ def helpMessage() {
       -profile                      	    Configuration profile to use. Can use multiple (comma separated)
                                     	    Available: conda, docker, singularity, awsbatch, test and more.
 
-    References                      	    If not specified in the configuration file or you wish to overwrite any of the references.
+    References:                      	    If not specified in the configuration file or you wish to overwrite any of the references.
       --genome                              Name of iGenomes reference
       --bwt2_index                     	    Path to Bowtie2 index
       --fasta                       	    Path to Fasta reference
@@ -50,11 +50,13 @@ def helpMessage() {
 
       --restriction_site	    	    Cutting motif(s) of restriction enzyme(s) (comma separated)
       --ligation_site		    	    Ligation motifs to trim (comma separated)
-
       --min_restriction_fragment_size	    Minimum size of restriction fragments to consider
       --max_restriction_framgnet_size	    Maximum size of restriction fragmants to consider
       --min_insert_size			    Minimum insert size of mapped reads to consider
       --max_insert_size			    Maximum insert size of mapped reads to consider
+
+      --dnase				    Run DNase Hi-C mode. All options related to restriction fragments are not considered
+
       --min_cis_dist			    Minimum intra-chromosomal distance to consider
       --rm_singleton			    Remove singleton reads
       --rm_multi			    Remove multi-mapped reads
@@ -95,6 +97,11 @@ if (params.help){
 // Check if genome exists in the config file
 if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
+}
+
+// Check Digestion or DNase Hi-C mode
+if (!params.dnase && !params.ligation_site) {
+   exit 1, "Ligation motif not found. For DNase Hi-C, please use '--dnase' option"
 }
 
 // Reference index path configuration
@@ -221,7 +228,7 @@ else {
 }
 
 // Resolutions for contact maps
-map_res = Channel.from( params.bins_size.tokenize(',') )
+map_res = Channel.from( params.bin_size.tokenize(',') )
 
 // Stage config files
 ch_multiqc_config = Channel.fromPath(params.multiqc_config)
@@ -242,31 +249,36 @@ log.info """=======================================================
 nf-core/hic v${workflow.manifest.version}"
 ======================================================="""
 def summary = [:]
-summary['Pipeline Name']  = 'nf-core/hic'
+summary['Pipeline Name']    = 'nf-core/hic'
 summary['Pipeline Version'] = workflow.manifest.version
-summary['Run Name']     = custom_runName ?: workflow.runName
+summary['Run Name']         = custom_runName ?: workflow.runName
 
-summary['Reads']        = params.reads
-summary['Fasta Ref']    = params.fasta
+summary['Reads']            = params.reads
+summary['splitFastq']       = params.splitFastq
+summary['Fasta Ref']        = params.fasta
+summary['Ligation Motif']   = params.ligation_site
+summary['DNase Mode']       = params.dnase
+summary['Remove Dup']       = params.rm_dup
+summary['Maps resolution']  = params.bin_size
 
-
-summary['Max Memory']   = params.max_memory
-summary['Max CPUs']     = params.max_cpus
-summary['Max Time']     = params.max_time
-summary['Output dir']   = params.outdir
-summary['Working dir']  = workflow.workDir
+summary['Max Memory']       = params.max_memory
+summary['Max CPUs']         = params.max_cpus
+summary['Max Time']         = params.max_time
+summary['Output dir']       = params.outdir
+summary['Working dir']      = workflow.workDir
 summary['Container Engine'] = workflow.containerEngine
-if(workflow.containerEngine) summary['Container'] = workflow.container
-summary['Current home']   = "$HOME"
-summary['Current user']   = "$USER"
-summary['Current path']   = "$PWD"
-summary['Working dir']    = workflow.workDir
-summary['Output dir']     = params.outdir
-summary['Script dir']     = workflow.projectDir
-summary['Config Profile'] = workflow.profile
+if(workflow.containerEngine) 
+   summary['Container']     = workflow.container
+summary['Current home']     = "$HOME"
+summary['Current user']     = "$USER"
+summary['Current path']     = "$PWD"
+summary['Working dir']      = workflow.workDir
+summary['Output dir']       = params.outdir
+summary['Script dir']       = workflow.projectDir
+summary['Config Profile']   = workflow.profile
 if(workflow.profile == 'awsbatch'){
-   summary['AWS Region'] = params.awsregion
-   summary['AWS Queue'] = params.awsqueue
+   summary['AWS Region']    = params.awsregion
+   summary['AWS Queue']     = params.awsqueue
 }
 if(params.email) summary['E-mail Address'] = params.email
 log.info summary.collect { k,v -> "${k.padRight(15)}: $v" }.join("\n")
@@ -358,7 +370,7 @@ if(!params.chromosome_size && params.fasta){
       }
  }
 
-if(!params.restriction_fragments && params.fasta){
+if(!params.restriction_fragments && params.fasta && !params.dnase){
     process getRestrictionFragments {
         tag "$fasta [${params.restriction_site}]"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
@@ -401,20 +413,35 @@ process bowtie2_end_to_end {
    script:
 	prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
         def bwt2_opts = params.bwt2_opts_end2end
-	"""
-        bowtie2 --rg-id BMG --rg SM:${prefix} \\
+	
+	if (!params.dnase){
+	   """
+	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
 		${bwt2_opts} \\
 		-p ${task.cpus} \\
 		-x ${index}/${bwt2_base} \\
 		--un ${prefix}_unmap.fastq \\
 	 	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
-        """
+           """
+	}else{
+	   """
+	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
+		${bwt2_opts} \\
+		-p ${task.cpus} \\
+		-x ${index}/${bwt2_base} \\
+		--un ${prefix}_unmap.fastq \\
+	 	-U ${reads} > ${prefix}.bam
+           """
+	}
 }
 
 process trim_reads {
    tag "$prefix"
    publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
+   when:
+      !params.dnase
 
    input:
       set val(prefix), file(reads) from unmapped_end_to_end
@@ -435,6 +462,9 @@ process bowtie2_on_trimmed_reads {
    publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
+   when:
+      !params.dnase
+
    input:
       set val(prefix), file(reads) from trimmed_reads
       file index from bwt2_index_trim.collect()
@@ -453,46 +483,79 @@ process bowtie2_on_trimmed_reads {
       """
 }
 
-process merge_mapping_steps{
-   tag "$sample = $bam1 + $bam2"
-   publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+if (!params.dnase){
+   process merge_mapping_steps{
+      tag "$sample = $bam1 + $bam2"
+      publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
-   input:
-      set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
+      input:
+         set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
 
-   output:
-      set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
-      set val(oname), file("${prefix}.mapstat") into all_mapstat
+      output:
+         set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
+         set val(oname), file("${prefix}.mapstat") into all_mapstat
 
-   script:
-      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
-      tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
-      oname = prefix.toString() - ~/(\.[0-9]+)$/
+      script:
+         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+         tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+         oname = prefix.toString() - ~/(\.[0-9]+)$/
 
-      """
-      samtools merge -@ ${task.cpus} \\
+         """
+         samtools merge -@ ${task.cpus} \\
        	             -f ${prefix}_bwt2merged.bam \\
 	             ${bam1} ${bam2} 
 
-      samtools sort -@ ${task.cpus} -m 800M \\
+         samtools sort -@ ${task.cpus} -m 800M \\
       	            -n -T /tmp/ \\
 	            -o ${prefix}_bwt2merged.sorted.bam \\
 	            ${prefix}_bwt2merged.bam
             
-      mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
+         mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
 
-      echo "## ${prefix}" > ${prefix}.mapstat
-      echo -n "total_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
-      echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
-      echo -n "global_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
-      echo -n "local_${tag}\t"  >> ${prefix}.mapstat
-      samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
-      """
+         echo "## ${prefix}" > ${prefix}.mapstat
+         echo -n "total_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+         echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+         echo -n "global_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+         echo -n "local_${tag}\t"  >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
+         """
+   }
+}else{
+   process dnase_mapping_stats{
+      tag "$sample = $bam1"
+      publishDir path: { params.saveAlignedIntermediates ? "${params.outdir}/mapping" : params.outdir },
+   	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
+
+      input:
+         set val(prefix), file(bam1) from end_to_end_bam
+
+      output:
+         set val(sample), file(bam1) into bwt2_merged_bam
+         set val(oname), file("${prefix}.mapstat") into all_mapstat
+
+      script:
+         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+         tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+         oname = prefix.toString() - ~/(\.[0-9]+)$/
+
+         """
+         echo "## ${prefix}" > ${prefix}.mapstat
+         echo -n "total_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c ${bam1} >> ${prefix}.mapstat
+	 echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+         echo -n "global_${tag}\t" >> ${prefix}.mapstat
+         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+         echo -n "local_${tag}\t0"  >> ${prefix}.mapstat
+         """
+   }
 }
+
+
 
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
@@ -527,38 +590,65 @@ process combine_mapped_files{
  * STEP2 - DETECT VALID PAIRS
 */
 
-
-process get_valid_interaction{
-   tag "$sample"
-   publishDir "${params.outdir}/hic_results/data", mode: 'copy',
+if (!params.dnase){
+   process get_valid_interaction{
+      tag "$sample"
+      publishDir "${params.outdir}/hic_results/data", mode: 'copy',
    	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
 
-   input:
-      set val(sample), file(pe_bam) from paired_bam
-      file frag_file from res_frag_file.collect()
+      input:
+         set val(sample), file(pe_bam) from paired_bam
+         file frag_file from res_frag_file.collect()
 
-   output:
-      set val(sample), file("*.validPairs") into valid_pairs
-      set val(sample), file("*.validPairs") into valid_pairs_4cool
-      set val(sample), file("*RSstat") into all_rsstat
+      output:
+         set val(sample), file("*.validPairs") into valid_pairs
+         set val(sample), file("*.validPairs") into valid_pairs_4cool
+         set val(sample), file("*RSstat") into all_rsstat
 
-   script:
-	
-      if (params.splitFastq){
-      	 sample = sample.toString() - ~/(\.[0-9]+)$/
-      }
+      script:	
+         if (params.splitFastq){
+      	    sample = sample.toString() - ~/(\.[0-9]+)$/
+         }
 
-      def opts = ""
-      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
-      if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
-      if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
-      if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
-      if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
+         def opts = ""
+         if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+         if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
+         if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
+         if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
+         if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
 
-      """
-      mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
-      """
+         """
+         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
+         """
+   }
 }
+else{
+   process get_valid_interaction_dnase{
+      tag "$sample"
+      publishDir "${params.outdir}/hic_results/data", mode: 'copy',
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
+
+      input:
+         set val(sample), file(pe_bam) from paired_bam
+      
+      output:
+         set val(sample), file("*.validPairs") into valid_pairs
+         set val(sample), file("*.validPairs") into valid_pairs_4cool
+         set val(sample), file("*RSstat") into all_rsstat
+
+      script:	
+         if (params.splitFastq){
+      	    sample = sample.toString() - ~/(\.[0-9]+)$/
+         }
+
+         def opts = ""
+         if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+	 """
+	 mapped_2hic_dnase.py -r ${pe_bam} ${opts}
+         """
+   }
+}
+
 
 /*
  * STEP3 - BUILD MATRIX

@@ -16,4 +16,4 @@ dependencies:
   - samtools=1.9
   - multiqc=1.6
   - pip:
-    - iced=0.4.2
+    - iced==0.4.2
