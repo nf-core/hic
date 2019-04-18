@@ -249,31 +249,36 @@ log.info """=======================================================
 nf-core/hic v${workflow.manifest.version}"
 ======================================================="""
 def summary = [:]
-summary['Pipeline Name']  = 'nf-core/hic'
+summary['Pipeline Name']    = 'nf-core/hic'
 summary['Pipeline Version'] = workflow.manifest.version
-summary['Run Name']     = custom_runName ?: workflow.runName
+summary['Run Name']         = custom_runName ?: workflow.runName
 
-summary['Reads']        = params.reads
-summary['Fasta Ref']    = params.fasta
+summary['Reads']            = params.reads
+summary['splitFastq']       = params.splitFastq
+summary['Fasta Ref']        = params.fasta
+summary['Ligation Motif']   = params.ligation_site
+summary['DNase Mode']       = params.dnase
+summary['Remove Dup']       = params.rm_dup
+summary['Maps resolution']  = params.bin_size
 
-
-summary['Max Memory']   = params.max_memory
-summary['Max CPUs']     = params.max_cpus
-summary['Max Time']     = params.max_time
-summary['Output dir']   = params.outdir
-summary['Working dir']  = workflow.workDir
+summary['Max Memory']       = params.max_memory
+summary['Max CPUs']         = params.max_cpus
+summary['Max Time']         = params.max_time
+summary['Output dir']       = params.outdir
+summary['Working dir']      = workflow.workDir
 summary['Container Engine'] = workflow.containerEngine
-if(workflow.containerEngine) summary['Container'] = workflow.container
-summary['Current home']   = "$HOME"
-summary['Current user']   = "$USER"
-summary['Current path']   = "$PWD"
-summary['Working dir']    = workflow.workDir
-summary['Output dir']     = params.outdir
-summary['Script dir']     = workflow.projectDir
-summary['Config Profile'] = workflow.profile
+if(workflow.containerEngine) 
+   summary['Container']     = workflow.container
+summary['Current home']     = "$HOME"
+summary['Current user']     = "$USER"
+summary['Current path']     = "$PWD"
+summary['Working dir']      = workflow.workDir
+summary['Output dir']       = params.outdir
+summary['Script dir']       = workflow.projectDir
+summary['Config Profile']   = workflow.profile
 if(workflow.profile == 'awsbatch'){
-   summary['AWS Region'] = params.awsregion
-   summary['AWS Queue'] = params.awsqueue
+   summary['AWS Region']    = params.awsregion
+   summary['AWS Queue']     = params.awsqueue
 }
 if(params.email) summary['E-mail Address'] = params.email
 log.info summary.collect { k,v -> "${k.padRight(15)}: $v" }.join("\n")
