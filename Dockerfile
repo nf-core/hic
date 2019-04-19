@@ -2,7 +2,7 @@ FROM nfcore/base
 LABEL authors="Nicolas Servant" \
       description="Docker image containing all requirements for nf-core/hic pipeline"
 
-## Install gcc for pip CellProfiler install
+## Install gcc for pip iced install
 RUN apt-get update && apt-get install -y gcc g++ && apt-get clean -y
 
 COPY environment.yml /
