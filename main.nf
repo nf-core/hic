@@ -11,7 +11,7 @@
 
 
 def helpMessage() {
-    // TODO nf-core: Add to this help message with new command line parameters
+    // Add to this help message with new command line parameters
     log.info nfcoreHeader()
     log.info"""
 
@@ -868,7 +868,7 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // TODO nf-core: If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
+    // If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
     // On success try attach the multiqc report
     def mqc_report = null
     try {

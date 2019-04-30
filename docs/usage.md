@@ -7,69 +7,69 @@
 * [Updating the pipeline](#updating-the-pipeline)
 * [Reproducibility](#reproducibility)
 * [Main arguments](#main-arguments)
-    * [`-profile`](#-profile-single-dash)
-        * [`awsbatch`](#awsbatch)
-        * [`conda`](#conda)
-        * [`docker`](#docker)
-        * [`singularity`](#singularity)
-        * [`test`](#test)
-    * [`--reads`](#--reads)
-    * [`--singleEnd`](#--singleend)
+  * [`-profile`](#-profile-single-dash)
+    * [`awsbatch`](#awsbatch)
+    * [`conda`](#conda)
+    * [`docker`](#docker)
+    * [`singularity`](#singularity)
+    * [`test`](#test)
+  * [`--reads`](#--reads)
+  * [`--singleEnd`](#--singleend)
 * [Reference genomes](#reference-genomes)
-    * [`--genome`](#--genome)
-    * [`--fasta`](#--fasta)
-    * [`--igenomesIgnore`](#--igenomesignore)
-    * [`--bwt2_index`](#--bwt2_index)
-    * [`--chromosome_size`](#--chromosome_size)
-    * [`--restriction_fragments`](#--restriction_fragments)
+  * [`--genome`](#--genome)
+  * [`--fasta`](#--fasta)
+  * [`--igenomesIgnore`](#--igenomesignore)
+  * [`--bwt2_index`](#--bwt2_index)
+  * [`--chromosome_size`](#--chromosome_size)
+  * [`--restriction_fragments`](#--restriction_fragments)
 * [Hi-C specific options](#hi-c-specific-options)
-    * [Reads mapping](#reads-mapping)
-        * [`--bwt2_opts_end2end`](#--bwt2_opts_end2end)
-        * [`--bwt2_opts_trimmed`](#--bwt2_opts_trimmed)
-        * [`--min_mapq`](#--min_mapq)
-    * [Digestion Hi-C](#digestion-hi-c)
-        * [`--restriction_site`](#--restriction_site)
-        * [`--ligation_site`](#--ligation_site)
-        * [`--min_restriction_fragment_size`](#--min_restriction_fragment_size)
-        * [`--max_restriction_fragment_size`](#--max_restriction_fragment_size)
-        * [`--min_insert_size`](#--min_insert_size)
-        * [`--max_insert_size`](#--max_insert_size)
-   * [DNase Hi-C](#dnase-hi-c)
-        * [`--dnase`](#--dnase)
-   * [Hi-C Processing](#hi-c-processing)
-        * [`--min_cis_dist`](#--min_cis_dist)
-        * [`--rm_singleton`](#--rm_singleton)
-        * [`--rm_dup`](#--rm_dup)
-        * [`--rm_multi`](#--rm_multi)
-    * [Genome-wide contact maps](#genome-wide-contact-maps)
-        * [`--bins_size`](#--bins_size)
-        * [`--ice_max_iter`](#--ice_max_iter)
-        * [`--ice_filer_low_count_perc`](#--ice_filer_low_count_perc)
-        * [`--ice_filer_high_count_perc`](#--ice_filer_high_count_perc)
-        * [`--ice_eps`](#--ice_eps)
-    * [Inputs/Outputs](#inputs-outputs)
-        * [`--splitFastq`](#--splitFastq)
-        * [`--saveReference`](#--saveReference)
-        * [`--saveAlignedIntermediates`](#--saveAlignedIntermediates)
+  * [Reads mapping](#reads-mapping)
+    * [`--bwt2_opts_end2end`](#--bwt2_opts_end2end)
+    * [`--bwt2_opts_trimmed`](#--bwt2_opts_trimmed)
+    * [`--min_mapq`](#--min_mapq)
+  * [Digestion Hi-C](#digestion-hi-c)
+    * [`--restriction_site`](#--restriction_site)
+    * [`--ligation_site`](#--ligation_site)
+    * [`--min_restriction_fragment_size`](#--min_restriction_fragment_size)
+    * [`--max_restriction_fragment_size`](#--max_restriction_fragment_size)
+    * [`--min_insert_size`](#--min_insert_size)
+    * [`--max_insert_size`](#--max_insert_size)
+  * [DNase Hi-C](#dnase-hi-c)
+    * [`--dnase`](#--dnase)
+  * [Hi-C Processing](#hi-c-processing)
+    * [`--min_cis_dist`](#--min_cis_dist)
+    * [`--rm_singleton`](#--rm_singleton)
+    * [`--rm_dup`](#--rm_dup)
+    * [`--rm_multi`](#--rm_multi)
+  * [Genome-wide contact maps](#genome-wide-contact-maps)
+    * [`--bins_size`](#--bins_size)
+    * [`--ice_max_iter`](#--ice_max_iter)
+    * [`--ice_filer_low_count_perc`](#--ice_filer_low_count_perc)
+    * [`--ice_filer_high_count_perc`](#--ice_filer_high_count_perc)
+    * [`--ice_eps`](#--ice_eps)
+  * [Inputs/Outputs](#inputs-outputs)
+    * [`--splitFastq`](#--splitFastq)
+    * [`--saveReference`](#--saveReference)
+    * [`--saveAlignedIntermediates`](#--saveAlignedIntermediates)
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
 * [Custom resource requests](#custom-resource-requests)
 * [AWS batch specific parameters](#aws-batch-specific-parameters)
-    * [`-awsbatch`](#-awsbatch)
-    * [`--awsqueue`](#--awsqueue)
-    * [`--awsregion`](#--awsregion)
+  * [`-awsbatch`](#-awsbatch)
+  * [`--awsqueue`](#--awsqueue)
+  * [`--awsregion`](#--awsregion)
 * [Other command line parameters](#other-command-line-parameters)
-    * [`--outdir`](#--outdir)
-    * [`--email`](#--email)
-    * [`-name`](#-name-single-dash)
-    * [`-resume`](#-resume-single-dash)
-    * [`-c`](#-c-single-dash)
-    * [`--custom_config_version`](#--custom_config_version)
-    * [`--max_memory`](#--max_memory)
-    * [`--max_time`](#--max_time)
-    * [`--max_cpus`](#--max_cpus)
-    * [`--plaintext_email`](#--plaintext_email)
-    * [`--multiqc_config`](#--multiqc_config)
+  * [`--outdir`](#--outdir)
+  * [`--email`](#--email)
+  * [`-name`](#-name-single-dash)
+  * [`-resume`](#-resume-single-dash)
+  * [`-c`](#-c-single-dash)
+  * [`--custom_config_version`](#--custom_config_version)
+  * [`--max_memory`](#--max_memory)
+  * [`--max_time`](#--max_time)
+  * [`--max_cpus`](#--max_cpus)
+  * [`--plaintext_email`](#--plaintext_email)
+  * [`--multiqc_config`](#--multiqc_config)
 
 
 ## General Nextflow info
@@ -83,6 +83,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 
 ## Running the pipeline
 The typical command for running the pipeline is as follows:
+
 ```bash
 nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -genome GRCh37 -profile docker
 ```
@@ -134,8 +135,6 @@ If `-profile` is not specified at all the pipeline will be run locally and expec
 * `test`
   * A profile with a complete configuration for automated testing
   * Includes links to test data so needs no other parameters
-
-<!-- TODO nf-core: Document required command line parameters -->
 
 ### `--reads`
 Use this to specify the location of your input FastQ files. For example:
@@ -211,7 +210,8 @@ The bowtie2 indexes are required to run the Hi-C pipeline. If the `--bwt2_index`
 
 The Hi-C pipeline will also requires a two-columns text file with the chromosome name and its size (tab separated).
 If not specified, this file will be automatically created by the pipeline. In the latter case, the `--fasta` reference genome has to be specified.
-```
+
+```bash
    chr1    249250621
    chr2    243199373
    chr3    198022430
@@ -233,7 +233,7 @@ If not specified, this file will be automatically created by the pipeline. In th
 
 Finally, Hi-C experiments based on restriction enzyme digestion requires a BED file with coordinates of restriction fragments.
 
-```
+```bash
    chr1   0       16007   HIC_chr1_1    0   +
    chr1   16007   24571   HIC_chr1_2    0   +
    chr1   24571   27981   HIC_chr1_3    0   +
@@ -445,7 +445,7 @@ The `--splitFastq` option allows to automatically split input read pairs into ch
 
 If specified, annotation files automatically generated from the `--fasta` file are exported in the results folder. Default: false
 
-```
+```bash
 --saveReference
 ```
 
@@ -453,7 +453,7 @@ If specified, annotation files automatically generated from the `--fasta` file a
 
 If specified, all intermediate mapping files are saved and exported in the results folder. Default: false
 
-```
+```bash
 --saveReference
 ```
 
