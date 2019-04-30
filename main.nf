@@ -11,19 +11,9 @@
 
 
 def helpMessage() {
+    // TODO nf-core: Add to this help message with new command line parameters
+    log.info nfcoreHeader()
     log.info"""
-    =======================================================
-                                              ,--./,-.
-              ___     __   __   __   ___     /,-._.--~\'
-        |\\ | |__  __ /  ` /  \\ |__) |__         }  {
-        | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,
-                                              `._,._,\'
-
-     nf-core/hic v${workflow.manifest.version}
-    =======================================================
-
-    This pipeline is a Nextflow version of the HiC-Pro pipeline for Hi-C data processing.
-    See https://github.com/nservant/HiC-Pro for details.
 
     Usage:
 
@@ -107,7 +97,7 @@ if (!params.dnase && !params.ligation_site) {
 }
 
 // Reference index path configuration
-params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false 
+params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
 
@@ -118,21 +108,20 @@ if( !(workflow.runName ==~ /[a-z]+_[a-z]+/) ){
   custom_runName = workflow.runName
 }
 
+
 if( workflow.profile == 'awsbatch') {
   // AWSBatch sanity checking
   if (!params.awsqueue || !params.awsregion) exit 1, "Specify correct --awsqueue and --awsregion parameters on AWSBatch!"
-  if (!workflow.workDir.startsWith('s3') || !params.outdir.startsWith('s3')) exit 1, "Specify S3 URLs for workDir and outdir parameters on AWSBatch!"
-  // Check workDir/outdir paths to be S3 buckets if running on AWSBatch
+  // Check outdir paths to be S3 buckets if running on AWSBatch
   // related: https://github.com/nextflow-io/nextflow/issues/813
-  if (!workflow.workDir.startsWith('s3:') || !params.outdir.startsWith('s3:')) exit 1, "Workdir or Outdir not on S3 - specify S3 Buckets for each to run on AWSBatch!"
+  if (!params.outdir.startsWith('s3:')) exit 1, "Outdir not on S3 - specify S3 Bucket to run on AWSBatch!"
+  // Prevent trace files to be stored on S3 since S3 does not support rolling files.
+  if (workflow.tracedir.startsWith('s3:')) exit 1, "Specify a local tracedir or run without trace! S3 cannot be used for tracefiles."
 }
 
 // Stage config files
 ch_multiqc_config = Channel.fromPath(params.multiqc_config)
 ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
-
-
-
 
 /**********************************************************
  * SET UP CHANNELS
@@ -185,7 +174,7 @@ if ( params.bwt2_index ){
    Channel.fromPath( bwt2_dir , checkIfExists: true)
       .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
       .into { bwt2_index_end2end; bwt2_index_trim }
-      
+
 }
 else if ( params.fasta ) {
     lastPath = params.fasta.lastIndexOf(File.separator)
@@ -198,7 +187,6 @@ else if ( params.fasta ) {
 else {
    exit 1, "No reference genome specified!"
 }
-
 
 // Chromosome size
 
@@ -241,20 +229,10 @@ ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
  */
 
 // Header log info
-log.info """=======================================================
-                                          ,--./,-.
-          ___     __   __   __   ___     /,-._.--~\'
-    |\\ | |__  __ /  ` /  \\ |__) |__         }  {
-    | \\| |       \\__, \\__/ |  \\ |___     \\`-._,-`-,
-                                          `._,._,\'
-
-nf-core/hic v${workflow.manifest.version}"
-======================================================="""
+log.info nfcoreHeader()
 def summary = [:]
-summary['Pipeline Name']    = 'nf-core/hic'
-summary['Pipeline Version'] = workflow.manifest.version
+if(workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
-
 summary['Reads']            = params.reads
 summary['splitFastq']       = params.splitFastq
 summary['Fasta Ref']        = params.fasta
@@ -269,7 +247,7 @@ summary['Max Time']         = params.max_time
 summary['Output dir']       = params.outdir
 summary['Working dir']      = workflow.workDir
 summary['Container Engine'] = workflow.containerEngine
-if(workflow.containerEngine) 
+if(workflow.containerEngine)
    summary['Container']     = workflow.container
 summary['Current home']     = "$HOME"
 summary['Current user']     = "$USER"
@@ -282,10 +260,19 @@ if(workflow.profile == 'awsbatch'){
    summary['AWS Region']    = params.awsregion
    summary['AWS Queue']     = params.awsqueue
 }
-if(params.email) summary['E-mail Address'] = params.email
-log.info summary.collect { k,v -> "${k.padRight(15)}: $v" }.join("\n")
-log.info "========================================="
+summary['Config Profile'] = workflow.profile
+if(params.config_profile_description) summary['Config Description'] = params.config_profile_description
+if(params.config_profile_contact)     summary['Config Contact']     = params.config_profile_contact
+if(params.config_profile_url)         summary['Config URL']         = params.config_profile_url
+if(params.email) {
+  summary['E-mail Address']  = params.email
+  summary['MultiQC maxsize'] = params.maxMultiqcEmailFileSize
+}
+log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
+log.info "\033[2m----------------------------------------------------\033[0m"
 
+// Check the hostnames against configured profiles
+checkHostname()
 
 def create_workflow_summary(summary) {
     def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
@@ -309,19 +296,25 @@ ${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style
  * Parse software version numbers
  */
 process get_software_versions {
+   publishDir "${params.outdir}/pipeline_info", mode: 'copy',
+   saveAs: {filename ->
+       if (filename.indexOf(".csv") > 0) filename
+       else null
+   }
 
-    output:
-    file 'software_versions_mqc.yaml' into software_versions_yaml
+   output:
+   file 'software_versions_mqc.yaml' into software_versions_yaml
+   file "software_versions.csv"
 
-    script:
-     """
-     echo $workflow.manifest.version > v_pipeline.txt
-     echo $workflow.nextflow.version > v_nextflow.txt
-     bowtie2 --version > v_bowtie2.txt
-     python --version > v_python.txt
-     samtools --version > v_samtools.txt
-     scrape_software_versions.py > software_versions_mqc.yaml
-     """
+   script:
+   """
+   echo $workflow.manifest.version > v_pipeline.txt
+   echo $workflow.nextflow.version > v_nextflow.txt
+   bowtie2 --version > v_bowtie2.txt
+   python --version > v_python.txt
+   samtools --version > v_samtools.txt
+   scrape_software_versions.py &> software_versions_mqc.yaml
+   """
 }
 
 
@@ -362,13 +355,13 @@ if(!params.chromosome_size && params.fasta){
         file fasta from fasta_for_chromsize
 
         output:
-        file "*.size" into chromosome_size, chromosome_size_cool 
+        file "*.size" into chromosome_size, chromosome_size_cool
 
         script:
         """
 	samtools faidx ${fasta}
 	cut -f1,2 ${fasta}.fai > chrom.size
-   	"""	
+   	"""
       }
  }
 
@@ -407,7 +400,7 @@ process bowtie2_end_to_end {
    input:
         set val(sample), file(reads) from raw_reads
         file index from bwt2_index_end2end.collect()
- 
+
    output:
 	set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
      	set val(prefix), file("${prefix}.bam") into end_to_end_bam
@@ -415,7 +408,7 @@ process bowtie2_end_to_end {
    script:
 	prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
         def bwt2_opts = params.bwt2_opts_end2end
-	
+
 	if (!params.dnase){
 	   """
 	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
@@ -506,13 +499,13 @@ if (!params.dnase){
          """
          samtools merge -@ ${task.cpus} \\
        	             -f ${prefix}_bwt2merged.bam \\
-	             ${bam1} ${bam2} 
+	             ${bam1} ${bam2}
 
          samtools sort -@ ${task.cpus} -m 800M \\
       	            -n -T /tmp/ \\
 	            -o ${prefix}_bwt2merged.sorted.bam \\
 	            ${prefix}_bwt2merged.bam
-            
+
          mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
 
          echo "## ${prefix}" > ${prefix}.mapstat
@@ -557,13 +550,11 @@ if (!params.dnase){
    }
 }
 
-
-
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
    publishDir "${params.outdir}/mapping", mode: 'copy',
-   	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}	      
- 
+   	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
+
    input:
       set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
 
@@ -577,7 +568,7 @@ process combine_mapped_files{
       r2_bam = aligned_bam[1]
       r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
       oname = sample.toString() - ~/(\.[0-9]+)$/
- 
+
       def opts = "-t"
       opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
       opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
@@ -596,7 +587,7 @@ if (!params.dnase){
    process get_valid_interaction{
       tag "$sample"
       publishDir "${params.outdir}/hic_results/data", mode: 'copy',
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
          set val(sample), file(pe_bam) from paired_bam
@@ -607,7 +598,7 @@ if (!params.dnase){
          set val(sample), file("*.validPairs") into valid_pairs_4cool
          set val(sample), file("*RSstat") into all_rsstat
 
-      script:	
+      script:
          if (params.splitFastq){
       	    sample = sample.toString() - ~/(\.[0-9]+)$/
          }
@@ -628,17 +619,17 @@ else{
    process get_valid_interaction_dnase{
       tag "$sample"
       publishDir "${params.outdir}/hic_results/data", mode: 'copy',
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}	      
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
          set val(sample), file(pe_bam) from paired_bam
-      
+
       output:
          set val(sample), file("*.validPairs") into valid_pairs
          set val(sample), file("*.validPairs") into valid_pairs_4cool
          set val(sample), file("*RSstat") into all_rsstat
 
-      script:	
+      script:
          if (params.splitFastq){
       	    sample = sample.toString() - ~/(\.[0-9]+)$/
          }
@@ -659,7 +650,7 @@ else{
 process remove_duplicates {
    tag "$sample"
    publishDir "${params.outdir}/hic_results/data", mode: 'copy',
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}	      
+   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
      set val(sample), file(vpairs) from valid_pairs.groupTuple()
@@ -674,7 +665,7 @@ process remove_duplicates {
    """
    mkdir -p stats/${sample}
    sort -T /tmp/ -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
-   awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs                   
+   awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs
    echo -n "valid_interaction\t" > stats/${sample}/${sample}_allValidPairs.mergestat
    cat ${vpairs} | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
    echo -n "valid_interaction_rmdup\t" >> stats/${sample}/${sample}_allValidPairs.mergestat
@@ -764,7 +755,7 @@ process run_ice{
    --results_filename ${prefix}_iced.matrix \
    --filter_high_counts_perc ${params.ice_filer_high_count_perc} \
    --max_iter ${params.ice_max_iter} --eps ${params.ice_eps} --remove-all-zeros-loci --output-bias 1 --verbose 1 ${rmaps}
-   """ 
+   """
 }
 
 
@@ -788,13 +779,13 @@ process generate_cool{
    script:
    """
    hicpro2higlass.sh -i $vpairs -r 5000 -c ${chrsize} -n
-   """ 
+   """
 }
 
 
 /*
  * STEP 5 - MultiQC
- */ 
+ */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
@@ -814,23 +805,19 @@ process multiqc {
     script:
     rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
     rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-   
+
     """
     multiqc -f $rtitle $rfilename --config $multiqc_config .
     """
 }
 
 
-/****************************************************
- * POST-PROCESSING
- */
 
-/* 
- * Output Description HTML
+/*
+ * STEP 3 - Output Description HTML
  */
-
 process output_documentation {
-    publishDir "${params.outdir}/Documentation", mode: 'copy'
+    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
     input:
     file output_docs from ch_output_docs
@@ -876,9 +863,25 @@ workflow.onComplete {
     if(workflow.repository) email_fields['summary']['Pipeline repository Git URL'] = workflow.repository
     if(workflow.commitId) email_fields['summary']['Pipeline repository Git Commit'] = workflow.commitId
     if(workflow.revision) email_fields['summary']['Pipeline Git branch/tag'] = workflow.revision
+    if(workflow.container) email_fields['summary']['Docker image'] = workflow.container
     email_fields['summary']['Nextflow Version'] = workflow.nextflow.version
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
+
+    // TODO nf-core: If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
+    // On success try attach the multiqc report
+    def mqc_report = null
+    try {
+        if (workflow.success) {
+            mqc_report = multiqc_report.getVal()
+            if (mqc_report.getClass() == ArrayList){
+                log.warn "[nf-core/hic] Found multiple reports from process 'multiqc', will use only one"
+                mqc_report = mqc_report[0]
+            }
+        }
+    } catch (all) {
+        log.warn "[nf-core/hic] Could not attach MultiQC report to summary email"
+    }
 
     // Render the TXT template
     def engine = new groovy.text.GStringTemplateEngine()
@@ -892,7 +895,7 @@ workflow.onComplete {
     def email_html = html_template.toString()
 
     // Render the sendmail template
-    def smail_fields = [ email: params.email, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir" ]
+    def smail_fields = [ email: params.email, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$baseDir", mqcFile: mqc_report, mqcMaxSize: params.maxMultiqcEmailFileSize.toBytes() ]
     def sf = new File("$baseDir/assets/sendmail_template.txt")
     def sendmail_template = engine.createTemplate(sf).make(smail_fields)
     def sendmail_html = sendmail_template.toString()
@@ -912,7 +915,7 @@ workflow.onComplete {
     }
 
     // Write summary e-mail HTML to a file
-    def output_d = new File( "${params.outdir}/Documentation/" )
+    def output_d = new File( "${params.outdir}/pipeline_info/" )
     if( !output_d.exists() ) {
       output_d.mkdirs()
     }
@@ -921,5 +924,67 @@ workflow.onComplete {
     def output_tf = new File( output_d, "pipeline_report.txt" )
     output_tf.withWriter { w -> w << email_txt }
 
-    log.info "[nf-core/hic] Pipeline Complete"
+    c_reset = params.monochrome_logs ? '' : "\033[0m";
+    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
+    c_green = params.monochrome_logs ? '' : "\033[0;32m";
+    c_red = params.monochrome_logs ? '' : "\033[0;31m";
+
+    if (workflow.stats.ignoredCountFmt > 0 && workflow.success) {
+      log.info "${c_purple}Warning, pipeline completed, but with errored process(es) ${c_reset}"
+      log.info "${c_red}Number of ignored errored process(es) : ${workflow.stats.ignoredCountFmt} ${c_reset}"
+      log.info "${c_green}Number of successfully ran process(es) : ${workflow.stats.succeedCountFmt} ${c_reset}"
+    }
+
+    if(workflow.success){
+        log.info "${c_purple}[nf-core/hic]${c_green} Pipeline completed successfully${c_reset}"
+    } else {
+        checkHostname()
+        log.info "${c_purple}[nf-core/hic]${c_red} Pipeline completed with errors${c_reset}"
+    }
+
+}
+
+
+def nfcoreHeader(){
+    // Log colors ANSI codes
+    c_reset = params.monochrome_logs ? '' : "\033[0m";
+    c_dim = params.monochrome_logs ? '' : "\033[2m";
+    c_black = params.monochrome_logs ? '' : "\033[0;30m";
+    c_green = params.monochrome_logs ? '' : "\033[0;32m";
+    c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
+    c_blue = params.monochrome_logs ? '' : "\033[0;34m";
+    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
+    c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
+    c_white = params.monochrome_logs ? '' : "\033[0;37m";
+
+    return """    ${c_dim}----------------------------------------------------${c_reset}
+                                            ${c_green},--.${c_black}/${c_green},-.${c_reset}
+    ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
+    ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
+    ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
+                                            ${c_green}`._,._,\'${c_reset}
+    ${c_purple}  nf-core/hic v${workflow.manifest.version}${c_reset}
+    ${c_dim}----------------------------------------------------${c_reset}
+    """.stripIndent()
+}
+
+def checkHostname(){
+    def c_reset = params.monochrome_logs ? '' : "\033[0m"
+    def c_white = params.monochrome_logs ? '' : "\033[0;37m"
+    def c_red = params.monochrome_logs ? '' : "\033[1;91m"
+    def c_yellow_bold = params.monochrome_logs ? '' : "\033[1;93m"
+    if(params.hostnames){
+        def hostname = "hostname".execute().text.trim()
+        params.hostnames.each { prof, hnames ->
+            hnames.each { hname ->
+                if(hostname.contains(hname) && !workflow.profile.contains(prof)){
+                    log.error "====================================================\n" +
+                            "  ${c_red}WARNING!${c_reset} You are running with `-profile $workflow.profile`\n" +
+                            "  but your machine hostname is ${c_white}'$hostname'${c_reset}\n" +
+                            "  ${c_yellow_bold}It's highly recommended that you use `-profile $prof${c_reset}`\n" +
+                            "============================================================"
+                }
+            }
+        }
+    }
 }
