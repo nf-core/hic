@@ -64,7 +64,7 @@ Short range interactions that are likely to be spurious ligation products can th
 
 The validPairs are stored using a simple tab-delimited text format ;
 
-```
+```bash
 read name / chr_reads1 / pos_reads1 / strand_reads1 / chr_reads2 / pos_reads2 / strand_reads2 / fragment_size / res frag name R1 / res frag R2 / mapping qual R1 / mapping qual R2 [/ allele_specific_tag]
 ```
 
@@ -102,7 +102,7 @@ A contact map is defined by :
 
 Based on the observation that a contact map is symmetric and usually sparse, only non-zero values are stored for half of the matrix. The user can specified if the 'upper', 'lower' or 'complete' matrix has to be stored. The 'asis' option allows to store the contacts as they are observed from the valid pairs files.
 
-```
+```bash
    A   B   10
    A   C   23
    B   C   24

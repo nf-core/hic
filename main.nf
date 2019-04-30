@@ -11,7 +11,7 @@
 
 
 def helpMessage() {
-    // TODO nf-core: Add to this help message with new command line parameters
+    // Add to this help message with new command line parameters
     log.info nfcoreHeader()
     log.info"""
 
@@ -236,6 +236,7 @@ summary['Run Name']         = custom_runName ?: workflow.runName
 summary['Reads']            = params.reads
 summary['splitFastq']       = params.splitFastq
 summary['Fasta Ref']        = params.fasta
+summary['Restriction Motif']= params.restriction_site
 summary['Ligation Motif']   = params.ligation_site
 summary['DNase Mode']       = params.dnase
 summary['Remove Dup']       = params.rm_dup
@@ -311,8 +312,9 @@ process get_software_versions {
    echo $workflow.manifest.version > v_pipeline.txt
    echo $workflow.nextflow.version > v_nextflow.txt
    bowtie2 --version > v_bowtie2.txt
-   python --version > v_python.txt
+   python --version > v_python.txt 2>&1
    samtools --version > v_samtools.txt
+   multiqc --version > v_multiqc.txt
    scrape_software_versions.py &> software_versions_mqc.yaml
    """
 }
@@ -868,7 +870,7 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // TODO nf-core: If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
+    // If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
     // On success try attach the multiqc report
     def mqc_report = null
     try {
