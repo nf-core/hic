@@ -75,6 +75,8 @@ def helpMessage() {
       -name                         	    Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
 
     Step options:
+      --skip_maps                           Skip generation of contact maps. Useful for capture-C
+      --skip_ice			    Skip ICE normalization
       --skip_cool			    Skip generation of cool files
       --skip_multiQC			    Skip MultiQC
 
@@ -720,6 +722,9 @@ process build_contact_maps{
    tag "$sample - $mres"
    publishDir "${params.outdir}/hic_results/matrix/raw", mode: 'copy'
 
+   when:
+      !params.skip_maps
+
    input:
       set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
       file chrsize from chromosome_size.collect()
@@ -741,6 +746,9 @@ process build_contact_maps{
 process run_ice{
    tag "$rmaps"
    publishDir "${params.outdir}/hic_results/matrix/iced", mode: 'copy'
+
+   when:
+      !params.skip_maps && !params.skip_ice
 
    input:
       file(rmaps) from raw_maps
