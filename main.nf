@@ -236,6 +236,7 @@ summary['Run Name']         = custom_runName ?: workflow.runName
 summary['Reads']            = params.reads
 summary['splitFastq']       = params.splitFastq
 summary['Fasta Ref']        = params.fasta
+summary['Restriction Motif']= params.restriction_site
 summary['Ligation Motif']   = params.ligation_site
 summary['DNase Mode']       = params.dnase
 summary['Remove Dup']       = params.rm_dup
@@ -311,8 +312,9 @@ process get_software_versions {
    echo $workflow.manifest.version > v_pipeline.txt
    echo $workflow.nextflow.version > v_nextflow.txt
    bowtie2 --version > v_bowtie2.txt
-   python --version > v_python.txt
+   python --version > v_python.txt 2>&1
    samtools --version > v_samtools.txt
+   multiqc --version > v_multiqc.txt
    scrape_software_versions.py &> software_versions_mqc.yaml
    """
 }
