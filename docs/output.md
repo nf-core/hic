@@ -26,7 +26,7 @@ Singletons are discarded, and multi-hits are filtered according to the configura
 Note that if the `--dnase` mode is activated, HiC-Pro will skip the second mapping step.
 
 **Output directory: `results/mapping`**
-                                                                                                                                                                                                            
+
 * `*bwt2pairs.bam` - final BAM file with aligned paired data
 * `*.pairstat` - mapping statistics
 
@@ -50,7 +50,7 @@ Invalid pairs are classified as follow:
 * Dangling end, i.e. unligated fragments (both reads mapped on the same restriction fragment)
 * Self circles, i.e. fragments ligated on themselves (both reads mapped on the same restriction fragment in inverted orientation)
 * Religation, i.e. ligation of juxtaposed fragments
-* Filtered pairs, i.e. any pairs that do not match the filtering criteria on inserts size, restriction fragments size 
+* Filtered pairs, i.e. any pairs that do not match the filtering criteria on inserts size, restriction fragments size
 * Dumped pairs, i.e. any pairs for which we were not able to reconstruct the ligation product.
 
 Only valid pairs involving two different restriction fragments are used to build the contact maps.
@@ -59,12 +59,12 @@ Duplicated valid pairs associated to PCR artefacts are discarded (see `--rm_dup`
 In case of Hi-C protocols that do not require a restriction enzyme such as DNase Hi-C or micro Hi-C, the assignment to a restriction is not possible (see `--dnase`).
 Short range interactions that are likely to be spurious ligation products can thus be discarded using the `--min_cis_dist` parameter.
 
-* `*.validPairs` - List of valid ligation products 
+* `*.validPairs` - List of valid ligation products
 * `*RSstat` - Statitics of number of read pairs falling in each category
 
 The validPairs are stored using a simple tab-delimited text format ;
 
-```
+```bash
 read name / chr_reads1 / pos_reads1 / strand_reads1 / chr_reads2 / pos_reads2 / strand_reads2 / fragment_size / res frag name R1 / res frag R2 / mapping qual R1 / mapping qual R2 [/ allele_specific_tag]
 ```
 
@@ -102,7 +102,7 @@ A contact map is defined by :
 
 Based on the observation that a contact map is symmetric and usually sparse, only non-zero values are stored for half of the matrix. The user can specified if the 'upper', 'lower' or 'complete' matrix has to be stored. The 'asis' option allows to store the contacts as they are observed from the valid pairs files.
 
-```
+```bash
    A   B   10
    A   C   23
    B   C   24
@@ -124,4 +124,4 @@ The pipeline has special steps which allow the software versions used to be repo
 * `Project_multiqc_data/`
   * Directory containing parsed statistics from the different tools used in the pipeline
 
-For more information about how to use MultiQC reports, see http://multiqc.info
+For more information about how to use MultiQC reports, see [http://multiqc.info](http://multiqc.info)

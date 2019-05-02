@@ -1,19 +1,21 @@
-name: nf-core-hic-1.0dev
+# You can use this file to create a conda environment for this pipeline:
+#   conda env create -f environment.yml
+name: nf-core-hic-1.0.0
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - python=2.7.13
-  - pip=18.1
-  - conda-forge::scipy=1.0.1
-  - conda-forge::numpy=1.9.3
-  - conda-forge::r-markdown=0.8
-  - bcbio::bx-python=0.7.3
-  - bioconda::pysam=0.14.1
-  - cooler=0.8.3
+  - python=2.7.15
+  - pip=19.1
+  - scipy=1.2.1
+  - numpy=1.16.3
+  - r-markdown=0.9
+  - bx-python=0.8.2     
+  - pysam=0.15.2
+  - cooler=0.8.5
   - bowtie2=2.3.5
-  - samtools=1.7
-  - multiqc=1.6
+  - samtools=1.9
+  - multiqc=1.7
   - pip:
-    - iced==0.4.2
+    - iced==0.5.1
