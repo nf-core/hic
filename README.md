@@ -1,4 +1,4 @@
-# nf-core/hic
+# ![nf-core/hic](docs/images/nfcore-hic_logo.png)
 
 **Analysis of Chromosome Conformation Capture data (Hi-C)**.
 
