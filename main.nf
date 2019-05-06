@@ -67,7 +67,7 @@ def helpMessage() {
     Step options:
       --skip_maps                           Skip generation of contact maps. Useful for capture-C
       --skip_ice			    Skip ICE normalization
-      --skip_cool			    Skip generation of cool files
+      --skip_cool			    Skip generation of cooler files
       --skip_multiQC			    Skip MultiQC
 
     AWSBatch options:
@@ -666,12 +666,17 @@ process remove_duplicates {
    if ( params.rm_dup ){
    """
    mkdir -p stats/${sample}
+
+   ## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
    sort -T /tmp/ -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
    awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs
+
    echo -n "valid_interaction\t" > stats/${sample}/${sample}_allValidPairs.mergestat
    cat ${vpairs} | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
    echo -n "valid_interaction_rmdup\t" >> stats/${sample}/${sample}_allValidPairs.mergestat
    cat ${sample}.allValidPairs | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
+
+   ## Count short range (<20000) vs long range contacts
    awk 'BEGIN{cis=0;trans=0;sr=0;lr=0} \$2 == \$5{cis=cis+1; d=\$6>\$3?\$6-\$3:\$3-\$6; if (d<=20000){sr=sr+1}else{lr=lr+1}} \$2!=\$5{trans=trans+1}END{print "trans_interaction\\t"trans"\\ncis_interaction\\t"cis"\\ncis_shortRange\\t"sr"\\ncis_longRange\\t"lr}' ${sample}.allValidPairs >> stats/${sample}/${sample}_allValidPairs.mergestat
 
    """
@@ -683,6 +688,8 @@ process remove_duplicates {
    cat ${vpairs} | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
    echo -n "valid_interaction_rmdup\t" >> stats/${sample}/${sample}_allValidPairs.mergestat
    cat ${sample}.allValidPairs | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
+
+   ## Count short range (<20000) vs long range contacts 
    awk 'BEGIN{cis=0;trans=0;sr=0;lr=0} \$2 == \$5{cis=cis+1; d=\$6>\$3?\$6-\$3:\$3-\$6; if (d<=20000){sr=sr+1}else{lr=lr+1}} \$2!=\$5{trans=trans+1}END{print "trans_interaction\\t"trans"\\ncis_interaction\\t"cis"\\ncis_shortRange\\t"sr"\\ncis_longRange\\t"lr}' ${sample}.allValidPairs >> stats/${sample}/${sample}_allValidPairs.mergestat
    """
    }
