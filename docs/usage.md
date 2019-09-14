@@ -85,7 +85,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -genome GRCh37 -profile docker
+nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' --genome GRCh37 -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.

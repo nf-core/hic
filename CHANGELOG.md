@@ -1,5 +1,11 @@
 # nf-core/hic: Changelog
 
+## v1.1dev
+
+* Fix bug for reads extension _1/_2 (#30)
+
+* Update manual (#28)
+
 ## v1.0dev - 2019-04-09
 
 First version of nf-core-hic pipeline which is a Nextflow implementation of the [HiC-Pro pipeline](https://github.com/nservant/HiC-Pro/).
