@@ -7,10 +7,10 @@
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
 [![Docker](https://img.shields.io/docker/automated/nfcore/hic.svg)](https://hub.docker.com/r/nfcore/hic)
-![Singularity Container available](
-https://img.shields.io/badge/singularity-available-7E4C74.svg)
+![Singularity Container available](https://img.shields.io/badge/singularity-available-7E4C74.svg)
 
-[![DOI](https://zenodo.org/badge/156259074.svg)](https://zenodo.org/badge/latestdoi/156259074)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2669513.svg)](https://doi.org/10.5281/zenodo.2669513)
+
 
 ### Introduction
 This pipeline is based on the [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
