@@ -3,6 +3,7 @@
 ## v1.1dev
 
 * Add --saveInteractionBAM option
+* Add DOI (#29)
 * Fix bug for reads extension _1/_2 (#30)
 * Update manual (#28)
 

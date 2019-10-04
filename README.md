@@ -10,6 +10,8 @@
 ![Singularity Container available](
 https://img.shields.io/badge/singularity-available-7E4C74.svg)
 
+[![DOI](https://zenodo.org/badge/156259074.svg)](https://zenodo.org/badge/latestdoi/156259074)
+
 ### Introduction
 This pipeline is based on the [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
 It was designed to process Hi-C data from raw fastq files (paired-end Illumina data) to normalized contact maps.
@@ -41,3 +43,8 @@ The nf-core/hic pipeline comes with documentation about the pipeline, found in t
 
 ### Credits
 nf-core/hic was originally written by Nicolas Servant.
+
+If you use nf-core/hic for your analysis, please cite it using the following doi: [10.5281/zenodo.2669513](https://doi.org/10.5281/zenodo.2669513)
+
+You can cite the `nf-core` pre-print as follows:  
+Ewels PA, Peltzer A, Fillinger S, Alneberg JA, Patel H, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. **nf-core: Community curated bioinformatics pipelines**. *bioRxiv*. 2019. p. 610741. [doi: 10.1101/610741](https://www.biorxiv.org/content/10.1101/610741v1).
