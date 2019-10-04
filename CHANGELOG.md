@@ -1,10 +1,9 @@
 # nf-core/hic: Changelog
 
-
 ## v1.1dev
 
+* Add --saveInteractionBAM option
 * Fix bug for reads extension _1/_2 (#30)
-
 * Update manual (#28)
 
 ## v1.0 - 2019-05-06

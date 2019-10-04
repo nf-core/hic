@@ -32,6 +32,8 @@ def helpMessage() {
       --fasta                            Path to Fasta reference
       --chromosome_size                  Path to chromosome size file
       --restriction_fragments            Path to restriction fragment file (bed)
+      --saveReference                    Save reference genome to output folder. Default: False
+      --saveAlignedIntermediates         Save intermediates alignment files. Default: False
 
     Options:
       --bwt2_opts_end2end                Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
@@ -43,8 +45,9 @@ def helpMessage() {
       --max_restriction_framgnet_size    Maximum size of restriction fragmants to consider. Default: None
       --min_insert_size                  Minimum insert size of mapped reads to consider. Default: None
       --max_insert_size                  Maximum insert size of mapped reads to consider. Default: None
+      --saveInteractionBAM               Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
 
-      --dnase                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: false
+      --dnase                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
 
       --min_cis_dist                     Minimum intra-chromosomal distance to consider. Default: None
       --rm_singleton                     Remove singleton reads. Default: true
@@ -65,10 +68,10 @@ def helpMessage() {
 
     Step options:
 
-      --skip_maps                        Skip generation of contact maps. Useful for capture-C. Default: false
-      --skip_ice                         Skip ICE normalization. Default: false
-      --skip_cool                        Skip generation of cool files. Default: false
-      --skip_multiQC                     Skip MultiQC. Default: false
+      --skip_maps                        Skip generation of contact maps. Useful for capture-C. Default: False
+      --skip_ice                         Skip ICE normalization. Default: False
+      --skip_cool                        Skip generation of cool files. Default: False
+      --skip_multiQC                     Skip MultiQC. Default: False
 
     AWSBatch options:
       --awsqueue                         The AWSBatch JobQueue that needs to be set when running on AWSBatch
@@ -154,7 +157,7 @@ if ( params.splitFastq ){
    raw_reads_full = raw_reads.concat( raw_reads_2 )
    raw_reads = raw_reads_full.splitFastq( by: params.splitFastq , file: true)
  }else{
-   raw_reads = raw_reads.concat( raw_reads_2 )
+   raw_reads = raw_reads.concat( raw_reads_2 ).dump(tag: "data")
 }
 
 
@@ -599,6 +602,10 @@ if (!params.dnase){
       output:
          set val(sample), file("*.validPairs") into valid_pairs
          set val(sample), file("*.validPairs") into valid_pairs_4cool
+	 set val(sample), file("*.DEPairs") into de_pairs
+	 set val(sample), file("*.SCPairs") into sc_pairs
+         set val(sample), file("*.REPairs") into re_pairs
+	 set val(sample), file("*.FiltPairs") into filt_pairs
          set val(sample), file("*RSstat") into all_rsstat
 
       script:
@@ -612,9 +619,10 @@ if (!params.dnase){
          if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
          if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
          if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
+	 if (params.saveInteractionBAM) opts="${opts} --sam"
 
          """
-         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
+         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
          """
    }
 }
