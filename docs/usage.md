@@ -296,12 +296,14 @@ Minimum mapping quality. Reads with lower quality are discarded. Default: 10
 Restriction motif(s) for Hi-C digestion protocol. The restriction motif(s) is(are) used to generate the list of restriction fragments.
 The precise cutting site of the restriction enzyme has to be specified using the '^' character. Default: 'A^AGCTT'
 Here are a few examples:
-* MboI: '^GATC'
-* DpnII: '^GATC'
-* BglII: 'A^GATCT'
-* HindIII: 'A^AGCTT'
+* MboI: ^GATC
+* DpnII: ^GATC
+* BglII: A^GATCT
+* HindIII: A^AGCTT
+* ARIMA kit: ^GATC,^GANT
 
-Note that multiples restriction motifs can be provided (comma-separated).
+Note that multiples restriction motifs can be provided (comma-separated) and that 'N' base are supported.
+
 
 ```bash
 --restriction_size '[Cutting motif]'
@@ -310,11 +312,14 @@ Note that multiples restriction motifs can be provided (comma-separated).
 #### `--ligation_site`
 
 Ligation motif after reads ligation. This motif is used for reads trimming and depends on the fill in strategy.
-Note that multiple ligation sites can be specified. Default: 'AAGCTAGCTT'
+Note that multiple ligation sites can be specified (comma separated) and that 'N' base is interpreted and replaced by 'A','C','G','T'.
+Default: 'AAGCTAGCTT'
 
 ```bash
 --ligation_site '[Ligation motif]'
 ```
+
+Exemple of the ARIMA kit: GATCGATC,GATCGANT,GANTGATC,GANTGANT
 
 #### `--min_restriction_fragment_size`
 

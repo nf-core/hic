@@ -2,6 +2,8 @@
 
 ## v1.1dev
 
+* Support 'N' base motif in restriction/ligation sites
+* Support multiple restriction enzymes/ligattion sites (comma separated) (#31)
 * Add --saveInteractionBAM option
 * Add DOI (#29)
 * Fix bug for reads extension _1/_2 (#30)
