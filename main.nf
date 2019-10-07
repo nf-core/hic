@@ -22,57 +22,60 @@ def helpMessage() {
     nextflow run nf-core/hic --reads '*_R{1,2}.fastq.gz' -profile conda
 
     Mandatory arguments:
-      --reads				    Path to input data (must be surrounded with quotes)
-      -profile                      	    Configuration profile to use. Can use multiple (comma separated)
-                                    	    Available: conda, docker, singularity, awsbatch, test and more.
+      --reads                            Path to input data (must be surrounded with quotes)
+      -profile                           Configuration profile to use. Can use multiple (comma separated)
+                                         Available: conda, docker, singularity, awsbatch, test and more.
 
-    References:                      	    If not specified in the configuration file or you wish to overwrite any of the references.
-      --genome                              Name of iGenomes reference
-      --bwt2_index                     	    Path to Bowtie2 index
-      --fasta                       	    Path to Fasta reference
-      --chromosome_size             	    Path to chromosome size file
-      --restriction_fragments    	    Path to restriction fragment file (bed)
+    References:                          If not specified in the configuration file or you wish to overwrite any of the references.
+      --genome                           Name of iGenomes reference
+      --bwt2_index                       Path to Bowtie2 index
+      --fasta                            Path to Fasta reference
+      --chromosome_size                  Path to chromosome size file
+      --restriction_fragments            Path to restriction fragment file (bed)
+      --saveReference                    Save reference genome to output folder. Default: False
+      --saveAlignedIntermediates         Save intermediates alignment files. Default: False
 
     Options:
-      --bwt2_opts_end2end		    Options for bowtie2 end-to-end mappinf (first mapping step)
-      --bwt2_opts_trimmed	    	    Options for bowtie2 mapping after ligation site trimming
-      --min_mapq		    	    Minimum mapping quality values to consider
+      --bwt2_opts_end2end                Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
+      --bwt2_opts_trimmed                Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
+      --min_mapq                         Minimum mapping quality values to consider. Default: 10
+      --restriction_site                 Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
+      --ligation_site                    Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
+      --min_restriction_fragment_size    Minimum size of restriction fragments to consider. Default: None
+      --max_restriction_framgnet_size    Maximum size of restriction fragmants to consider. Default: None
+      --min_insert_size                  Minimum insert size of mapped reads to consider. Default: None
+      --max_insert_size                  Maximum insert size of mapped reads to consider. Default: None
+      --saveInteractionBAM               Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
 
-      --restriction_site	    	    Cutting motif(s) of restriction enzyme(s) (comma separated)
-      --ligation_site		    	    Ligation motifs to trim (comma separated)
-      --min_restriction_fragment_size	    Minimum size of restriction fragments to consider
-      --max_restriction_framgnet_size	    Maximum size of restriction fragmants to consider
-      --min_insert_size			    Minimum insert size of mapped reads to consider
-      --max_insert_size			    Maximum insert size of mapped reads to consider
+      --dnase                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
 
-      --dnase				    Run DNase Hi-C mode. All options related to restriction fragments are not considered
+      --min_cis_dist                     Minimum intra-chromosomal distance to consider. Default: None
+      --rm_singleton                     Remove singleton reads. Default: true
+      --rm_multi                         Remove multi-mapped reads. Default: true
+      --rm_dup                           Remove duplicates. Default: true
 
-      --min_cis_dist			    Minimum intra-chromosomal distance to consider
-      --rm_singleton			    Remove singleton reads
-      --rm_multi			    Remove multi-mapped reads
-      --rm_dup				    Remove duplicates
-
-      --bin_size			    Bin size for contact maps (comma separated)
-      --ice_max_iter			    Maximum number of iteration for ICE normalization
-      --ice_filter_low_count_perc	    Percentage of low counts columns/rows to filter before ICE normalization
-      --ice_filter_high_count_perc	    Percentage of high counts columns/rows to filter before ICE normalization
-      --ice_eps				    Convergence criteria for ICE normalization
+      --bin_size                         Bin size for contact maps (comma separated). Default: '1000000,500000'
+      --ice_max_iter                     Maximum number of iteration for ICE normalization. Default: 100
+      --ice_filter_low_count_perc        Percentage of low counts columns/rows to filter before ICE normalization. Default: 0.02
+      --ice_filter_high_count_perc       Percentage of high counts columns/rows to filter before ICE normalization. Default: 0
+      --ice_eps                          Convergence criteria for ICE normalization. Default: 0.1
 
     Other options:
-      --splitFastq			    Size of read chuncks to use to speed up the workflow
-      --outdir				    The output directory where the results will be saved
-      --email                       	    Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
-      -name                         	    Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
+      --splitFastq                       Size of read chuncks to use to speed up the workflow. Default: None
+      --outdir                           The output directory where the results will be saved. Default: './results'
+      --email                            Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. Default: None
+      -name                              Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic. Default: None
 
     Step options:
-      --skip_maps                           Skip generation of contact maps. Useful for capture-C
-      --skip_ice			    Skip ICE normalization
-      --skip_cool			    Skip generation of cooler files
-      --skip_multiQC			    Skip MultiQC
+
+      --skip_maps                        Skip generation of contact maps. Useful for capture-C. Default: False
+      --skip_ice                         Skip ICE normalization. Default: False
+      --skip_cool                        Skip generation of cool files. Default: False
+      --skip_multiQC                     Skip MultiQC. Default: False
 
     AWSBatch options:
-      --awsqueue			    The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion                   	    The AWS Region for your AWS Batch job to run on
+      --awsqueue                         The AWSBatch JobQueue that needs to be set when running on AWSBatch
+      --awsregion                        The AWS Region for your AWS Batch job to run on
     """.stripIndent()
 }
 
@@ -154,7 +157,7 @@ if ( params.splitFastq ){
    raw_reads_full = raw_reads.concat( raw_reads_2 )
    raw_reads = raw_reads_full.splitFastq( by: params.splitFastq , file: true)
  }else{
-   raw_reads = raw_reads.concat( raw_reads_2 )
+   raw_reads = raw_reads.concat( raw_reads_2 ).dump(tag: "data")
 }
 
 
@@ -494,8 +497,8 @@ if (!params.dnase){
          set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
-         tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+         sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
+         tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
          oname = prefix.toString() - ~/(\.[0-9]+)$/
 
          """
@@ -535,8 +538,8 @@ if (!params.dnase){
          set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
-         tag = prefix.toString() =~/_R1|_val_1/ ? "R1" : "R2"
+         sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
+         tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
          oname = prefix.toString() - ~/(\.[0-9]+)$/
 
          """
@@ -551,6 +554,7 @@ if (!params.dnase){
          """
    }
 }
+
 
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
@@ -598,6 +602,10 @@ if (!params.dnase){
       output:
          set val(sample), file("*.validPairs") into valid_pairs
          set val(sample), file("*.validPairs") into valid_pairs_4cool
+	 set val(sample), file("*.DEPairs") into de_pairs
+	 set val(sample), file("*.SCPairs") into sc_pairs
+         set val(sample), file("*.REPairs") into re_pairs
+	 set val(sample), file("*.FiltPairs") into filt_pairs
          set val(sample), file("*RSstat") into all_rsstat
 
       script:
@@ -611,9 +619,10 @@ if (!params.dnase){
          if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
          if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
          if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
+	 if (params.saveInteractionBAM) opts="${opts} --sam"
 
          """
-         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} ${opts}
+         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
          """
    }
 }
@@ -706,7 +715,7 @@ process merge_sample {
      file("mstats/") into all_mstats
 
   script:
-     sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2)/
+     sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
      if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
      if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
      if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
