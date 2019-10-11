@@ -4,7 +4,6 @@ name: nf-core-hic-1.1.0
 channels:
   - conda-forge
   - bioconda
-  - bioconda/label/cf201901
   - defaults
 dependencies:
   - python=2.7.15
@@ -13,7 +12,7 @@ dependencies:
   - numpy=1.16.3
   - r-markdown=0.9
   - bx-python=0.8.2     
-  - pysam=0.15.2
+  - bioconda::pysam=0.15.2
   - cooler=0.8.5
   - bowtie2=2.3.5
   - samtools=1.9
