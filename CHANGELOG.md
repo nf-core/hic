@@ -3,11 +3,11 @@
 ## v1.1.0
 
 * Support 'N' base motif in restriction/ligation sites
-* Support multiple restriction enzymes/ligattion sites (comma separated) (#31)
+* Support multiple restriction enzymes/ligattion sites (comma separated) ([#31](https://github.com/nf-core/hic/issues/31))
 * Add --saveInteractionBAM option
-* Add DOI (#29)
-* Fix bug for reads extension _1/_2 (#30)
-* Update manual (#28)
+* Add DOI ([#29](https://github.com/nf-core/hic/issues/29))
+* Fix bug for reads extension _1/_2 ([#30](https://github.com/nf-core/hic/issues/30))
+* Update manual ([#28](https://github.com/nf-core/hic/issues/28))
 
 ## v1.0 - 2019-05-06
 
