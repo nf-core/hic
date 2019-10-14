@@ -64,10 +64,10 @@ def helpMessage() {
 
 
     Workflow
-      --skip_maps                        Skip generation of contact maps. Useful for capture-C. Default: False
-      --skip_ice                         Skip ICE normalization. Default: False
-      --skip_cool                        Skip generation of cool files. Default: False
-      --skip_multiQC                     Skip MultiQC. Default: False
+      --skipMaps                        Skip generation of contact maps. Useful for capture-C. Default: False
+      --skipIce                         Skip ICE normalization. Default: False
+      --skipCool                        Skip generation of cool files. Default: False
+      --skipMultiQC                     Skip MultiQC. Default: False
 
     Other
       --splitFastq                       Size of read chuncks to use to speed up the workflow. Default: None
@@ -734,7 +734,7 @@ process build_contact_maps{
    publishDir "${params.outdir}/hic_results/matrix/raw", mode: 'copy'
 
    when:
-      !params.skip_maps
+      !params.skipMaps
 
    input:
       set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
@@ -759,7 +759,7 @@ process run_ice{
    publishDir "${params.outdir}/hic_results/matrix/iced", mode: 'copy'
 
    when:
-      !params.skip_maps && !params.skip_ice
+      !params.skipMaps && !params.skipIce
 
    input:
       file(rmaps) from raw_maps
@@ -787,7 +787,7 @@ process generate_cool{
    publishDir "${params.outdir}/export/cool", mode: 'copy'
 
    when:
-      !params.skip_cool
+      !params.skipCool
 
    input:
       set val(sample), file(vpairs) from all_valid_pairs_4cool
@@ -810,7 +810,7 @@ process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
     when:
-       !params.skip_multiqc
+       !params.skipMultiQC
 
     input:
        file multiqc_config from ch_multiqc_config
