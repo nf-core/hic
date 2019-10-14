@@ -245,6 +245,12 @@ summary['Restriction Motif']= params.restriction_site
 summary['Ligation Motif']   = params.ligation_site
 summary['DNase Mode']       = params.dnase
 summary['Remove Dup']       = params.rm_dup
+summary['Min MAPQ']         = params.min_mapq
+summary['Min Fragment Size']= params.min_restriction_fragment_size
+summary['Max Fragment Size']= params.max_restriction_framgnet_size
+summary['Min Insert Size']  = params.min_insert_size
+summary['Max Insert Size']  = params.max_insert_size
+summary['Min CIS dist']     = params.min_cis_dist
 summary['Maps resolution']  = params.bin_size
 
 summary['Max Memory']       = params.max_memory
