@@ -405,36 +405,36 @@ process bowtie2_end_to_end {
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
    input:
-        set val(sample), file(reads) from raw_reads
-        file index from bwt2_index_end2end.collect()
+   set val(sample), file(reads) from raw_reads
+   file index from bwt2_index_end2end.collect()
 
    output:
-	set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
-     	set val(prefix), file("${prefix}.bam") into end_to_end_bam
+   set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
+   set val(prefix), file("${prefix}.bam") into end_to_end_bam
 
    script:
-	prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
-        def bwt2_opts = params.bwt2_opts_end2end
+   prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
+   def bwt2_opts = params.bwt2_opts_end2end
 
-	if (!params.dnase){
-	   """
-	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
-		${bwt2_opts} \\
-		-p ${task.cpus} \\
-		-x ${index}/${bwt2_base} \\
-		--un ${prefix}_unmap.fastq \\
-	 	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
-           """
-	}else{
-	   """
-	   bowtie2 --rg-id BMG --rg SM:${prefix} \\
-		${bwt2_opts} \\
-		-p ${task.cpus} \\
-		-x ${index}/${bwt2_base} \\
-		--un ${prefix}_unmap.fastq \\
-	 	-U ${reads} > ${prefix}.bam
-           """
-	}
+   if (!params.dnase){
+   """
+   bowtie2 --rg-id BMG --rg SM:${prefix} \\
+	${bwt2_opts} \\
+	-p ${task.cpus} \\
+	-x ${index}/${bwt2_base} \\
+	--un ${prefix}_unmap.fastq \\
+ 	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
+   """
+   }else{
+   """
+   bowtie2 --rg-id BMG --rg SM:${prefix} \\
+	${bwt2_opts} \\
+	-p ${task.cpus} \\
+	-x ${index}/${bwt2_base} \\
+	--un ${prefix}_unmap.fastq \\
+ 	-U ${reads} > ${prefix}.bam
+   """
+   }
 }
 
 process trim_reads {
@@ -443,20 +443,20 @@ process trim_reads {
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
    when:
-      !params.dnase
+   !params.dnase
 
    input:
-      set val(prefix), file(reads) from unmapped_end_to_end
+   set val(prefix), file(reads) from unmapped_end_to_end
 
    output:
-      set val(prefix), file("${prefix}_trimmed.fastq") into trimmed_reads
+   set val(prefix), file("${prefix}_trimmed.fastq") into trimmed_reads
 
    script:
-      """
-      cutsite_trimming --fastq $reads \\
-       		       --cutsite  ${params.ligation_site} \\
-                       --out ${prefix}_trimmed.fastq
-      """
+   """
+   cutsite_trimming --fastq $reads \\
+                    --cutsite  ${params.ligation_site} \\
+                    --out ${prefix}_trimmed.fastq
+   """
 }
 
 process bowtie2_on_trimmed_reads {
@@ -465,24 +465,24 @@ process bowtie2_on_trimmed_reads {
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
    when:
-      !params.dnase
+   !params.dnase
 
    input:
-      set val(prefix), file(reads) from trimmed_reads
-      file index from bwt2_index_trim.collect()
+   set val(prefix), file(reads) from trimmed_reads
+   file index from bwt2_index_trim.collect()
 
    output:
-      set val(prefix), file("${prefix}_trimmed.bam") into trimmed_bam
+   set val(prefix), file("${prefix}_trimmed.bam") into trimmed_bam
 
    script:
-      prefix = reads.toString() - ~/(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
-      """
-      bowtie2 --rg-id BMG --rg SM:${prefix} \\
-      	      ${params.bwt2_opts_trimmed} \\
-              -p ${task.cpus} \\
-	      -x ${index}/${bwt2_base} \\
-	      -U ${reads} | samtools view -bS - > ${prefix}_trimmed.bam
-      """
+   prefix = reads.toString() - ~/(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
+   """
+   bowtie2 --rg-id BMG --rg SM:${prefix} \\
+           ${params.bwt2_opts_trimmed} \\
+           -p ${task.cpus} \\
+           -x ${index}/${bwt2_base} \\
+           -U ${reads} | samtools view -bS - > ${prefix}_trimmed.bam
+   """
 }
 
 if (!params.dnase){
@@ -492,39 +492,39 @@ if (!params.dnase){
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
       input:
-         set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
+      set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
 
       output:
-         set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
-         set val(oname), file("${prefix}.mapstat") into all_mapstat
+      set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
+      set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-         sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-         tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
-         oname = prefix.toString() - ~/(\.[0-9]+)$/
+      sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
+      tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
+      oname = prefix.toString() - ~/(\.[0-9]+)$/
 
-         """
-         samtools merge -@ ${task.cpus} \\
-       	             -f ${prefix}_bwt2merged.bam \\
-	             ${bam1} ${bam2}
+      """
+      samtools merge -@ ${task.cpus} \\
+    	             -f ${prefix}_bwt2merged.bam \\
+                     ${bam1} ${bam2}
 
-         samtools sort -@ ${task.cpus} -m 800M \\
+      samtools sort -@ ${task.cpus} -m 800M \\
       	            -n -T /tmp/ \\
 	            -o ${prefix}_bwt2merged.sorted.bam \\
 	            ${prefix}_bwt2merged.bam
 
-         mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
+      mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
 
-         echo "## ${prefix}" > ${prefix}.mapstat
-         echo -n "total_${tag}\t" >> ${prefix}.mapstat
-         samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
-         echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
-         samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
-         echo -n "global_${tag}\t" >> ${prefix}.mapstat
-         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
-         echo -n "local_${tag}\t"  >> ${prefix}.mapstat
-         samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
-         """
+      echo "## ${prefix}" > ${prefix}.mapstat
+      echo -n "total_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+      echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c -F 4 ${prefix}_bwt2merged.bam >> ${prefix}.mapstat
+      echo -n "global_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+      echo -n "local_${tag}\t"  >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
+      """
    }
 }else{
    process dnase_mapping_stats{
@@ -533,27 +533,27 @@ if (!params.dnase){
    	      saveAs: { params.saveAlignedIntermediates ? it : null }, mode: 'copy'
 
       input:
-         set val(prefix), file(bam1) from end_to_end_bam
+      set val(prefix), file(bam1) from end_to_end_bam
 
       output:
-         set val(sample), file(bam1) into bwt2_merged_bam
-         set val(oname), file("${prefix}.mapstat") into all_mapstat
+      set val(sample), file(bam1) into bwt2_merged_bam
+      set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-         sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-         tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
-         oname = prefix.toString() - ~/(\.[0-9]+)$/
+      sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
+      tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
+      oname = prefix.toString() - ~/(\.[0-9]+)$/
 
-         """
-         echo "## ${prefix}" > ${prefix}.mapstat
-         echo -n "total_${tag}\t" >> ${prefix}.mapstat
-         samtools view -c ${bam1} >> ${prefix}.mapstat
-	 echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
-         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
-         echo -n "global_${tag}\t" >> ${prefix}.mapstat
-         samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
-         echo -n "local_${tag}\t0"  >> ${prefix}.mapstat
-         """
+      """
+      echo "## ${prefix}" > ${prefix}.mapstat
+      echo -n "total_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c ${bam1} >> ${prefix}.mapstat
+      echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+      echo -n "global_${tag}\t" >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+      echo -n "local_${tag}\t0"  >> ${prefix}.mapstat
+      """
    }
 }
 
@@ -564,26 +564,26 @@ process combine_mapped_files{
    	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
 
    input:
-      set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
+   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
 
    output:
-      set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
-      set val(oname), file("*.pairstat") into all_pairstat
+   set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
+   set val(oname), file("*.pairstat") into all_pairstat
 
    script:
-      r1_bam = aligned_bam[0]
-      r1_prefix = r1_bam.toString() - ~/_bwt2merged.bam$/
-      r2_bam = aligned_bam[1]
-      r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
-      oname = sample.toString() - ~/(\.[0-9]+)$/
+   r1_bam = aligned_bam[0]
+   r1_prefix = r1_bam.toString() - ~/_bwt2merged.bam$/
+   r2_bam = aligned_bam[1]
+   r2_prefix = r2_bam.toString() - ~/_bwt2merged.bam$/
+   oname = sample.toString() - ~/(\.[0-9]+)$/
 
-      def opts = "-t"
-      opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
-      opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
-      if ("$params.min_mapq".isInteger()) opts="${opts} -q ${params.min_mapq}"
-      """
-      mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam ${opts}
-      """
+   def opts = "-t"
+   opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
+   opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
+   if ("$params.min_mapq".isInteger()) opts="${opts} -q ${params.min_mapq}"
+   """
+   mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam ${opts}
+   """
 }
 
 
@@ -598,34 +598,33 @@ if (!params.dnase){
    	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
-         set val(sample), file(pe_bam) from paired_bam
-         file frag_file from res_frag_file.collect()
+      set val(sample), file(pe_bam) from paired_bam
+      file frag_file from res_frag_file.collect()
 
       output:
-         set val(sample), file("*.validPairs") into valid_pairs
-         set val(sample), file("*.validPairs") into valid_pairs_4cool
-	 set val(sample), file("*.DEPairs") into de_pairs
-	 set val(sample), file("*.SCPairs") into sc_pairs
-         set val(sample), file("*.REPairs") into re_pairs
-	 set val(sample), file("*.FiltPairs") into filt_pairs
-         set val(sample), file("*RSstat") into all_rsstat
+      set val(sample), file("*.validPairs") into valid_pairs
+      set val(sample), file("*.validPairs") into valid_pairs_4cool
+      set val(sample), file("*.DEPairs") into de_pairs
+      set val(sample), file("*.SCPairs") into sc_pairs
+      set val(sample), file("*.REPairs") into re_pairs
+      set val(sample), file("*.FiltPairs") into filt_pairs
+      set val(sample), file("*RSstat") into all_rsstat
 
       script:
-         if (params.splitFastq){
-      	    sample = sample.toString() - ~/(\.[0-9]+)$/
-         }
+      if (params.splitFastq){
+         sample = sample.toString() - ~/(\.[0-9]+)$/
+      }
 
-         def opts = ""
-         if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
-         if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
-         if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
-         if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
-         if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
-	 if (params.saveInteractionBAM) opts="${opts} --sam"
-
-         """
-         mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
-         """
+      def opts = ""
+      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+      if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
+      if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
+      if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
+      if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
+      if (params.saveInteractionBAM) opts="${opts} --sam"
+      """
+      mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
+      """
    }
 }
 else{
@@ -635,23 +634,23 @@ else{
    	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
-         set val(sample), file(pe_bam) from paired_bam
+      set val(sample), file(pe_bam) from paired_bam
 
       output:
-         set val(sample), file("*.validPairs") into valid_pairs
-         set val(sample), file("*.validPairs") into valid_pairs_4cool
-         set val(sample), file("*RSstat") into all_rsstat
+      set val(sample), file("*.validPairs") into valid_pairs
+      set val(sample), file("*.validPairs") into valid_pairs_4cool
+      set val(sample), file("*RSstat") into all_rsstat
 
       script:
-         if (params.splitFastq){
-      	    sample = sample.toString() - ~/(\.[0-9]+)$/
-         }
+      if (params.splitFastq){
+         sample = sample.toString() - ~/(\.[0-9]+)$/
+      }
 
-         def opts = ""
-         if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
-	 """
-	 mapped_2hic_dnase.py -r ${pe_bam} ${opts}
-         """
+      def opts = ""
+      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+      """
+      mapped_2hic_dnase.py -r ${pe_bam} ${opts}
+      """
    }
 }
 
@@ -666,12 +665,12 @@ process remove_duplicates {
    	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
-     set val(sample), file(vpairs) from valid_pairs.groupTuple()
+   set val(sample), file(vpairs) from valid_pairs.groupTuple()
 
    output:
-     set val(sample), file("*.allValidPairs") into all_valid_pairs
-     set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
-     file("stats/") into all_mergestat
+   set val(sample), file("*.allValidPairs") into all_valid_pairs
+   set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
+   file("stats/") into all_mergestat
 
    script:
    if ( params.rm_dup ){
@@ -711,21 +710,21 @@ process merge_sample {
    publishDir "${params.outdir}/hic_results/stats/${sample}", mode: 'copy'
 
    input:
-     set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
+   set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
 
-  output:
-     file("mstats/") into all_mstats
+   output:
+   file("mstats/") into all_mstats
 
-  script:
-     sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-     if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
-     if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
-     if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
+   script:
+   sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
+   if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
+   if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
+   if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
 
-     """
-     mkdir -p mstats/${sample}
-     merge_statfiles.py -f ${fstat} > mstats/${sample}/${prefix}.${ext}
-     """
+   """
+   mkdir -p mstats/${sample}
+   merge_statfiles.py -f ${fstat} > mstats/${sample}/${prefix}.${ext}
+   """
 }
 
 
@@ -734,15 +733,15 @@ process build_contact_maps{
    publishDir "${params.outdir}/hic_results/matrix/raw", mode: 'copy'
 
    when:
-      !params.skipMaps
+   !params.skipMaps
 
    input:
-      set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
-      file chrsize from chromosome_size.collect()
+   set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
+   file chrsize from chromosome_size.collect()
 
    output:
-      file("*.matrix") into raw_maps
-      file "*.bed"
+   file("*.matrix") into raw_maps
+   file "*.bed"
 
    script:
    """
@@ -759,14 +758,14 @@ process run_ice{
    publishDir "${params.outdir}/hic_results/matrix/iced", mode: 'copy'
 
    when:
-      !params.skipMaps && !params.skipIce
+   !params.skipMaps && !params.skipIce
 
    input:
-      file(rmaps) from raw_maps
-      file "*.biases"
+   file(rmaps) from raw_maps
+   file "*.biases"
 
    output:
-      file("*iced.matrix") into iced_maps
+   file("*iced.matrix") into iced_maps
 
    script:
    prefix = rmaps.toString() - ~/(\.matrix)?$/
@@ -787,14 +786,14 @@ process generate_cool{
    publishDir "${params.outdir}/export/cool", mode: 'copy'
 
    when:
-      !params.skipCool
+   !params.skipCool
 
    input:
-      set val(sample), file(vpairs) from all_valid_pairs_4cool
-      file chrsize from chromosome_size_cool.collect()
+   set val(sample), file(vpairs) from all_valid_pairs_4cool
+   file chrsize from chromosome_size_cool.collect()
 
    output:
-      file("*mcool") into cool_maps
+   file("*mcool") into cool_maps
 
    script:
    """
@@ -807,28 +806,27 @@ process generate_cool{
  * STEP 6 - MultiQC
  */
 process multiqc {
-    publishDir "${params.outdir}/MultiQC", mode: 'copy'
+   publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
-    when:
-       !params.skipMultiQC
+   when:
+   !params.skipMultiQC
 
-    input:
-       file multiqc_config from ch_multiqc_config
-       file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
-       file ('software_versions/*') from software_versions_yaml
-       file workflow_summary from create_workflow_summary(summary)
+   input:
+   file multiqc_config from ch_multiqc_config
+   file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
+   file ('software_versions/*') from software_versions_yaml
+   file workflow_summary from create_workflow_summary(summary)
 
-    output:
-       file "*multiqc_report.html" into multiqc_report
-       file "*_data"
+   output:
+   file "*multiqc_report.html" into multiqc_report
+   file "*_data"
 
-    script:
-    rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
-    rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
-
-    """
-    multiqc -f $rtitle $rfilename --config $multiqc_config .
-    """
+   script:
+   rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
+   rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
+   """
+   multiqc -f $rtitle $rfilename --config $multiqc_config .
+   """
 }
 
 
@@ -837,18 +835,18 @@ process multiqc {
  * STEP 7 - Output Description HTML
  */
 process output_documentation {
-    publishDir "${params.outdir}/pipeline_info", mode: 'copy'
+   publishDir "${params.outdir}/pipeline_info", mode: 'copy'
 
-    input:
-    file output_docs from ch_output_docs
+   input:
+   file output_docs from ch_output_docs
 
-    output:
-    file "results_description.html"
+   output:
+   file "results_description.html"
 
-    script:
-    """
-    markdown_to_html.r $output_docs results_description.html
-    """
+   script:
+   """
+   markdown_to_html.r $output_docs results_description.html
+   """
 }
 
 
