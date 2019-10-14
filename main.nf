@@ -26,7 +26,7 @@ def helpMessage() {
       -profile                           Configuration profile to use. Can use multiple (comma separated)
                                          Available: conda, docker, singularity, awsbatch, test and more.
 
-    References:                          If not specified in the configuration file or you wish to overwrite any of the references.
+    References                          If not specified in the configuration file or you wish to overwrite any of the references.
       --genome                           Name of iGenomes reference
       --bwt2_index                       Path to Bowtie2 index
       --fasta                            Path to Fasta reference
@@ -35,12 +35,17 @@ def helpMessage() {
       --saveReference                    Save reference genome to output folder. Default: False
       --saveAlignedIntermediates         Save intermediates alignment files. Default: False
 
-    Options:
+    Alignments
       --bwt2_opts_end2end                Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
       --bwt2_opts_trimmed                Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
       --min_mapq                         Minimum mapping quality values to consider. Default: 10
       --restriction_site                 Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
       --ligation_site                    Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
+      --rm_singleton                     Remove singleton reads. Default: true
+      --rm_multi                         Remove multi-mapped reads. Default: true
+      --rm_dup                           Remove duplicates. Default: true
+ 
+    Contacts calling
       --min_restriction_fragment_size    Minimum size of restriction fragments to consider. Default: None
       --max_restriction_framgnet_size    Maximum size of restriction fragmants to consider. Default: None
       --min_insert_size                  Minimum insert size of mapped reads to consider. Default: None
@@ -48,32 +53,29 @@ def helpMessage() {
       --saveInteractionBAM               Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
 
       --dnase                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
-
       --min_cis_dist                     Minimum intra-chromosomal distance to consider. Default: None
-      --rm_singleton                     Remove singleton reads. Default: true
-      --rm_multi                         Remove multi-mapped reads. Default: true
-      --rm_dup                           Remove duplicates. Default: true
 
+    Contact maps
       --bin_size                         Bin size for contact maps (comma separated). Default: '1000000,500000'
       --ice_max_iter                     Maximum number of iteration for ICE normalization. Default: 100
       --ice_filter_low_count_perc        Percentage of low counts columns/rows to filter before ICE normalization. Default: 0.02
       --ice_filter_high_count_perc       Percentage of high counts columns/rows to filter before ICE normalization. Default: 0
       --ice_eps                          Convergence criteria for ICE normalization. Default: 0.1
 
-    Other options:
-      --splitFastq                       Size of read chuncks to use to speed up the workflow. Default: None
-      --outdir                           The output directory where the results will be saved. Default: './results'
-      --email                            Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. Default: None
-      -name                              Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic. Default: None
 
-    Step options:
-
+    Workflow
       --skip_maps                        Skip generation of contact maps. Useful for capture-C. Default: False
       --skip_ice                         Skip ICE normalization. Default: False
       --skip_cool                        Skip generation of cool files. Default: False
       --skip_multiQC                     Skip MultiQC. Default: False
 
-    AWSBatch options:
+    Other
+      --splitFastq                       Size of read chuncks to use to speed up the workflow. Default: None
+      --outdir                           The output directory where the results will be saved. Default: './results'
+      --email                            Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. Default: None
+      -name                              Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic. Default: None
+
+    AWSBatch
       --awsqueue                         The AWSBatch JobQueue that needs to be set when running on AWSBatch
       --awsregion                        The AWS Region for your AWS Batch job to run on
     """.stripIndent()
@@ -802,7 +804,7 @@ process generate_cool{
 
 
 /*
- * STEP 5 - MultiQC
+ * STEP 6 - MultiQC
  */
 process multiqc {
     publishDir "${params.outdir}/MultiQC", mode: 'copy'
@@ -832,7 +834,7 @@ process multiqc {
 
 
 /*
- * STEP 3 - Output Description HTML
+ * STEP 7 - Output Description HTML
  */
 process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: 'copy'
@@ -975,14 +977,14 @@ def nfcoreHeader(){
     c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
     c_white = params.monochrome_logs ? '' : "\033[0;37m";
 
-    return """    ${c_dim}----------------------------------------------------${c_reset}
+    return """    -${c_dim}--------------------------------------------------${c_reset}-
                                             ${c_green},--.${c_black}/${c_green},-.${c_reset}
     ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
     ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
     ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
                                             ${c_green}`._,._,\'${c_reset}
-    ${c_purple}  nf-core/hic v${workflow.manifest.version}${c_reset}
-    ${c_dim}----------------------------------------------------${c_reset}
+    ${c_purple}  nf-core/atacseq v${workflow.manifest.version}${c_reset}
+    -${c_dim}--------------------------------------------------${c_reset}-
     """.stripIndent()
 }
 
