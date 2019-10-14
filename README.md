@@ -39,6 +39,28 @@ sites (bowtie2)
 6. Quality controls and report (MultiQC)
 7. Addition export for visualisation and downstream analysis (cooler)
 
+## Quick Start
+
+i. Install [`nextflow`](https://nf-co.re/usage/installation)
+
+ii. Install one of [`docker`](https://docs.docker.com/engine/installation/),
+[`singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or
+[`conda`](https://conda.io/miniconda.html)
+
+iii. Download the pipeline and test it on a minimal dataset with a single command
+
+```bash
+nextflow run hic -profile test,<docker/singularity/conda>
+```
+
+iv. Start running your own analysis!
+
+```bash
+nextflow run hic -profile <docker/singularity/conda> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
+```
+
+See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
+
 ## Documentation
 
 The nf-core/hic pipeline comes with documentation about the pipeline, found in
@@ -52,6 +74,16 @@ the `docs/` directory:
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
+
+## Contributions and Support
+
+If you would like to contribute to this pipeline, please see the
+[contributing guidelines](.github/CONTRIBUTING.md).
+
+For further information or help, don't hesitate to get in touch on
+[Slack](https://nfcore.slack.com/channels/hic).
+You can join with [this invite](https://nf-co.re/join/slack).
+
 
 ## Credits
 
