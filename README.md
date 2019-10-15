@@ -89,6 +89,8 @@ You can join with [this invite](https://nf-co.re/join/slack).
 
 nf-core/hic was originally written by Nicolas Servant.
 
+## Citation
+
 If you use nf-core/hic for your analysis, please cite it using the following
 doi: [10.5281/zenodo.2669513](https://doi.org/10.5281/zenodo.2669513)
 
