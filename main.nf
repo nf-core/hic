@@ -85,7 +85,7 @@ def helpMessage() {
  * SET UP CONFIGURATION VARIABLES
  */
 
-// Show help emssage
+// Show help message
 if (params.help){
     helpMessage()
     exit 0
@@ -281,7 +281,7 @@ if(params.email) {
   summary['MultiQC maxsize'] = params.maxMultiqcEmailFileSize
 }
 log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
-log.info "\033[2m----------------------------------------------------\033[0m"
+log.info "-\033[2m--------------------------------------------------\033[0m-"
 
 // Check the hostnames against configured profiles
 checkHostname()
@@ -953,10 +953,10 @@ workflow.onComplete {
     c_green = params.monochrome_logs ? '' : "\033[0;32m";
     c_red = params.monochrome_logs ? '' : "\033[0;31m";
 
-    if (workflow.stats.ignoredCountFmt > 0 && workflow.success) {
+    if (workflow.stats.ignoredCount > 0 && workflow.success) {
       log.info "${c_purple}Warning, pipeline completed, but with errored process(es) ${c_reset}"
-      log.info "${c_red}Number of ignored errored process(es) : ${workflow.stats.ignoredCountFmt} ${c_reset}"
-      log.info "${c_green}Number of successfully ran process(es) : ${workflow.stats.succeedCountFmt} ${c_reset}"
+      log.info "${c_red}Number of ignored errored process(es) : ${workflow.stats.ignoredCount} ${c_reset}"
+      log.info "${c_green}Number of successfully ran process(es) : ${workflow.stats.succeedCount} ${c_reset}"
     }
 
     if(workflow.success){

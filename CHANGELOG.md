@@ -1,6 +1,6 @@
 # nf-core/hic: Changelog
 
-## v1.1.0
+## v1.1.0 - 2019-10-15
 
 * Support 'N' base motif in restriction/ligation sites
 * Support multiple restriction enzymes/ligattion sites (comma separated) ([#31](https://github.com/nf-core/hic/issues/31))
