@@ -13,7 +13,7 @@ before_install:
   - docker pull nfcore/hic:dev
   # Fake the tag locally so that the pipeline runs properly
   # Looks weird when this is :dev to :dev, but makes sense when testing code for a release (:dev to :1.0.1)
-  - docker tag nfcore/hic:dev nfcore/hic:1.1.0
+  - docker tag nfcore/hic:dev nfcore/hic:dev
 
 install:
   # Install Nextflow
