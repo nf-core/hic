@@ -15,7 +15,7 @@
 
 This pipeline is based on the
 [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
-It was designed to process Hi-C data from raw fastq files (paired-end Illumina
+It was designed to process Hi-C data from raw FastQ files (paired-end Illumina
 data) to normalized contact maps.
 The current version supports most protocols, including digestion protocols as
 well as protocols that do not require restriction enzymes such as DNase Hi-C.
@@ -50,13 +50,13 @@ ii. Install one of [`docker`](https://docs.docker.com/engine/installation/),
 iii. Download the pipeline and test it on a minimal dataset with a single command
 
 ```bash
-nextflow run hic -profile test,<docker/singularity/conda>
+nextflow run nf-core/hic -profile test,<docker/singularity/conda/institute>
 ```
 
 iv. Start running your own analysis!
 
 ```bash
-nextflow run hic -profile <docker/singularity/conda> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
+nextflow run nf-core/hic -profile <docker/singularity/conda/institute> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
 ```
 
 See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
