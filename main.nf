@@ -42,7 +42,7 @@ def helpMessage() {
       --restriction_site                 Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
       --ligation_site                    Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
       --min_restriction_fragment_size    Minimum size of restriction fragments to consider. Default: None
-      --max_restriction_framgnet_size    Maximum size of restriction fragmants to consider. Default: None
+      --max_restriction_fragment_size    Maximum size of restriction fragments to consider. Default: None
       --min_insert_size                  Minimum insert size of mapped reads to consider. Default: None
       --max_insert_size                  Maximum insert size of mapped reads to consider. Default: None
       --saveInteractionBAM               Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
