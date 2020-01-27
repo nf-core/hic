@@ -497,8 +497,8 @@ if (!params.dnase){
          set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-         sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-         tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
+         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1$|_2)/
+         tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
          oname = prefix.toString() - ~/(\.[0-9]+)$/
 
          """
@@ -538,8 +538,8 @@ if (!params.dnase){
          set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-         sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-         tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
+         sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
+         tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
          oname = prefix.toString() - ~/(\.[0-9]+)$/
 
          """
@@ -555,6 +555,7 @@ if (!params.dnase){
    }
 }
 
+println(bwt2_merged_bam)
 
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
@@ -715,7 +716,7 @@ process merge_sample {
      file("mstats/") into all_mstats
 
   script:
-     sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
+     sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
      if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
      if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
      if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
