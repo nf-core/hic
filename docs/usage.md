@@ -53,10 +53,10 @@
     * [`--saveAlignedIntermediates`](#--saveAlignedIntermediates)
     * [`--saveInteractionBAM`](#--saveInteractionBAM)
 * [Skip options](#skip-options)
-  * [--skip_maps](#--skip_maps)
-  * [--skip_ice](#--skip_ice)
-  * [--skip_cool](#--skip_cool)
-  * [--skip_multiqc](#--skip_multiqc)  
+  * [--skipMaps](#--skipMaps)
+  * [--skipIce](#--skipIce)
+  * [--skipCool](#--skipCool)
+  * [--skipMultiQC](#--skipMultiQC)  
 * [Job resources](#job-resources)
 * [Automatic resubmission](#automatic-resubmission)
 * [Custom resource requests](#custom-resource-requests)
@@ -561,38 +561,38 @@ dangling end, self-circle, etc.) and its tags.
 
 ## Skip options
 
-### `--skip_maps`
+### `--skipMaps`
 
 If defined, the workflow stops with the list of valid interactions, and the
 genome-wide maps are not built. Usefult for capture-C analysis. Default: false
 
 ```bash
---skip_maps
+--skipMaps
 ```
 
-### `--skip_ice`
+### `--skipIce`
 
 If defined, the ICE normalization is not run on the raw contact maps.
 Default: false
 
 ```bash
---skip_ice
+--skipIce
 ```
 
-### `--skip_cool`
+### `--skipCool`
 
 If defined, cooler files are not generated. Default: false
 
 ```bash
---skip_cool
+--skipCool
 ```
 
-### `--skip_multiqc`
+### `--skipMultiQC`
 
 If defined, the MultiQC report is not generated. Default: false
 
 ```bash
---skip_multiqc
+--skipMultiQC
 ```
 
 ## Job resources
