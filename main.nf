@@ -47,7 +47,7 @@ def helpMessage() {
  
     Contacts calling
       --min_restriction_fragment_size    Minimum size of restriction fragments to consider. Default: None
-      --max_restriction_framgnet_size    Maximum size of restriction fragmants to consider. Default: None
+      --max_restriction_fragment_size    Maximum size of restriction fragments to consider. Default: None
       --min_insert_size                  Minimum insert size of mapped reads to consider. Default: None
       --max_insert_size                  Maximum insert size of mapped reads to consider. Default: None
       --saveInteractionBAM               Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
@@ -505,10 +505,9 @@ if (!params.dnase){
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-      tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
+      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1$|_2)/
+      tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
-
       """
       samtools merge -@ ${task.cpus} \\
     	             -f ${prefix}_bwt2merged.bam \\
@@ -546,10 +545,9 @@ if (!params.dnase){
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-      tag = prefix.toString() =~/_R1$|_val_1$|_1$/ ? "R1" : "R2"
+      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
+      tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
-
       """
       echo "## ${prefix}" > ${prefix}.mapstat
       echo -n "total_${tag}\t" >> ${prefix}.mapstat
@@ -563,6 +561,7 @@ if (!params.dnase){
    }
 }
 
+println(bwt2_merged_bam)
 
 process combine_mapped_files{
    tag "$sample = $r1_prefix + $r2_prefix"
@@ -721,16 +720,15 @@ process merge_sample {
    output:
    file("mstats/") into all_mstats
 
-   script:
-   sample = prefix.toString() - ~/(_R1$|_R2$|_val_1$|_val_2$|_1$|_2$)/
-   if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
-   if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
-   if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
-
-   """
-   mkdir -p mstats/${sample}
-   merge_statfiles.py -f ${fstat} > mstats/${sample}/${prefix}.${ext}
-   """
+  script:
+  sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
+  if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
+  if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
+  if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
+  """
+  mkdir -p mstats/${sample}
+  merge_statfiles.py -f ${fstat} > mstats/${sample}/${prefix}.${ext}
+  """
 }
 
 
