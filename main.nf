@@ -796,7 +796,7 @@ process generate_cool{
 
    script:
    """
-   hicpro2higlass.sh -i $vpairs -r 5000 -c ${chrsize} -n
+   hicpro2higlass.sh -p ${task.cpus} -i $vpairs -r 5000 -c ${chrsize} -n
    """
 }
 
