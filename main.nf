@@ -380,7 +380,7 @@ if(!params.chromosome_size && params.fasta){
 
 if(!params.restriction_fragments && params.fasta && !params.dnase){
     process getRestrictionFragments {
-        tag "$fasta [${params.restriction_site}]"
+        tag "$fasta - ${params.restriction_site}"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.saveReference ? it : null }, mode: 'copy'
 

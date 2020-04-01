@@ -1,5 +1,9 @@
 # nf-core/hic: Changelog
 
+## v1.1.1
+
+* Fix bug in tag. Remove '['
+
 ## v1.1.0 - 2019-10-15
 
 * Update hicpro2higlass with `-p` parameter
