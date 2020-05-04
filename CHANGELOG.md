@@ -1,7 +1,12 @@
 # nf-core/hic: Changelog
 
+## v1.1.1
+
+* Fix bug in tag. Remove '['
+
 ## v1.1.0 - 2019-10-15
 
+* Update hicpro2higlass with `-p` parameter
 * Support 'N' base motif in restriction/ligation sites
 * Support multiple restriction enzymes/ligattion sites (comma separated) ([#31](https://github.com/nf-core/hic/issues/31))
 * Add --saveInteractionBAM option

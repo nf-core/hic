@@ -380,7 +380,7 @@ if(!params.chromosome_size && params.fasta){
 
 if(!params.restriction_fragments && params.fasta && !params.dnase){
     process getRestrictionFragments {
-        tag "$fasta [${params.restriction_site}]"
+        tag "$fasta - ${params.restriction_site}"
         publishDir path: { params.saveReference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.saveReference ? it : null }, mode: 'copy'
 
@@ -801,7 +801,7 @@ process generate_cool{
 
    script:
    """
-   hicpro2higlass.sh -i $vpairs -r 5000 -c ${chrsize} -n
+   hicpro2higlass.sh -p ${task.cpus} -i $vpairs -r 5000 -c ${chrsize} -n
    """
 }
 
