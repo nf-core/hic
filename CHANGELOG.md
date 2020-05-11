@@ -1,20 +1,42 @@
 # nf-core/hic: Changelog
 
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## v1.2.0dev
+
+### `Added`
+
+* Bump v1.2.0
+* Merge template nf-core 1.9
+
+
 ## v1.1.1
+
+### `Fixed`
 
 * Fix bug in tag. Remove '['
 
 ## v1.1.0 - 2019-10-15
+
+### `Added`
 
 * Update hicpro2higlass with `-p` parameter
 * Support 'N' base motif in restriction/ligation sites
 * Support multiple restriction enzymes/ligattion sites (comma separated) ([#31](https://github.com/nf-core/hic/issues/31))
 * Add --saveInteractionBAM option
 * Add DOI ([#29](https://github.com/nf-core/hic/issues/29))
-* Fix bug for reads extension _1/_2 ([#30](https://github.com/nf-core/hic/issues/30))
 * Update manual ([#28](https://github.com/nf-core/hic/issues/28))
 
-## v1.0 - 2019-05-06
+### `Fixed`
+
+* Fix bug for reads extension _1/_2 ([#30](https://github.com/nf-core/hic/issues/30))
+
+## v1.0 - [2019-05-06]
+
+Initial release of nf-core/hic, created with the [nf-core](http://nf-co.re/) template.
+
+### `Added`
 
 First version of nf-core Hi-C pipeline which is a Nextflow implementation of
 the [HiC-Pro pipeline](https://github.com/nservant/HiC-Pro/).
@@ -32,3 +54,4 @@ if not provided.
 * Normalization of the contact maps using the ICE algorithm
 * Generation of cooler file for visualization on [higlass](https://higlass.io/)
 * Quality report based on HiC-Pro MultiQC module
+
