@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Update conda environment file
 * Update python scripts for python3
 
+### `Fixed`
+
+* Fix a bug in rm_dup in file sorting
+
 ### `Deprecated`
 
 * --skipMaps, --skipIce, --skipCool, --skipMultiQC are deprecated and replaced by --skip_maps, --skip_ice, --skip_cool, --skip_multiqc

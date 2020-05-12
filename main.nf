@@ -650,8 +650,10 @@ if (!params.dnase){
       if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
       if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
       if (params.save_interaction_bam) opts="${opts} --sam"
+      prefix = pe_bam.toString() - ~/.bam/
       """
       mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
+      sort -T /tmp/ -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
       """
    }
 }
@@ -677,8 +679,10 @@ else{
 
       def opts = ""
       if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+      prefix = pe_bam.toString() - ~/.bam/
       """
       mapped_2hic_dnase.py -r ${pe_bam} ${opts}
+      sort -T /tmp/ -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
       """
    }
 }
