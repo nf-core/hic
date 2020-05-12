@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### `Added`
 
-* Bump v1.2.0
+* Bump v1.2.0dev
 * Merge template nf-core 1.9
+* Move some options to camel_case
+* Update conda environment file
+* Update python scripts for python3
 
+### `Deprecated`
+
+* --skipMaps, --skipIce, --skipCool, --skipMultiQC are deprecated and replaced by --skip_maps, --skip_ice, --skip_cool, --skip_multiqc
+* --saveReference, --saveAlignedIntermediates, --saveInteractionBAM are replaced by --save_reference, --save_aligned_intermediates, --save_interaction_bam
 
 ## v1.1.1
 
