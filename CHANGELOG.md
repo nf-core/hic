@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## v1.2.0dev
+## v1.2.0dev - 2020-05-12
 
 ### `Added`
 
@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * --skipMaps, --skipIce, --skipCool, --skipMultiQC are deprecated and replaced by --skip_maps, --skip_ice, --skip_cool, --skip_multiqc
 * --saveReference, --saveAlignedIntermediates, --saveInteractionBAM are replaced by --save_reference, --save_aligned_intermediates, --save_interaction_bam
 
-## v1.1.1
+## v1.1.1 - 2020-04-02
 
 ### `Fixed`
 
