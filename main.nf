@@ -245,7 +245,7 @@ summary['DNase Mode']       = params.dnase
 summary['Remove Dup']       = params.rm_dup
 summary['Min MAPQ']         = params.min_mapq
 summary['Min Fragment Size']= params.min_restriction_fragment_size
-summary['Max Fragment Size']= params.max_restriction_framgnet_size
+summary['Max Fragment Size']= params.max_restriction_fragment_size
 summary['Min Insert Size']  = params.min_insert_size
 summary['Max Insert Size']  = params.max_insert_size
 summary['Min CIS dist']     = params.min_cis_dist
@@ -302,6 +302,7 @@ Channel.from(summary.collect{ [it.key, it.value] })
 /*
  * Parse software version numbers
  */
+
 process get_software_versions {
    publishDir "${params.outdir}/pipeline_info", mode: 'copy',
    saveAs: {filename ->
@@ -324,6 +325,25 @@ process get_software_versions {
    scrape_software_versions.py &> software_versions_mqc.yaml
    """
 }
+
+def create_workflow_summary(summary) {
+
+    def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
+    yaml_file.text  = """
+    id: 'nf-core-chipseq-summary'
+    description: " - this information is collected when the pipeline is started."
+    section_name: 'nf-core/chipseq Workflow Summary'
+    section_href: 'https://github.com/nf-core/chipseq'
+    plot_type: 'html'
+    data: |
+        <dl class=\"dl-horizontal\">
+${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }.join("\n")}
+        </dl>
+    """.stripIndent()
+
+   return yaml_file
+}
+
 
 
 /****************************************************
@@ -357,7 +377,7 @@ if(!params.bwt2_index && params.fasta){
 if(!params.chromosome_size && params.fasta){
     process makeChromSize {
         tag "$fasta"
-	label 'process_low''
+	label 'process_low'
         publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.save_reference ? it : null }, mode: 'copy'
 
@@ -822,7 +842,7 @@ process multiqc {
    publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
    when:
-   !params.skip_multiQC
+   !params.skip_multiqc
 
    input:
    file multiqc_config from ch_multiqc_config
@@ -856,7 +876,7 @@ process output_documentation {
 
    script:
    """
-   markdown_to_html.r $output_docs results_description.html
+   markdown_to_html.py $output_docs -o results_description.html
    """
 }
 
