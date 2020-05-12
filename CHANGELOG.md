@@ -65,4 +65,3 @@ if not provided.
 * Normalization of the contact maps using the ICE algorithm
 * Generation of cooler file for visualization on [higlass](https://higlass.io/)
 * Quality report based on HiC-Pro MultiQC module
-
