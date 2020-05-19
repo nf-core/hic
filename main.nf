@@ -223,10 +223,6 @@ else {
 // Resolutions for contact maps
 map_res = Channel.from( params.bin_size.tokenize(',') )
 
-// Stage config files
-ch_multiqc_config = Channel.fromPath(params.multiqc_config)
-ch_output_docs = Channel.fromPath("$baseDir/docs/output.md")
-
 /**********************************************************
  * SET UP LOGS
  */
