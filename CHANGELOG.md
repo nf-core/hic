@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### `Fixed`
 
-* Fix bug for reads extension _1/_2 ([#30](https://github.com/nf-core/hic/issues/30))
+* Fix bug for reads extension `_1`/`_2` ([#30](https://github.com/nf-core/hic/issues/30))
 
 ## v1.0 - [2019-05-06]
 
