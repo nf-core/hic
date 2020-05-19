@@ -19,8 +19,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### `Deprecated`
 
-* --skipMaps, --skipIce, --skipCool, --skipMultiQC are deprecated and replaced by --skip_maps, --skip_ice, --skip_cool, --skip_multiqc
-* --saveReference, --saveAlignedIntermediates, --saveInteractionBAM are replaced by --save_reference, --save_aligned_intermediates, --save_interaction_bam
+* Command line options converted to `camel_case`:
+    * `--skipMaps` > `--skip_maps`
+    * `--skipIce` > `--skip_ice`
+    * `--skipCool` > `--skip_cool`
+    * `--skipMultiQC` > `--skip_multiqc`
+    * `--saveReference` > `--save_reference`
+    * `--saveAlignedIntermediates` > `--save_aligned_intermediates`
+    * `--saveInteractionBAM` > `--save_interaction_bam`
 
 ## v1.1.1 - 2020-04-02
 
