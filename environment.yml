@@ -1,6 +1,6 @@
 # You can use this file to create a conda environment for this pipeline:
 #   conda env create -f environment.yml
-name: nf-core-hic-1.2.1dev
+name: nf-core-hic-1.3.0dev
 channels:
   - conda-forge
   - bioconda
@@ -19,9 +19,11 @@ dependencies:
   - bioconda::samtools=1.9
   - bioconda::multiqc=1.8
 
+## Dev tools
   - bioconda::hicexplorer=3.4.3
   - bioconda::bioconductor-hitc=1.32.0
   - conda-forge::r-optparse=1.6.6
+  - bioconda::ucsc-bedgraphtobigwig=377
   - pip:
-    - cooltools
-    - fanc
+    - cooltools==0.3.2
+    - fanc==0.8.30
