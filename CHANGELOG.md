@@ -12,38 +12,39 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Move some options to camel_case
 * Update python scripts for python3
 * Update conda environment file
-    * python base `2.7.15` > `3.7.6`
-    * pip `19.1` > `20.0.1`
-    * scipy `1.2.1` > `1.4.1`
-    * numpy `1.16.3` > `1.18.1`
-    * bx-python `0.8.2` > `0.8.8`
-    * pysam `0.15.2` > `0.15.4`
-    * cooler `0.8.5` > `0.8.6`
-    * multiqc `1.7` > `1.8`
-    * iced `0.5.1` > `0.5.6`
-    * *_New_* pymdown-extensions `7.1`
-    * *_New_* hicexplorer `3.4.3`
-    * *_New_* bioconductor-hitc `1.32.0`
-    * *_New_* r-optparse `1.6.6`
-    * *_New_* ucsc-bedgraphtobigwig `377`
-    * *_New_* cooltools `0.3.2`
-    * *_New_* fanc `0.8.30`
-    * *_Removed_* r-markdown
+  * python base `2.7.15` > `3.7.6`
+  * pip `19.1` > `20.0.1`
+  * scipy `1.2.1` > `1.4.1`
+  * numpy `1.16.3` > `1.18.1`
+  * bx-python `0.8.2` > `0.8.8`
+  * pysam `0.15.2` > `0.15.4`
+  * cooler `0.8.5` > `0.8.6`
+  * multiqc `1.7` > `1.8`
+  * iced `0.5.1` > `0.5.6`
+  * *_New_* pymdown-extensions `7.1`
+  * *_New_* hicexplorer `3.4.3`
+  * *_New_* bioconductor-hitc `1.32.0`
+  * *_New_* r-optparse `1.6.6`
+  * *_New_* ucsc-bedgraphtobigwig `377`
+  * *_New_* cooltools `0.3.2`
+  * *_New_* fanc `0.8.30`
+  * *_Removed_* r-markdown
 
 ### `Fixed`
 
-* Sort output of `get_valid_interaction` process as the input files of `remove_duplicates` are expected to be sorted (sort -m)
+* Sort output of `get_valid_interaction` process as the input files of `remove_duplicates`
+are expected to be sorted (sort -m)
 
 ### `Deprecated`
 
 * Command line options converted to `camel_case`:
-    * `--skipMaps` > `--skip_maps`
-    * `--skipIce` > `--skip_ice`
-    * `--skipCool` > `--skip_cool`
-    * `--skipMultiQC` > `--skip_multiqc`
-    * `--saveReference` > `--save_reference`
-    * `--saveAlignedIntermediates` > `--save_aligned_intermediates`
-    * `--saveInteractionBAM` > `--save_interaction_bam`
+  * `--skipMaps` > `--skip_maps`
+  * `--skipIce` > `--skip_ice`
+  * `--skipCool` > `--skip_cool`
+  * `--skipMultiQC` > `--skip_multiqc`
+  * `--saveReference` > `--save_reference`
+  * `--saveAlignedIntermediates` > `--save_aligned_intermediates`
+  * `--saveInteractionBAM` > `--save_interaction_bam`
 
 ## v1.1.1 - 2020-04-02
 
