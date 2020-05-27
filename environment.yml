@@ -24,6 +24,7 @@ dependencies:
   - bioconda::bioconductor-hitc=1.32.0
   - conda-forge::r-optparse=1.6.6
   - bioconda::ucsc-bedgraphtobigwig=357
+  - conda-forge::cython=0.29.19
   - pip:
     - cooltools==0.3.2
     - fanc==0.8.30
