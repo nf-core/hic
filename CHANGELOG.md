@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   * *_New_* bioconductor-hitc `1.32.0`
   * *_New_* r-optparse `1.6.6`
   * *_New_* ucsc-bedgraphtobigwig `377`
+  * *_New_* cython `0.29.19`
   * *_New_* cooltools `0.3.2`
   * *_New_* fanc `0.8.30`
   * *_Removed_* r-markdown
