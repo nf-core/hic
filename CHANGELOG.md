@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### `Fixed`
 
+* Fix error in doc for Arima kit usage
 * Sort output of `get_valid_interaction` process as the input files of `remove_duplicates`
 are expected to be sorted (sort -m)
 

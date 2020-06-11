@@ -398,7 +398,7 @@ Here are a few examples:
 * DpnII: ^GATC
 * BglII: A^GATCT
 * HindIII: A^AGCTT
-* ARIMA kit: ^GATC,^GANT
+* ARIMA kit: ^GATC,G^ANTC
 
 Note that multiples restriction motifs can be provided (comma-separated) and
 that 'N' base are supported.
@@ -419,7 +419,7 @@ Default: 'AAGCTAGCTT'
 --ligation_site '[Ligation motif]'
 ```
 
-Exemple of the ARIMA kit: GATCGATC,GATCGANT,GANTGATC,GANTGANT
+Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 
 #### `--min_restriction_fragment_size`
 
