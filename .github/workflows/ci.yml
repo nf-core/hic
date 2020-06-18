@@ -22,7 +22,7 @@ jobs:
       - name: Pull docker image
         run: |
           docker pull nfcore/hic:dev
-          docker tag nfcore/hic:dev nfcore/hic:dev
+          docker tag nfcore/hic:dev nfcore/hic:1.2.0
       - name: Run pipeline with test data
         run: |
           # nf-core: You can customise CI pipeline run tests as required

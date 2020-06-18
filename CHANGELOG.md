@@ -3,11 +3,11 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## v1.2.0dev - 2020-05-12
+## v1.2.0 - 2020-06-18
 
 ### `Added`
 
-* Bump v1.2.0dev
+* Bump v1.2.0
 * Merge template nf-core 1.9
 * Move some options to camel_case
 * Update python scripts for python3
@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### `Fixed`
 
+* Fix error in doc for Arima kit usage
 * Sort output of `get_valid_interaction` process as the input files of `remove_duplicates`
 are expected to be sorted (sort -m)
 
