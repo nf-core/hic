@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-## HiC-Pro
-## Copyright (c) 2015 Institut Curie                               
-## Author(s): Nicolas Servant, Eric Viara
+## nf-core-hic
+## Copyright (c) 2020 Institut Curie                               
+## Author(s): Nicolas Servant
 ## Contact: nicolas.servant@curie.fr
 ## This software is distributed without any guarantee under the terms of the BSD-3 licence.
 ## See the LICENCE file for details
@@ -36,13 +36,13 @@ if __name__ == "__main__":
 
     if li > 0:
         if args.verbose:
-            print "## merge_statfiles.py"
-            print "## Merging "+ str(li)+" files"
+            print("## merge_statfiles.py")
+            print("## Merging "+ str(li)+" files")
  
         ## Reading first file to get the template
         template = OrderedDict()
         if args.verbose:
-            print "## Use "+infiles[0]+" as template"
+            print("## Use "+infiles[0]+" as template")
         with open(infiles[0]) as f:
             for line in f:
                 if not line.startswith("#"):
@@ -51,17 +51,17 @@ if __name__ == "__main__":
                     template[str(lsp[0])] = data
                 
         if len(template) == 0:
-            print "Cannot find template files !"
+            print("Cannot find template files !")
             sys.exit(1)
 
         ## Int are counts / Float are percentage
-        for fidx in xrange(1, li):
+        for fidx in list(range(1, li)):
             with open(infiles[fidx]) as f:
                 for line in f:
                     if not line.startswith("#"):
                         lsp = line.strip().split("\t")
                         if lsp[0] in template:
-                            for i in xrange(1, len(lsp)):
+                            for i in list(range(1, len(lsp))):
                                 if isinstance(num(lsp[i]), int):
                                     template[lsp[0]][i-1] += num(lsp[i])
                                 else:
@@ -77,6 +77,6 @@ if __name__ == "__main__":
             sys.stdout.write("\n")
 
     else:
-        print "No files to merge - stop"
+        print("No files to merge - stop")
         sys.exit(1)
 
