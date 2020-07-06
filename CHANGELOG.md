@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   * *_New_* cooltools `0.3.2`
   * *_New_* fanc `0.8.30`
   * *_Removed_* r-markdown
+* Keep fasta extension when generating bowtie2 index, fixing prefix-mismatch bug.
 
 ### `Fixed`
 
