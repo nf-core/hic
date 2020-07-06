@@ -360,11 +360,9 @@ if(!params.bwt2_index && params.fasta){
         file "bowtie2_index" into bwt2_index_end2end
 	file "bowtie2_index" into bwt2_index_trim
 
-        script:
-        bwt2_base = fasta.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?$/
         """
         mkdir bowtie2_index
-	bowtie2-build ${fasta} bowtie2_index/${bwt2_base}
+	bowtie2-build ${fasta} bowtie2_index/${fasta}
 	"""
       }
  }
