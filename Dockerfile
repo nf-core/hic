@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y gcc g++ && apt-get clean -y
 
 COPY environment.yml /
 RUN conda env create -f /environment.yml && conda clean -a
-ENV PATH /opt/conda/envs/nf-core-hic-1.2.0/bin:$PATH
+ENV PATH /opt/conda/envs/nf-core-hic-1.2.1/bin:$PATH
 
 # Dump the details of the installed packages to a file for posterity
-RUN conda env export --name nf-core-hic-1.2.0 > nf-core-hic-1.2.0.yml
+RUN conda env export --name nf-core-hic-1.2.1 > nf-core-hic-1.2.1.yml
 

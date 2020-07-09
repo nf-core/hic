@@ -181,9 +181,10 @@ if ( params.bwt2_index ){
 
 }
 else if ( params.fasta ) {
-    lastPath = params.fasta.lastIndexOf(File.separator)
-    bwt2_base = params.fasta.substring(lastPath+1)
-
+   lastPath = params.fasta.lastIndexOf(File.separator)
+   fasta_base = params.fasta.substring(lastPath+1)
+   bwt2_base = fasta_base.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
+ 
    Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
         .set { fasta_for_index }
@@ -361,7 +362,6 @@ if(!params.bwt2_index && params.fasta){
 	file "bowtie2_index" into bwt2_index_trim
 
         script:
-        bwt2_base = fasta.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?$/
         """
         mkdir bowtie2_index
 	bowtie2-build ${fasta} bowtie2_index/${bwt2_base}
