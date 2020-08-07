@@ -10,6 +10,7 @@
 [![Docker](https://img.shields.io/docker/automated/nfcore/hic.svg)](https://hub.docker.com/r/nfcore/hic)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2669513.svg)](https://doi.org/10.5281/zenodo.2669513)
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?logo=slack)](https://nfcore.slack.com/channels/hic)
 
 ## Introduction
 
@@ -82,10 +83,6 @@ found in the `docs/` directory:
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
-
-=======
-
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?logo=slack)](https://nfcore.slack.com/channels/hic)
 
 The nf-core/hic pipeline comes with documentation about the pipeline which
 you can read at [https://nf-core/hic/docs](https://nf-core/hic/docs) or
