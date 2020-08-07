@@ -32,10 +32,10 @@ def helpMessage() {
       --chromosome_size [file]                  Path to chromosome size file
       --restriction_fragments [file]            Path to restriction fragment file (bed)
       --save_reference [bool]                   Save reference genome to output folder. Default: False
-      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
 
     Alignments
       --split_fastq [bool]                      Size of read chuncks to use to speed up the workflow. Default: None
+      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False 
       --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
       --bwt2_opts_trimmed [str]                 Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
       --min_mapq [int]                          Minimum mapping quality values to consider. Default: 10
