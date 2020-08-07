@@ -244,6 +244,7 @@ summary['Restriction Motif']= params.restriction_site
 summary['Ligation Motif']   = params.ligation_site
 summary['DNase Mode']       = params.dnase
 summary['Remove Dup']       = params.rm_dup
+summary['Remove MultiHits'] = params.rm_multi
 summary['Min MAPQ']         = params.min_mapq
 summary['Min Fragment Size']= params.min_restriction_fragment_size
 summary['Max Fragment Size']= params.max_restriction_fragment_size

@@ -132,15 +132,18 @@
                 },
                 "rm_dup": {
                     "type": "boolean",
-                    "description": "Remove duplicates"
+                    "description": "Remove duplicates",
+                    "default": true
                 },
                 "rm_multi": {
                     "type": "boolean",
-                    "description": "Remove multi-mapped reads"
+                    "description": "Remove multi-mapped reads",
+                    "default": true
                 },
                 "rm_singleton": {
                     "type": "boolean",
-                    "description": "Remove singleton"
+                    "description": "Remove singleton",
+                    "default": true
                 },
                 "min_mapq": {
                     "type": "integer",
