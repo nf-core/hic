@@ -63,8 +63,7 @@ settings for your local compute environment.
 iv. Start running your own analysis!
 
 ```bash
-nextflow run nf-core/hic -profile <docker/singularity/conda/institute>
-                         --reads '*_R{1,2}.fastq.gz' --genome GRCh37
+nextflow run nf-core/hic -profile <docker/singularity/conda/institute> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
 ```
 
 See [usage docs](docs/usage.md) for all of the available options when running
@@ -83,7 +82,9 @@ found in the `docs/` directory:
 3. [Running the pipeline](docs/usage.md)
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
+
 =======
+
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?logo=slack)](https://nfcore.slack.com/channels/hic)
 
 The nf-core/hic pipeline comes with documentation about the pipeline which
