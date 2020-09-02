@@ -34,7 +34,8 @@ def helpMessage() {
       --save_reference [bool]                   Save reference genome to output folder. Default: False
 
     Alignments
-      --split_fastq [int]                       Size of read chuncks to use to speed up the workflow. Default: None
+      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: None
+      --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
       --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False 
       --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
       --bwt2_opts_trimmed [str]                 Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
@@ -46,14 +47,14 @@ def helpMessage() {
       --rm_dup [bool]                           Remove duplicates. Default: true
  
     Contacts calling
-      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: None
-      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: None
-      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: None
-      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: None
+      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: 0
+      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: 0
+      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: 0
+      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: 0
       --save_interaction_bam [bool]             Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
 
       --dnase [bool]                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
-      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: None
+      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: 0
 
     Contact maps
       --bin_size [int]                          Bin size for contact maps (comma separated). Default: '1000000,500000'
@@ -163,7 +164,7 @@ if (params.input_paths){
 
 if ( params.split_fastq ){
    raw_reads_full = raw_reads.concat( raw_reads_2 )
-   raw_reads = raw_reads_full.splitFastq( by: params.split_fastq , file: true)
+   raw_reads = raw_reads_full.splitFastq( by: params.fastq_chunks_size, file: true)
  }else{
    raw_reads = raw_reads.concat( raw_reads_2 ).dump(tag: "data")
 }
@@ -239,6 +240,8 @@ if(workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
 summary['Input']            = params.input
 summary['splitFastq']       = params.split_fastq
+if (params.split_fastq)
+   summary['Read chunks Size'] = params.fastq_chunks_size
 summary['Fasta Ref']        = params.fasta
 summary['Restriction Motif']= params.restriction_site
 summary['Ligation Motif']   = params.ligation_site
@@ -647,12 +650,12 @@ if (!params.dnase){
       }
 
       def opts = ""
-      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
-      if ("$params.min_insert_size".isInteger()) opts="${opts} -s ${params.min_insert_size}"
-      if ("$params.max_insert_size".isInteger()) opts="${opts} -l ${params.max_insert_size}"
-      if ("$params.min_restriction_fragment_size".isInteger()) opts="${opts} -t ${params.min_restriction_fragment_size}"
-      if ("$params.max_restriction_fragment_size".isInteger()) opts="${opts} -m ${params.max_restriction_fragment_size}"
-      if (params.save_interaction_bam) opts="${opts} --sam"
+      opts += params.min_cis_dist > 0 ? " -d ${params.min_cis_dist}" : ''
+      opts += params.min_insert_size > 0 ?  " -s ${params.min_insert_size}" : ''
+      opts += params.max_insert_size > 0 ? " -l ${params.max_insert_size}" : ''
+      opts += params.min_restriction_fragment_size > 0 ? " -t ${params.min_restriction_fragment_size}" : ''
+      opts += params.max_restriction_fragment_size > 0 ? " -m ${params.max_restriction_fragment_size}" : ''
+      opts += params.save_interaction_bam ? " --sam" : ''
       prefix = pe_bam.toString() - ~/.bam/
       """
       mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
@@ -680,8 +683,7 @@ else{
          sample = sample.toString() - ~/(\.[0-9]+)$/
       }
 
-      def opts = ""
-      if ("$params.min_cis_dist".isInteger()) opts="${opts} -d ${params.min_cis_dist}"
+      opts = params.min_cis_dist > 0 ? " -d ${params.min_cis_dist}" : ''
       prefix = pe_bam.toString() - ~/.bam/
       """
       mapped_2hic_dnase.py -r ${pe_bam} ${opts}

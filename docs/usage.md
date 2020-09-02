@@ -517,75 +517,79 @@ normalization. Default: 0.1
 
 ## Inputs/Outputs
 
-### `--splitFastq`
+### `--split_fastq`
 
 By default, the nf-core Hi-C pipeline expects one read pairs per sample.
 However, for large Hi-C data processing single fastq files can be very
 time consuming.
-The `--splitFastq` option allows to automatically split input read pairs
-into chunks of reads. In this case, all chunks will be processed in parallel
+The `--split_fastq` option allows to automatically split input read pairs
+into chunks of reads of size `--fastq_chunks_size` (Default : 20000000). In this case, all chunks will be processed in parallel
 and merged before generating the contact maps, thus leading to a significant
 increase of processing performance.
 
 ```bash
---splitFastq '[Number of reads per chunk]'
+--split_fastq --fastq_chunks_size '[numeric]'
 ```
 
-### `--saveReference`
+### `--save_reference`
 
 If specified, annotation files automatically generated from the `--fasta` file
 are exported in the results folder. Default: false
 
 ```bash
---saveReference
+--save_reference
 ```
 
-### `--saveAlignedIntermediates`
+### `--save_aligned_intermediates`
 
 If specified, all intermediate mapping files are saved and exported in the
 results folder. Default: false
 
 ```bash
---saveReference
+--save_aligned_inermediates
 ```
 
-### `--saveInteractionBAM`
+### `--save_interaction_bam`
 
 If specified, write a BAM file with all classified reads (valid paires,
 dangling end, self-circle, etc.) and its tags.
 
+```bash
+--save_interaction_bam
+```
+
 ## Skip options
 
-### `--skipMaps`
+### `--skip_maps`
 
 If defined, the workflow stops with the list of valid interactions, and the
 genome-wide maps are not built. Usefult for capture-C analysis. Default: false
 
 ```bash
---skipMaps
+--skip_maps
 ```
 
-### `--skipIce`
+### `--skip_ice`
 
 If defined, the ICE normalization is not run on the raw contact maps.
 Default: false
 
 ```bash
---skipIce
+--skip_ice
 ```
 
-### `--skipCool`
+### `--skip_cool`
 
 If defined, cooler files are not generated. Default: false
 
 ```bash
---skipCool
+--skip_cool
 ```
 
-### `--skipMultiQC`
+### `--skip_multiQC`
 
 If defined, the MultiQC report is not generated. Default: false
 
 ```bash
---skipMultiQC
+--skip_multiQC
 ```

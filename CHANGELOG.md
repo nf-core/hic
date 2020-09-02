@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 * Template update for nf-core/tools v1.10.2
+* Add the `--fastq_chunks_size` to specify the number of reads per chunks if split_fastq is true
 
 ### `Fixed`
 

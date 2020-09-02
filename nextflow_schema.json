@@ -27,10 +27,16 @@
                     "default": "undefined"
                 },
                 "split_fastq": {
-                    "type": "number",
-                    "description": "Split the reads into chunks before running. Specify the number of reads per chuncks as --split_fastq 20000000.",
-                    "fa_icon": "fas fa-dna"
+                    "type": "boolean",
+                    "description": "Split the reads into chunks before running the pipelne",
+                    "fa_icon": "fas fa-dna",
+		    "default": "false"
                 },
+		"fastq_chunks_size":{
+		    "type": "integer",
+		    "description": "Read number per chunks if split_fastq is used",
+		    "default": "20000000"
+		},
                 "single_end": {
                     "type": "boolean",
                     "description": "Specifies that the input is single-end reads.",
@@ -178,29 +184,29 @@
             "fa_icon": "fas fa-signature",
             "properties": {
                 "min_cis_dist": {
-                    "type": "string",
-                    "default": "undefined",
-                    "description": "Minimum distance between loci to consider. Useful for --dnase mode to remove spurious ligation products"
+                    "type": "integer",
+                    "default": "O",
+                    "description": "Minimum distance between loci to consider. Useful for --dnase mode to remove spurious ligation products. Only values > 0 are considered"
                 },
                 "max_insert_size": {
-                    "type": "string",
-                    "default": "undefined",
-                    "description": "Maximum fragment size to consider"
+                    "type": "integer",
+                    "default": "0",
+                    "description": "Maximum fragment size to consider. Only values > 0 are considered"
                 },
                 "min_insert_size": {
-                    "type": "string",
-                    "default": "undefined",
-                    "description": "Minimum fragment size to consider"
+                    "type": "integer",
+                    "default": "0",
+                    "description": "Minimum fragment size to consider. Only values > 0 are considered"
                 },
                 "max_restriction_fragment_size": {
-                    "type": "string",
-                    "default": "undefined",
-                    "description": "Maximum restriction fragment size to consider"
+                    "type": "integer",
+                    "default": "0",
+                    "description": "Maximum restriction fragment size to consider. Only values > 0 are considered"
                 },
                 "min_restriction_fragment_size": {
-                    "type": "string",
-                    "default": "undefined",
-                    "description": "Minimum restriction fragment size to consider"
+                    "type": "integer",
+                    "default": "0",
+                    "description": "Minimum restriction fragment size to consider. Only values > 0 are considered"
                 }
             }
         },
