@@ -85,7 +85,7 @@ found in the `docs/` directory:
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
 
 The nf-core/hic pipeline comes with documentation about the pipeline which
-you can read at [https://nf-core/hic/usage](https://nf-core/hic/usage or
+you can read at [https://nf-core/hic/usage](https://nf-core/hic/usage) or
 find in the [`docs/` directory](docs).
 
 For further information or help, don't hesitate to get in touch on
