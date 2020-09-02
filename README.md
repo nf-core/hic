@@ -67,7 +67,7 @@ iv. Start running your own analysis!
 nextflow run nf-core/hic -profile <docker/singularity/conda/institute> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
 ```
 
-See [usage docs](docs/usage.md) for all of the available options when running
+See [usage docs](https://nf-co.re/hic/usage) for all of the available options when running
 the pipeline.
 
 ## Documentation
