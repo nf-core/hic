@@ -209,7 +209,6 @@ notation to specify read pairs.
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-### `--single_end`
 
 By default, the pipeline expects paired-end data. If you have single-end data,
 you need to specify `--single_end` on the command line when you launch the pipeline.
