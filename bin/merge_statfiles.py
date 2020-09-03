@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 if not line.startswith("#"):
                     lsp = line.strip().split("\t")
                     data = map(num, lsp[1:len(lsp)])
-                    template[str(lsp[0])] = data
+                    template[str(lsp[0])] = list(data)
                 
         if len(template) == 0:
             print("Cannot find template files !")
