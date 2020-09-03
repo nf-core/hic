@@ -34,7 +34,7 @@ def helpMessage() {
       --save_reference [bool]                   Save reference genome to output folder. Default: False
 
     Alignments
-      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: None
+      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
       --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
       --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False 
       --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
