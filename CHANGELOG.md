@@ -1,7 +1,24 @@
 # nf-core/hic: Changelog
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## v1.2.2 - 2020-09-02
+
+### `Added`
+
+* Template update for nf-core/tools v1.10.2
+* Add the `--fastq_chunks_size` to specify the number of reads per chunks if split_fastq is true
+
+### `Fixed`
+
+* Bug in `--split_fastq` option not recognized
+
+## v1.2.1 - 2020-07-06
+
+### `Fixed`
+
+* Fix issue with `--fasta` option and `.fa` extension (#66)
 
 ## v1.2.0 - 2020-06-18
 

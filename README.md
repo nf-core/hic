@@ -6,10 +6,11 @@
 [![GitHub Actions Linting Status](https://github.com/nf-core/hic/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/hic/actions)
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A519.10.0-brightgreen.svg)](https://www.nextflow.io/)
 
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](http://bioconda.github.io/)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/)
 [![Docker](https://img.shields.io/docker/automated/nfcore/hic.svg)](https://hub.docker.com/r/nfcore/hic)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2669513.svg)](https://doi.org/10.5281/zenodo.2669513)
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?logo=slack)](https://nfcore.slack.com/channels/hic)
 
 ## Introduction
 
@@ -66,7 +67,8 @@ iv. Start running your own analysis!
 nextflow run nf-core/hic -profile <docker/singularity/conda/institute> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
 ```
 
-See [usage docs](docs/usage.md) for all of the available options when running the pipeline.
+See [usage docs](https://nf-co.re/hic/usage) for all of the available options when running
+the pipeline.
 
 ## Documentation
 
@@ -82,6 +84,10 @@ found in the `docs/` directory:
 4. [Output and how to interpret the results](docs/output.md)
 5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
 
+The nf-core/hic pipeline comes with documentation about the pipeline which
+you can read at [https://nf-co.re/hic/usage](https://nf-co.re/hic/usage) or
+find in the [`docs/` directory](docs).
+
 For further information or help, don't hesitate to get in touch on
 [Slack](https://nfcore.slack.com/channels/hic).
 You can join with [this invite](https://nf-co.re/join/slack).
@@ -94,9 +100,9 @@ nf-core/hic was originally written by Nicolas Servant.
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on
-[Slack](https://nfcore.slack.com/channels/hic) (you can join with
-[this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch on the
+[Slack `#hic` channel](https://nfcore.slack.com/channels/hic)
+(you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citation
 
@@ -110,6 +116,5 @@ You can cite the `nf-core` publication as follows:
 > Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg,
 Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
 >
-> _Nat Biotechnol._ 2020 Feb 13.
-doi:[10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).  
+> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
 > ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
