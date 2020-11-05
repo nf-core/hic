@@ -1,5 +1,11 @@
 # nf-core/hic: Usage
 
+## :warning: Please read this documentation on the nf-core website: [https://nf-co.re/hic/usage](https://nf-co.re/hic/usage)
+
+> _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
+
+## Introduction
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
@@ -74,9 +80,7 @@ fails after three times then the pipeline is stopped.
 Use this parameter to choose a configuration profile. Profiles can give
 configuration presets for different compute environments.
 
-Several generic profiles are bundled with the pipeline which instruct
-the pipeline to use software packaged using different methods
-(Docker, Singularity, Conda) - see below.
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Conda) - see below.
 
 > We highly recommend the use of Docker or Singularity containers for full
 pipeline reproducibility, however when this is not possible, Conda is also supported.
@@ -104,9 +108,11 @@ installed and available on the `PATH`. This is _not_ recommended.
 * `singularity`
   * A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
   * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+* `podman`
+  * A generic configuration profile to be used with [Podman](https://podman.io/)
+  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
 * `conda`
-  * Please only use Conda as a last resort i.e. when it's not possible to run the
-  pipeline with Docker or Singularity.
+  * Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity or Podman.
   * A generic configuration profile to be used with [Conda](https://conda.io/docs/)
   * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `test`
@@ -151,15 +157,7 @@ process {
 See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html)
 for more information.
 
-If you are likely to be running `nf-core` pipelines regularly it may be a
-good idea to request that your custom config file is uploaded to the
-`nf-core/configs` git repository. Before you do this please can you test
-that the config file works with your pipeline of choice using the `-c`
-parameter (see definition below). You can then create a pull request to the
-`nf-core/configs` repository with the addition of your config file, associated
-documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)),
-and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config)
-to include your custom profile.
+If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition above). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
 
 If you have any questions or issues please send us a message on
 [Slack](https://nf-co.re/join/slack) on the
@@ -215,7 +213,7 @@ A normal glob pattern, enclosed in quotation marks, can then be used for `--inpu
 For example:
 
 ```bash
---single_end --reads '*.fastq'
+--single_end --input '*.fastq'
 ```
 
 It is not possible to run a mixture of single-end and paired-end files in one run.
