@@ -1,10 +1,7 @@
 ---
 name: Feature request
 about: Suggest a new feature for this pipeline
-title: ''
 labels: enhancement
-assignees: ''
-
 ---
 
 <!--
