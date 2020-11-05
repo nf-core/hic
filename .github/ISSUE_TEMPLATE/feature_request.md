@@ -1,3 +1,12 @@
+---
+name: Feature request
+about: Suggest a new feature for this pipeline
+title: ''
+labels: enhancement
+assignees: ''
+
+---
+
 <!--
 # nf-core/hic feature request
 
@@ -25,4 +34,3 @@ Please delete this text and anything that's not relevant from the template below
 ## Additional context
 
 <!-- Add any other context about the feature request here. -->
-
