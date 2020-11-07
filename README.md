@@ -42,54 +42,35 @@ sites (bowtie2)
 
 ## Quick Start
 
-i. Install [`nextflow`](https://nf-co.re/usage/installation)
+1. Install [`nextflow`](https://nf-co.re/usage/installation)
 
-ii. Install either [`Docker`](https://docs.docker.com/engine/installation/)
-or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/)
-for full pipeline reproducibility (please only use [`Conda`](https://conda.io/miniconda.html)
-as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`Podman`](https://podman.io/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
 
-iii. Download the pipeline and test it on a minimal dataset with a single command
+3. Download the pipeline and test it on a minimal dataset with a single command
 
-```bash
-nextflow run nf-core/hic -profile test,<docker/singularity/conda/institute>
-```
+    ```bash
+    nextflow run nf-core/hic -profile test,<docker/singularity/podman/conda/institute>
+    ```
 
-> Please check [nf-core/configs](https://github.com/nf-core/configs#documentation)
-to see if a custom config file to run nf-core pipelines already exists for your Institute.
-If so, you can simply use `-profile <institute>` in your command.
-This will enable either `docker` or `singularity` and set the appropriate execution
-settings for your local compute environment.
+    > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation)
+    to see if a custom config file to run nf-core pipelines already exists for your Institute.
+    If so, you can simply use `-profile <institute>` in your command.
+    This will enable either `docker` or `singularity` and set the appropriate execution
+    settings for your local compute environment.
 
-iv. Start running your own analysis!
+4. Start running your own analysis!
 
-```bash
-nextflow run nf-core/hic -profile <docker/singularity/conda/institute> --reads '*_R{1,2}.fastq.gz' --genome GRCh37
-```
+    ```bash
+    nextflow run nf-core/hic -profile <docker/singularity/podman/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
+    ```
 
-See [usage docs](https://nf-co.re/hic/usage) for all of the available options when running
-the pipeline.
+See [usage docs](https://nf-co.re/hic/usage) for all of the available options when running the pipeline.
 
 ## Documentation
 
-The nf-core/hic pipeline comes with documentation about the pipeline,
-found in the `docs/` directory:
+The nf-core/hic pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/hic/usage) and [output](https://nf-co.re/hic/output).
 
-1. [Installation](https://nf-co.re/usage/installation)
-2. Pipeline configuration
-    * [Local installation](https://nf-co.re/usage/local_installation)
-    * [Adding your own system config](https://nf-co.re/usage/adding_own_config)
-    * [Reference genomes](https://nf-co.re/usage/reference_genomes)
-3. [Running the pipeline](docs/usage.md)
-4. [Output and how to interpret the results](docs/output.md)
-5. [Troubleshooting](https://nf-co.re/usage/troubleshooting)
-
-The nf-core/hic pipeline comes with documentation about the pipeline which
-you can read at [https://nf-co.re/hic/usage](https://nf-co.re/hic/usage) or
-find in the [`docs/` directory](docs).
-
-For further information or help, don't hesitate to get in touch on
-[Slack](https://nfcore.slack.com/channels/hic).
+For further information or help, don't hesitate to get in touch on [Slack](https://nfcore.slack.com/channels/hic).
 You can join with [this invite](https://nf-co.re/join/slack).
 
 ## Credits
