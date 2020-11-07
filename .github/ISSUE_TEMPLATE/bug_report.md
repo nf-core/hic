@@ -1,3 +1,9 @@
+---
+name: Bug report
+about: Let us know about something that is not working
+labels: bug
+---
+
 <!--
 # nf-core/hic bug report
 
