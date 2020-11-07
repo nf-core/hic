@@ -59,4 +59,4 @@ For further information/help, please consult the [nf-core/hic documentation](htt
 don't hesitate to get in touch on the nf-core Slack [#hic](https://nfcore.slack.com/channels/hic) channel
 ([join our Slack here](https://nf-co.re/join/slack)).
 
-For further information/help, please consult the [nf-core/hic documentation](https://nf-co.re/hic/docs) and don't hesitate to get in touch on the nf-core Slack [#hic](https://nfcore.slack.com/channels/hic) channel ([join our Slack here](https://nf-co.re/join/slack)).
+For further information/help, please consult the [nf-core/hic documentation](https://nf-co.re/hic/usage) and don't hesitate to get in touch on the nf-core Slack [#hic](https://nfcore.slack.com/channels/hic) channel ([join our Slack here](https://nf-co.re/join/slack)).

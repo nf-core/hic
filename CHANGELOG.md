@@ -3,6 +3,11 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.3.0dev
+
+* Template update for nf-core/tools v1.11
+* Minor fix to summary log messages in pipeline header
+
 ## v1.2.2 - 2020-09-02
 
 ### `Added`
