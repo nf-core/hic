@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v1.3.0dev
 
 * Template update for nf-core/tools v1.11
+* Minor fix to summary log messages in pipeline header
 
 ## v1.2.2 - 2020-09-02
 
