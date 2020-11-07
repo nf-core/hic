@@ -36,7 +36,7 @@ def helpMessage() {
     Alignments
       --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
       --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
-      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False 
+      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
       --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
       --bwt2_opts_trimmed [str]                 Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
       --min_mapq [int]                          Minimum mapping quality values to consider. Default: 10
@@ -45,7 +45,7 @@ def helpMessage() {
       --rm_singleton [bool]                     Remove singleton reads. Default: true
       --rm_multi [bool]                         Remove multi-mapped reads. Default: true
       --rm_dup [bool]                           Remove duplicates. Default: true
- 
+
     Contacts calling
       --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: 0
       --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: 0
@@ -189,7 +189,7 @@ else if ( params.fasta ) {
    lastPath = params.fasta.lastIndexOf(File.separator)
    fasta_base = params.fasta.substring(lastPath+1)
    bwt2_base = fasta_base.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
- 
+
    Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
         .set { fasta_for_index }
@@ -255,24 +255,17 @@ summary['Min Insert Size']  = params.min_insert_size
 summary['Max Insert Size']  = params.max_insert_size
 summary['Min CIS dist']     = params.min_cis_dist
 summary['Maps resolution']  = params.bin_size
-summary['Max Memory']       = params.max_memory
-summary['Max CPUs']         = params.max_cpus
-summary['Max Time']         = params.max_time
+summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
+if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
+summary['Launch dir']       = workflow.launchDir
 summary['Working dir']      = workflow.workDir
-summary['Container Engine'] = workflow.containerEngine
-if(workflow.containerEngine)
-   summary['Container']     = workflow.container
-summary['Current home']     = "$HOME"
-summary['Current user']     = "$USER"
-summary['Current path']     = "$PWD"
-summary['Working dir']      = workflow.workDir
-summary['Output dir']       = params.outdir
 summary['Script dir']       = workflow.projectDir
-summary['Config Profile']   = workflow.profile
-if(workflow.profile == 'awsbatch'){
-   summary['AWS Region']    = params.awsregion
-   summary['AWS Queue']     = params.awsqueue
+summary['User']             = workflow.userName
+if (workflow.profile.contains('awsbatch')) {
+    summary['AWS Region']   = params.awsregion
+    summary['AWS Queue']    = params.awsqueue
+    summary['AWS CLI']      = params.awscli
 }
 summary['Config Profile'] = workflow.profile
 if (params.config_profile_description) summary['Config Profile Description'] = params.config_profile_description
@@ -738,7 +731,7 @@ process remove_duplicates {
    echo -n "valid_interaction_rmdup\t" >> stats/${sample}/${sample}_allValidPairs.mergestat
    cat ${sample}.allValidPairs | wc -l >> stats/${sample}/${sample}_allValidPairs.mergestat
 
-   ## Count short range (<20000) vs long range contacts 
+   ## Count short range (<20000) vs long range contacts
    awk 'BEGIN{cis=0;trans=0;sr=0;lr=0} \$2 == \$5{cis=cis+1; d=\$6>\$3?\$6-\$3:\$3-\$6; if (d<=20000){sr=sr+1}else{lr=lr+1}} \$2!=\$5{trans=trans+1}END{print "trans_interaction\\t"trans"\\ncis_interaction\\t"cis"\\ncis_shortRange\\t"sr"\\ncis_longRange\\t"lr}' ${sample}.allValidPairs >> stats/${sample}/${sample}_allValidPairs.mergestat
    """
    }
