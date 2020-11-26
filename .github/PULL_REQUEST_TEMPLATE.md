@@ -18,3 +18,4 @@ Learn more about contributing: [CONTRIBUTING.md](https://github.com/nf-core/hic/
 - [ ] If you've fixed a bug or added code that should be tested, add tests!
 - [ ] Documentation in `docs` is updated
 - [ ] If necessary, also make a PR on the [nf-core/hic branch on the nf-core/test-datasets repo](https://github.com/nf-core/test-datasets/pull/new/nf-core/hic)
+

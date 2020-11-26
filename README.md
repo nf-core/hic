@@ -1,4 +1,4 @@
-# ![nf-core/hic](docs/images/nf-core-hic_logo.png)
+# ![nf-core/hic](docs/images/nfcore-hic_logo.png)
 
 **Analysis of Chromosome Conformation Capture data (Hi-C)**.
 
@@ -8,11 +8,37 @@
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://bioconda.github.io/)
 [![Docker](https://img.shields.io/docker/automated/nfcore/hic.svg)](https://hub.docker.com/r/nfcore/hic)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2669513.svg)](https://doi.org/10.5281/zenodo.2669513)
 [![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?logo=slack)](https://nfcore.slack.com/channels/hic)
 
 ## Introduction
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
+This pipeline is based on the
+[HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
+It was designed to process Hi-C data from raw FastQ files (paired-end Illumina
+data) to normalized contact maps.
+The current version supports most protocols, including digestion protocols as
+well as protocols that do not require restriction enzymes such as DNase Hi-C.
+In practice, this workflow was successfully applied to many data-sets including
+dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or
+HiChip data.
+
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
+to run tasks across multiple compute infrastructures in a very portable manner.
+It comes with docker / singularity containers making installation trivial and
+results highly reproducible.
+
+## Pipeline summary
+
+1. Mapping using a two steps strategy to rescue reads spanning the ligation
+sites (bowtie2)
+2. Detection of valid interaction products
+3. Duplicates removal
+4. Create genome-wide contact maps at various resolution
+5. Contact maps normalization using the ICE algorithm (iced)
+6. Quality controls and report (MultiQC)
+7. Addition export for visualisation and downstream analysis (cooler)
 
 ## Quick Start
 
@@ -20,17 +46,19 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`Podman`](https://podman.io/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
 
-3. Download the pipeline and test it on a minimal dataset with a single command:
+3. Download the pipeline and test it on a minimal dataset with a single command
 
     ```bash
     nextflow run nf-core/hic -profile test,<docker/singularity/podman/conda/institute>
     ```
 
-    > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
+    > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation)
+    to see if a custom config file to run nf-core pipelines already exists for your Institute.
+    If so, you can simply use `-profile <institute>` in your command.
+    This will enable either `docker` or `singularity` and set the appropriate execution
+    settings for your local compute environment.
 
 4. Start running your own analysis!
-
-    <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
 
     ```bash
     nextflow run nf-core/hic -profile <docker/singularity/podman/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
@@ -42,7 +70,8 @@ See [usage docs](https://nf-co.re/hic/usage) for all of the available options wh
 
 The nf-core/hic pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/hic/usage) and [output](https://nf-co.re/hic/output).
 
-<!-- TODO nf-core: Add a brief overview of what the pipeline does and how it works -->
+For further information or help, don't hesitate to get in touch on [Slack](https://nfcore.slack.com/channels/hic).
+You can join with [this invite](https://nf-co.re/join/slack).
 
 ## Credits
 
@@ -52,18 +81,21 @@ nf-core/hic was originally written by Nicolas Servant.
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on the [Slack `#hic` channel](https://nfcore.slack.com/channels/hic) (you can join with [this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch on the
+[Slack `#hic` channel](https://nfcore.slack.com/channels/hic)
+(you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citation
 
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi. -->
-<!-- If you use  nf-core/hic for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+If you use nf-core/hic for your analysis, please cite it using the following
+doi: [10.5281/zenodo.2669513](https://doi.org/10.5281/zenodo.2669513)
 
 You can cite the `nf-core` publication as follows:
 
 > **The nf-core framework for community-curated bioinformatics pipelines.**
 >
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg,
+Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
 >
 > _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
 > ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
