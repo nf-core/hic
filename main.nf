@@ -228,7 +228,7 @@ else {
 }
 
 // Resolutions for contact maps
-map_res = Channel.from( params.bin_size.tokenize(',') )
+map_res = Channel.from( params.bin_size.toString() ).splitCsv().flatten()
 
 /**********************************************************
  * SET UP LOGS

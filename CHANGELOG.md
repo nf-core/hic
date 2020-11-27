@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+* Fix bug in `--bin_size` parameter (#85)
 * `min_mapq` is ignored if `--keep_multi` is used
 
 ### Deprecated
