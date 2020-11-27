@@ -22,47 +22,48 @@ def helpMessage() {
 
     Mandatory arguments:
       --input [file]                            Path to input data (must be surrounded with quotes)
+      --genome [str]                            Name of iGenomes reference
       -profile [str]                            Configuration profile to use. Can use multiple (comma separated)
                                                 Available: conda, docker, singularity, awsbatch, test and more.
 
     References                                  If not specified in the configuration file or you wish to overwrite any of the references.
-      --genome [str]                            Name of iGenomes reference
       --bwt2_index [file]                       Path to Bowtie2 index
       --fasta [file]                            Path to Fasta reference
+
+    Digestion Hi-C                              If not specified in the configuration file or you wish to set up specific digestion protocol
+      --ligation_site [str]                     Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
+      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
       --chromosome_size [file]                  Path to chromosome size file
       --restriction_fragments [file]            Path to restriction fragment file (bed)
       --save_reference [bool]                   Save reference genome to output folder. Default: False
 
+    DNase Hi-C
+      --dnase [bool]                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
+      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: None 
+
     Alignments
-      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
-      --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
-      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
       --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
       --bwt2_opts_trimmed [str]                 Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
       --min_mapq [int]                          Minimum mapping quality values to consider. Default: 10
-      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
-      --ligation_site [str]                     Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
-      --rm_singleton [bool]                     Remove singleton reads. Default: true
-      --rm_multi [bool]                         Remove multi-mapped reads. Default: true
-      --rm_dup [bool]                           Remove duplicates. Default: true
+      --keep_multi [bool]                       Keep multi-mapped reads (--min_mapq is ignored). Default: false
+      --keep_dups [bool]                        Keep duplicates. Default: false
+      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
+      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
+      --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
 
-    Contacts calling
-      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: 0
-      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: 0
-      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: 0
-      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: 0
+    Valid Pairs Detection
+      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: None
+      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: None
+      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: None
+      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: None
       --save_interaction_bam [bool]             Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
 
-      --dnase [bool]                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
-      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: 0
-
     Contact maps
-      --bin_size [int]                          Bin size for contact maps (comma separated). Default: '1000000,500000'
+      --bin_size [str]                          Bin size for contact maps (comma separated). Default: '1000000,500000'
       --ice_max_iter [int]                      Maximum number of iteration for ICE normalization. Default: 100
       --ice_filter_low_count_perc [float]       Percentage of low counts columns/rows to filter before ICE normalization. Default: 0.02
       --ice_filter_high_count_perc [float]      Percentage of high counts columns/rows to filter before ICE normalization. Default: 0
       --ice_eps [float]                         Convergence criteria for ICE normalization. Default: 0.1
-
 
     Workflow
       --skip_maps [bool]                        Skip generation of contact maps. Useful for capture-C. Default: False
@@ -243,17 +244,20 @@ summary['splitFastq']       = params.split_fastq
 if (params.split_fastq)
    summary['Read chunks Size'] = params.fastq_chunks_size
 summary['Fasta Ref']        = params.fasta
-summary['Restriction Motif']= params.restriction_site
-summary['Ligation Motif']   = params.ligation_site
-summary['DNase Mode']       = params.dnase
-summary['Remove Dup']       = params.rm_dup
-summary['Remove MultiHits'] = params.rm_multi
+if (params.restriction_site){
+   summary['Restriction Motif']= params.restriction_site
+   summary['Ligation Motif']   = params.ligation_site
+   summary['Min Fragment Size']= ("$params.min_restriction_fragment_size".isInteger() ? params.min_restriction_fragment_size : 'None')
+   summary['Max Fragment Size']= ("$params.max_restriction_fragment_size".isInteger() ? params.max_restriction_fragment_size : 'None')
+   summary['Min Insert Size']  = ("$params.min_insert_size".isInteger() ? params.min_insert_size : 'None')
+   summary['Max Insert Size']  = ("$params.max_insert_size".isInteger() ? params.max_insert_size : 'None')
+}else{
+   summary['DNase Mode']    = params.dnase
+   summary['Min CIS dist']  = ("$params.min_cis_dist".isInteger() ? params.min_cis_dist : 'None')
+}
 summary['Min MAPQ']         = params.min_mapq
-summary['Min Fragment Size']= params.min_restriction_fragment_size
-summary['Max Fragment Size']= params.max_restriction_fragment_size
-summary['Min Insert Size']  = params.min_insert_size
-summary['Max Insert Size']  = params.max_insert_size
-summary['Min CIS dist']     = params.min_cis_dist
+summary['Keep Duplicates']  = params.keep_dups
+summary['Keep Multihits']   = params.keep_multi
 summary['Maps resolution']  = params.bin_size
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -526,7 +530,7 @@ if (!params.dnase){
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1$|_2)/
+      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
       tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
       """
@@ -590,7 +594,7 @@ process combine_mapped_files{
    	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
 
    input:
-   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
+   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple().dump(tag:'bams')
 
    output:
    set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
@@ -604,9 +608,11 @@ process combine_mapped_files{
    oname = sample.toString() - ~/(\.[0-9]+)$/
 
    def opts = "-t"
-   opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
-   opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
-   if ("$params.min_mapq".isInteger()) opts="${opts} -q ${params.min_mapq}"
+   if (params.keep_multi) {
+     opts="${opts} --multi"
+   }else if (params.min_mapq){
+     opts="${opts} -q ${params.min_mapq}"
+   }
    """
    mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam ${opts}
    """
@@ -705,7 +711,7 @@ process remove_duplicates {
    file("stats/") into all_mergestat
 
    script:
-   if ( params.rm_dup ){
+   if ( ! params.keep_dups ){
    """
    mkdir -p stats/${sample}
 

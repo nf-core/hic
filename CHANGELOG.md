@@ -5,8 +5,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0dev
 
+* New `--keep_multi` and `keep_dup` options. Default: false
 * Template update for nf-core/tools v1.11
 * Minor fix to summary log messages in pipeline header
+
+### `Fixed`
+
+* `min_mapq` is ignored if `--keep_multi` is used
+
+### Deprecated
+
+* `--rm_dup` and `rm_multi` are replaced by `--keep_dup` and `--keep_multi`
 
 ## v1.2.2 - 2020-09-02
 

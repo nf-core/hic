@@ -5,11 +5,11 @@
     "description": "Analysis of Chromosome Conformation Capture data (Hi-C)",
     "type": "object",
     "definitions": {
-        "input_output_options": {
-            "title": "Input/output options",
+        "mandatory_arguments": {
+            "title": "Mandatory arguments",
             "type": "object",
             "fa_icon": "fas fa-terminal",
-            "description": "Define where the pipeline should find input data and save output data.",
+            "description": "Mandatory arguments to run the pipeline",
             "required": [
                 "input"
             ],
@@ -26,22 +26,11 @@
                     "description": "Input FastQ files for test only",
                     "default": "undefined"
                 },
-                "split_fastq": {
-                    "type": "boolean",
-                    "description": "Split the reads into chunks before running the pipelne",
-                    "fa_icon": "fas fa-dna",
-		    "default": "false"
-                },
-		"fastq_chunks_size":{
-		    "type": "integer",
-		    "description": "Read number per chunks if split_fastq is used",
-		    "default": "20000000"
-		},
-                "single_end": {
-                    "type": "boolean",
-                    "description": "Specifies that the input is single-end reads.",
-                    "fa_icon": "fas fa-align-center",
-                    "help_text": "By default, the pipeline expects paired-end data. If you have single-end data, you need to specify `--single_end` on the command line when you launch the pipeline. A normal glob pattern, enclosed in quotation marks, can then be used for `--input`. For example:\n\n```bash\n--single_end --input '*.fastq'\n```\n\nIt is not possible to run a mixture of single-end and paired-end files in one run."
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`.\n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
                 },
                 "outdir": {
                     "type": "string",
@@ -64,12 +53,6 @@
             "fa_icon": "fas fa-dna",
             "description": "Options for the reference genome indices used to align reads.",
             "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`.\n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
                 "fasta": {
                     "type": "string",
                     "fa_icon": "fas fa-font",
@@ -94,6 +77,24 @@
                     "type": "string",
                     "description": "Full path to directory containing Bowtie index including base name. i.e. `/path/to/index/base`.",
                     "fa_icon": "far fa-file-alt"
+                }
+            }
+        },
+        "digestion_hi_c": {
+            "title": "Digestion Hi-C",
+            "type": "object",
+            "description": "Parameters for protocols based on restriction enzyme",
+            "default": "",
+            "properties": {
+                "restriction_site": {
+                    "type": "string",
+                    "default": "'A^AGCTT'",
+                    "description": "Restriction motifs used during digestion. Several motifs (comma separated) can be provided."
+                },
+                "ligation_site": {
+                    "type": "string",
+                    "default": "'AAGCTAGCTT",
+                    "description": "Expected motif after DNA ligation.  Several motifs (comma separated) can be provided."
                 },
                 "chromosome_size": {
                     "type": "string",
@@ -115,41 +116,40 @@
                 }
             }
         },
-        "data_processing_options": {
-            "title": "Data processing",
+        "dnase_hi_c": {
+            "title": "DNAse Hi-C",
             "type": "object",
-            "description": "Parameters for Hi-C data processing",
+            "description": "Parameters for protocols based on DNAse digestion",
             "default": "",
-            "fa_icon": "fas fa-bahai",
             "properties": {
                 "dnase": {
                     "type": "boolean",
                     "description": "For Hi-C protocols which are not based on enzyme digestion such as DNase Hi-C"
                 },
-                "restriction_site": {
-                    "type": "string",
-                    "default": "'A^AGCTT'",
-                    "description": "Restriction motifs used during digestion. Several motifs (comma separated) can be provided."
-                },
-                "ligation_site": {
-                    "type": "string",
-                    "default": "'AAGCTAGCTT",
-                    "description": "Expected motif after DNA ligation.  Several motifs (comma separated) can be provided."
-                },
-                "rm_dup": {
+                "min_cis_dist": {
+                    "type": "integer",
+                    "default": "O",
+                    "description": "Minimum distance between loci to consider. Useful for --dnase mode to remove spurious ligation products. Only values > 0 are considered"
+                }
+            }
+        },
+        "alignments": {
+            "title": "Alignments",
+            "type": "object",
+            "description": "Parameters for reads aligments",
+            "default": "",
+            "fa_icon": "fas fa-bahai",
+            "properties": {
+                "split_fastq": {
                     "type": "boolean",
-                    "description": "Remove duplicates",
-                    "default": true
+                    "description": "Split the reads into chunks before running the pipelne",
+                    "fa_icon": "fas fa-dna",
+                    "default": "false"
                 },
-                "rm_multi": {
-                    "type": "boolean",
-                    "description": "Remove multi-mapped reads",
-                    "default": true
-                },
-                "rm_singleton": {
-                    "type": "boolean",
-                    "description": "Remove singleton",
-                    "default": true
+                "fastq_chunks_size": {
+                    "type": "integer",
+                    "description": "Read number per chunks if split_fastq is used",
+                    "default": "20000000"
                 },
                 "min_mapq": {
                     "type": "integer",
@@ -166,27 +166,28 @@
                     "default": "'--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
                     "description": "Option for trimmed reads mapping"
                 },
-                "save_interaction_bam": {
-                    "type": "boolean",
-                    "description": "Save a BAM file where all reads are flagged by their interaction classes"
-                },
                 "save_aligned_intermediates": {
                     "type": "boolean",
                     "description": "Save all BAM files during two-steps mapping"
                 }
             }
         },
-        "contacts_calling_options": {
-            "title": "Contacts calling",
+        "valid_pairs_detection": {
+            "title": "Valid Pairs Detection",
             "type": "object",
             "description": "Options to call significant interactions",
             "default": "",
             "fa_icon": "fas fa-signature",
             "properties": {
-                "min_cis_dist": {
-                    "type": "integer",
-                    "default": "O",
-                    "description": "Minimum distance between loci to consider. Useful for --dnase mode to remove spurious ligation products. Only values > 0 are considered"
+                "keep_dups": {
+                    "type": "string",
+                    "description": "Keep duplicated reads",
+                    "default": "False"
+                },
+                "keep_multi": {
+                    "type": "string",
+                    "description": "Keep multi-aligned reads",
+                    "default": "False"
                 },
                 "max_insert_size": {
                     "type": "integer",
@@ -207,6 +208,10 @@
                     "type": "integer",
                     "default": "0",
                     "description": "Minimum restriction fragment size to consider. Only values > 0 are considered"
+                },
+                "save_interaction_bam": {
+                    "type": "boolean",
+                    "description": "Save a BAM file where all reads are flagged by their interaction classes"
                 }
             }
         },
@@ -435,16 +440,22 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/definitions/mandatory_arguments"
         },
         {
             "$ref": "#/definitions/reference_genome_options"
         },
         {
-            "$ref": "#/definitions/data_processing_options"
+            "$ref": "#/definitions/digestion_hi_c"
         },
         {
-            "$ref": "#/definitions/contacts_calling_options"
+            "$ref": "#/definitions/dnase_hi_c"
+        },
+        {
+            "$ref": "#/definitions/alignments"
+        },
+        {
+            "$ref": "#/definitions/valid_pairs_detection"
         },
         {
             "$ref": "#/definitions/contact_maps_options"
