@@ -188,6 +188,31 @@ We recommend adding the following line to your environment to limit this
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
 
+## Use case
+
+### Hi-C digestion protocol
+
+Here is an command line example for standard DpnII digestion protocols.
+Alignment will be performed on the `mm10` genome with default paramters.
+Multi-hits will not be considered and duplicates will be removed.
+Note that by default, no filters are applied on DNA and restriction fragment sizes. 
+
+
+```bash
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
+```
+
+### DNase Hi-C protocol
+
+Here is an command line example for DNase protocol.
+Alignment will be performed on the `mm10` genome with default paramters.
+Multi-hits will not be considered and duplicates will be removed.
+Contacts involving fragments separated by less than 1000bp will be discarded.
+
+```
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
+```
+
 ## Inputs
 
 ### `--input`
@@ -207,16 +232,7 @@ notation to specify read pairs.
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-By default, the pipeline expects paired-end data. If you have single-end data,
-you need to specify `--single_end` on the command line when you launch the pipeline.
-A normal glob pattern, enclosed in quotation marks, can then be used for `--input`.
-For example:
-
-```bash
---single_end --input '*.fastq'
-```
-
-It is not possible to run a mixture of single-end and paired-end files in one run.
+Note that the Hi-C data analysis requires paired-end data.
 
 ## Reference genomes
 
@@ -302,7 +318,7 @@ Note that the `--restriction_site` parameter is mandatory to create this file.
 
 ## Hi-C specific options
 
-The following options are defined in the `hicpro.config` file, and can be
+The following options are defined in the `nextflow.config` file, and can be
 updated either using a custom configuration file (see `-c` option) or using
 command line parameter.
 
@@ -345,17 +361,28 @@ Minimum mapping quality. Reads with lower quality are discarded. Default: 10
 
 ### Digestion Hi-C
 
+#### `--digestion`
+
+This parameter allows to automatically set the `--restriction_site` and
+`--ligation_site` parameter according to the restriction enzyme you used.
+Available keywords are  'hindiii', 'dpnii', 'mboi', 'arima'.
+
+```bash
+--digestion 'hindiii'
+```
+
 #### `--restriction_site`
 
-Restriction motif(s) for Hi-C digestion protocol. The restriction motif(s)
-is(are) used to generate the list of restriction fragments.
+If the restriction enzyme is not available through the `--digestion`
+parameter, you can also defined manually the restriction motif(s) for
+Hi-C digestion protocol.
+The restriction motif(s) is(are) used to generate the list of restriction fragments.
 The precise cutting site of the restriction enzyme has to be specified using
 the '^' character. Default: 'A^AGCTT'
 Here are a few examples:
 
 * MboI: ^GATC
 * DpnII: ^GATC
-* BglII: A^GATCT
 * HindIII: A^AGCTT
 * ARIMA kit: ^GATC,G^ANTC
 
@@ -383,7 +410,7 @@ Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 #### `--min_restriction_fragment_size`
 
 Minimum size of restriction fragments to consider for the Hi-C processing.
-Default: ''
+Default: '0' - no filter
 
 ```bash
 --min_restriction_fragment_size '[numeric]'
@@ -392,7 +419,7 @@ Default: ''
 #### `--max_restriction_fragment_size`
 
 Maximum size of restriction fragments to consider for the Hi-C processing.
-Default: ''
+Default: '0' - no filter
 
 ```bash
 --max_restriction_fragment_size '[numeric]'
@@ -401,7 +428,7 @@ Default: ''
 #### `--min_insert_size`
 
 Minimum reads insert size. Shorter 3C products are discarded.
-Default: ''
+Default: '0' - no filter
 
 ```bash
 --min_insert_size '[numeric]'
@@ -410,7 +437,7 @@ Default: ''
 #### `--max_insert_size`
 
 Maximum reads insert size. Longer 3C products are discarded.
-Default: ''
+Default: '0' - no filter
 
 ```bash
 --max_insert_size '[numeric]'
@@ -434,36 +461,29 @@ to remove spurious ligation products.
 #### `--min_cis_dist`
 
 Filter short range contact below the specified distance.
-Mainly useful for DNase Hi-C. Default: ''
+Mainly useful for DNase Hi-C. Default: '0'
 
 ```bash
 --min_cis_dist '[numeric]'
 ```
 
-#### `--rm_singleton`
+#### `--keep_dups`
 
-If specified, singleton reads are discarded at the mapping step.
-
-```bash
---rm_singleton
-```
-
-#### `--rm_dup`
-
-If specified, duplicates reads are discarded before building contact maps.
+If specified, duplicates reads are not discarded before building contact maps.
 
 ```bash
---rm_dup
+--keep_dups
 ```
 
-#### `--rm_multi`
+#### `--keep_multi`
 
-If specified, reads that aligned multiple times on the genome are discarded.
+If specified, reads that aligned multiple times on the genome are not discarded.
 Note the default mapping options are based on random hit assignment, meaning
 that only one position is kept per read.
+Note that in this case the `--min_mapq` parameter is ignored.
 
 ```bash
---rm_multi
+--keep_multi
 ```
 
 ## Genome-wide contact maps

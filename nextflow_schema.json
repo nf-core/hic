@@ -86,6 +86,11 @@
             "description": "Parameters for protocols based on restriction enzyme",
             "default": "",
             "properties": {
+                "digestion": {
+                    "type": "string",
+                    "default": "hindiii",
+                    "description": "Name of restriction enzyme to automatically set the restriction_site and ligation_site options"
+                },
                 "restriction_site": {
                     "type": "string",
                     "default": "'A^AGCTT'",

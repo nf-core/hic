@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0dev
 
+* New `--digestion` parameter to automatically set the restriction_site and ligation_site motifs
 * New `--keep_multi` and `keep_dup` options. Default: false
 * Template update for nf-core/tools v1.11
 * Minor fix to summary log messages in pipeline header

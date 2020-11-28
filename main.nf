@@ -31,8 +31,9 @@ def helpMessage() {
       --fasta [file]                            Path to Fasta reference
 
     Digestion Hi-C                              If not specified in the configuration file or you wish to set up specific digestion protocol
-      --ligation_site [str]                     Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
-      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
+      --digestion [str]                         Digestion Hi-C. Name of restriction enzyme used for digestion pre-configuration. Default: 'hindiii'
+      --ligation_site [str]                     Ligation motifs to trim (comma separated) if not available in --digestion. Default: false
+      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated) if not available in --digestion. Default: false
       --chromosome_size [file]                  Path to chromosome size file
       --restriction_fragments [file]            Path to restriction fragment file (bed)
       --save_reference [bool]                   Save reference genome to output folder. Default: False
@@ -101,9 +102,15 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
 }
 
+if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
+   exit 1, "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
+}
+params.restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
+params.ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
+
 // Check Digestion or DNase Hi-C mode
 if (!params.dnase && !params.ligation_site) {
-   exit 1, "Ligation motif not found. For DNase Hi-C, please use '--dnase' option"
+   exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
 }
 
 // Reference index path configuration
@@ -245,6 +252,7 @@ if (params.split_fastq)
    summary['Read chunks Size'] = params.fastq_chunks_size
 summary['Fasta Ref']        = params.fasta
 if (params.restriction_site){
+   summary['Digestion']        = params.digestion
    summary['Restriction Motif']= params.restriction_site
    summary['Ligation Motif']   = params.ligation_site
    summary['Min Fragment Size']= ("$params.min_restriction_fragment_size".isInteger() ? params.min_restriction_fragment_size : 'None')
