@@ -195,8 +195,7 @@ NXF_OPTS='-Xms1g -Xmx4g'
 Here is an command line example for standard DpnII digestion protocols.
 Alignment will be performed on the `mm10` genome with default paramters.
 Multi-hits will not be considered and duplicates will be removed.
-Note that by default, no filters are applied on DNA and restriction fragment sizes. 
-
+Note that by default, no filters are applied on DNA and restriction fragment sizes.
 
 ```bash
 nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
@@ -209,7 +208,7 @@ Alignment will be performed on the `mm10` genome with default paramters.
 Multi-hits will not be considered and duplicates will be removed.
 Contacts involving fragments separated by less than 1000bp will be discarded.
 
-```
+```bash
 nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
 ```
 
