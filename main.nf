@@ -153,11 +153,18 @@ if (params.input_paths){
    raw_reads = Channel.create()
    raw_reads_2 = Channel.create()
 
-   Channel
-      .from( params.input_paths )
-      .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
-      .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
-
+   if ( params.split_fastq ){
+      Channel
+         .from( params.input_paths )
+         .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
+	 .splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
+         .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1]), tuple(a[0], a[1])] }
+   }else{
+     Channel
+        .from( params.input_paths )
+	.map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
+	.separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0] + "_R1", a[1][0]), tuple(a[0] + "_R2", a[1][1])] }
+   }
 }else{
    raw_reads = Channel.create()
    raw_reads_2 = Channel.create()
