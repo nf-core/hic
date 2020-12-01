@@ -22,47 +22,49 @@ def helpMessage() {
 
     Mandatory arguments:
       --input [file]                            Path to input data (must be surrounded with quotes)
+      --genome [str]                            Name of iGenomes reference
       -profile [str]                            Configuration profile to use. Can use multiple (comma separated)
                                                 Available: conda, docker, singularity, awsbatch, test and more.
 
     References                                  If not specified in the configuration file or you wish to overwrite any of the references.
-      --genome [str]                            Name of iGenomes reference
       --bwt2_index [file]                       Path to Bowtie2 index
       --fasta [file]                            Path to Fasta reference
+
+    Digestion Hi-C                              If not specified in the configuration file or you wish to set up specific digestion protocol
+      --digestion [str]                         Digestion Hi-C. Name of restriction enzyme used for digestion pre-configuration. Default: 'hindiii'
+      --ligation_site [str]                     Ligation motifs to trim (comma separated) if not available in --digestion. Default: false
+      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated) if not available in --digestion. Default: false
       --chromosome_size [file]                  Path to chromosome size file
       --restriction_fragments [file]            Path to restriction fragment file (bed)
       --save_reference [bool]                   Save reference genome to output folder. Default: False
 
+    DNase Hi-C
+      --dnase [bool]                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
+      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: None 
+
     Alignments
-      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
-      --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
-      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
       --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
       --bwt2_opts_trimmed [str]                 Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
       --min_mapq [int]                          Minimum mapping quality values to consider. Default: 10
-      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated). Default: 'A^AGCTT'
-      --ligation_site [str]                     Ligation motifs to trim (comma separated). Default: 'AAGCTAGCTT'
-      --rm_singleton [bool]                     Remove singleton reads. Default: true
-      --rm_multi [bool]                         Remove multi-mapped reads. Default: true
-      --rm_dup [bool]                           Remove duplicates. Default: true
+      --keep_multi [bool]                       Keep multi-mapped reads (--min_mapq is ignored). Default: false
+      --keep_dups [bool]                        Keep duplicates. Default: false
+      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
+      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
+      --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
 
-    Contacts calling
-      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: 0
-      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: 0
-      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: 0
-      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: 0
+    Valid Pairs Detection
+      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: None
+      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: None
+      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: None
+      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: None
       --save_interaction_bam [bool]             Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
 
-      --dnase [bool]                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
-      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: 0
-
     Contact maps
-      --bin_size [int]                          Bin size for contact maps (comma separated). Default: '1000000,500000'
+      --bin_size [str]                          Bin size for contact maps (comma separated). Default: '1000000,500000'
       --ice_max_iter [int]                      Maximum number of iteration for ICE normalization. Default: 100
       --ice_filter_low_count_perc [float]       Percentage of low counts columns/rows to filter before ICE normalization. Default: 0.02
       --ice_filter_high_count_perc [float]      Percentage of high counts columns/rows to filter before ICE normalization. Default: 0
       --ice_eps [float]                         Convergence criteria for ICE normalization. Default: 0.1
-
 
     Workflow
       --skip_maps [bool]                        Skip generation of contact maps. Useful for capture-C. Default: False
@@ -100,9 +102,15 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
 }
 
+if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
+   exit 1, "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
+}
+params.restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
+params.ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
+
 // Check Digestion or DNase Hi-C mode
 if (!params.dnase && !params.ligation_site) {
-   exit 1, "Ligation motif not found. For DNase Hi-C, please use '--dnase' option"
+   exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
 }
 
 // Reference index path configuration
@@ -148,27 +156,37 @@ if (params.input_paths){
    Channel
       .from( params.input_paths )
       .map { row -> [ row[0], [file(row[1][0]), file(row[1][1])]] }
-      .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
- }else{
+      .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0] + "_R1", a[1][0]), tuple(a[0] + "_R2", a[1][1])] }
 
+}else{
    raw_reads = Channel.create()
    raw_reads_2 = Channel.create()
 
-   Channel
-      .fromFilePairs( params.input )
-      .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0], a[1][0]), tuple(a[0], a[1][1])] }
+   if ( params.split_fastq ){
+      Channel
+         .fromFilePairs( params.input, flat:true )
+         .splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
+         .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0] + "_R1", a[1]), tuple(a[0] + "_R2", a[2])] }
+   }else{
+      Channel
+         .fromFilePairs( params.input )
+	 .separate( raw_reads, raw_reads_2 ) { a -> [tuple(a[0] + "_R1", a[1][0]), tuple(a[0] + "_R2", a[1][1])] }
+   }
 }
 
-// SPlit fastq files
-// https://www.nextflow.io/docs/latest/operator.html#splitfastq
-
-if ( params.split_fastq ){
-   raw_reads_full = raw_reads.concat( raw_reads_2 )
-   raw_reads = raw_reads_full.splitFastq( by: params.fastq_chunks_size, file: true)
- }else{
-   raw_reads = raw_reads.concat( raw_reads_2 ).dump(tag: "data")
+// Update sample name if splitFastq is used
+def updateSampleName(x) {
+   if ((matcher = x[1] =~ /\s*(\.[\d]+).fastq.gz/)) {
+        res = matcher[0][1]
+   }
+   return [x[0] + res, x[1]]
 }
 
+if (params.split_fastq ){
+  raw_reads = raw_reads.concat( raw_reads_2 ).map{it -> updateSampleName(it)}.dump(tag:'input')
+}else{
+  raw_reads = raw_reads.concat( raw_reads_2 ).dump(tag:'input')
+}
 
 /*
  * Other input channels
@@ -222,12 +240,12 @@ else if ( params.fasta && params.restriction_site ){
            .ifEmpty { exit 1, "Restriction fragments: Fasta file not found: ${params.fasta}" }
            .set { fasta_for_resfrag }
 }
-else {
+else if (! params.dnase) {
     exit 1, "No restriction fragments file specified!"
 }
 
 // Resolutions for contact maps
-map_res = Channel.from( params.bin_size.tokenize(',') )
+map_res = Channel.from( params.bin_size.toString() ).splitCsv().flatten()
 
 /**********************************************************
  * SET UP LOGS
@@ -243,17 +261,21 @@ summary['splitFastq']       = params.split_fastq
 if (params.split_fastq)
    summary['Read chunks Size'] = params.fastq_chunks_size
 summary['Fasta Ref']        = params.fasta
-summary['Restriction Motif']= params.restriction_site
-summary['Ligation Motif']   = params.ligation_site
-summary['DNase Mode']       = params.dnase
-summary['Remove Dup']       = params.rm_dup
-summary['Remove MultiHits'] = params.rm_multi
+if (params.restriction_site){
+   summary['Digestion']        = params.digestion
+   summary['Restriction Motif']= params.restriction_site
+   summary['Ligation Motif']   = params.ligation_site
+   summary['Min Fragment Size']= params.min_restriction_fragment_size
+   summary['Max Fragment Size']= params.max_restriction_fragment_size
+   summary['Min Insert Size']  = params.min_insert_size
+   summary['Max Insert Size']  = params.max_insert_size
+}else{
+   summary['DNase Mode']    = params.dnase
+   summary['Min CIS dist']  = params.min_cis_dist
+}
 summary['Min MAPQ']         = params.min_mapq
-summary['Min Fragment Size']= params.min_restriction_fragment_size
-summary['Max Fragment Size']= params.max_restriction_fragment_size
-summary['Min Insert Size']  = params.min_insert_size
-summary['Max Insert Size']  = params.max_insert_size
-summary['Min CIS dist']     = params.min_cis_dist
+summary['Keep Duplicates']  = params.keep_dups ? 'Yes' : 'No'
+summary['Keep Multihits']   = params.keep_multi ? 'Yes' : 'No'
 summary['Maps resolution']  = params.bin_size
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
@@ -330,10 +352,10 @@ def create_workflow_summary(summary) {
 
     def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
     yaml_file.text  = """
-    id: 'nf-core-chipseq-summary'
+    id: 'nf-core-hic-summary'
     description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/chipseq Workflow Summary'
-    section_href: 'https://github.com/nf-core/chipseq'
+    section_name: 'nf-core/hic Workflow Summary'
+    section_href: 'https://github.com/nf-core/hic'
     plot_type: 'html'
     data: |
         <dl class=\"dl-horizontal\">
@@ -423,7 +445,7 @@ if(!params.restriction_fragments && params.fasta && !params.dnase){
 */
 
 process bowtie2_end_to_end {
-   tag "$prefix"
+   tag "$sample"
    label 'process_medium'
    publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
@@ -433,13 +455,12 @@ process bowtie2_end_to_end {
    file index from bwt2_index_end2end.collect()
 
    output:
-   set val(prefix), file("${prefix}_unmap.fastq") into unmapped_end_to_end
-   set val(prefix), file("${prefix}.bam") into end_to_end_bam
+   set val(sample), file("${prefix}_unmap.fastq") into unmapped_end_to_end
+   set val(sample), file("${prefix}.bam") into end_to_end_bam
 
    script:
    prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
    def bwt2_opts = params.bwt2_opts_end2end
-
    if (!params.dnase){
    """
    bowtie2 --rg-id BMG --rg SM:${prefix} \\
@@ -462,7 +483,7 @@ process bowtie2_end_to_end {
 }
 
 process trim_reads {
-   tag "$prefix"
+   tag "$sample"
    label 'process_low'
    publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
@@ -471,12 +492,13 @@ process trim_reads {
    !params.dnase
 
    input:
-   set val(prefix), file(reads) from unmapped_end_to_end
+   set val(sample), file(reads) from unmapped_end_to_end
 
    output:
-   set val(prefix), file("${prefix}_trimmed.fastq") into trimmed_reads
+   set val(sample), file("${prefix}_trimmed.fastq") into trimmed_reads
 
    script:
+   prefix = reads.toString() - ~/(\.fq)?(\.fastq)?(\.gz)?$/
    """
    cutsite_trimming --fastq $reads \\
                     --cutsite  ${params.ligation_site} \\
@@ -485,7 +507,7 @@ process trim_reads {
 }
 
 process bowtie2_on_trimmed_reads {
-   tag "$prefix"
+   tag "$sample"
    label 'process_medium'
    publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
@@ -494,11 +516,11 @@ process bowtie2_on_trimmed_reads {
    !params.dnase
 
    input:
-   set val(prefix), file(reads) from trimmed_reads
+   set val(sample), file(reads) from trimmed_reads
    file index from bwt2_index_trim.collect()
 
    output:
-   set val(prefix), file("${prefix}_trimmed.bam") into trimmed_bam
+   set val(sample), file("${prefix}_trimmed.bam") into trimmed_bam
 
    script:
    prefix = reads.toString() - ~/(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
@@ -512,22 +534,24 @@ process bowtie2_on_trimmed_reads {
 }
 
 if (!params.dnase){
-   process merge_mapping_steps{
-      tag "$sample = $bam1 + $bam2"
+   process bowtie2_merge_mapping_steps{
+      tag "$prefix = $bam1 + $bam2"
       label 'process_medium'
       publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
       input:
-      set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam )
+      set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam ).dump(tag:'merge')
 
       output:
       set val(sample), file("${prefix}_bwt2merged.bam") into bwt2_merged_bam
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1$|_2)/
-      tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
+      //sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
+      sample = prefix.toString() - ~/(_R1|_R2)/
+      //tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
+      tag = prefix.toString() =~/_R1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
       """
       samtools merge -@ ${task.cpus} \\
@@ -554,46 +578,48 @@ if (!params.dnase){
    }
 }else{
    process dnase_mapping_stats{
-      tag "$sample = $bam1"
+      tag "$sample = $bam"
       label 'process_medium'
       publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
       input:
-      set val(prefix), file(bam1) from end_to_end_bam
+      set val(prefix), file(bam) from end_to_end_bam
 
       output:
-      set val(sample), file(bam1) into bwt2_merged_bam
+      set val(sample), file(bam) into bwt2_merged_bam
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
-      tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
+      //sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
+      sample = prefix.toString() - ~/(_R1|_R2)/
+      //tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
+      tag = prefix.toString() =~/_R1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
       """
       echo "## ${prefix}" > ${prefix}.mapstat
       echo -n "total_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c ${bam1} >> ${prefix}.mapstat
+      samtools view -c ${bam} >> ${prefix}.mapstat
       echo -n "mapped_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam} >> ${prefix}.mapstat
       echo -n "global_${tag}\t" >> ${prefix}.mapstat
-      samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
+      samtools view -c -F 4 ${bam} >> ${prefix}.mapstat
       echo -n "local_${tag}\t0"  >> ${prefix}.mapstat
       """
    }
 }
 
-process combine_mapped_files{
+process combine_mates{
    tag "$sample = $r1_prefix + $r2_prefix"
    label 'process_low'
    publishDir "${params.outdir}/mapping", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
 
    input:
-   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
+   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple().dump(tag:'mates')
 
    output:
-   set val(sample), file("${sample}_bwt2pairs.bam") into paired_bam
+   set val(oname), file("${sample}_bwt2pairs.bam") into paired_bam
    set val(oname), file("*.pairstat") into all_pairstat
 
    script:
@@ -604,9 +630,11 @@ process combine_mapped_files{
    oname = sample.toString() - ~/(\.[0-9]+)$/
 
    def opts = "-t"
-   opts = params.rm_singleton ? "${opts}" : "--single ${opts}"
-   opts = params.rm_multi ? "${opts}" : "--multi ${opts}"
-   if ("$params.min_mapq".isInteger()) opts="${opts} -q ${params.min_mapq}"
+   if (params.keep_multi) {
+     opts="${opts} --multi"
+   }else if (params.min_mapq){
+     opts="${opts} -q ${params.min_mapq}"
+   }
    """
    mergeSAM.py -f ${r1_bam} -r ${r2_bam} -o ${sample}_bwt2pairs.bam ${opts}
    """
@@ -615,7 +643,7 @@ process combine_mapped_files{
 
 /*
  * STEP2 - DETECT VALID PAIRS
-*/
+ */
 
 if (!params.dnase){
    process get_valid_interaction{
@@ -697,7 +725,7 @@ process remove_duplicates {
    	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
-   set val(sample), file(vpairs) from valid_pairs.groupTuple()
+   set val(sample), file(vpairs) from valid_pairs.groupTuple().dump(tag:'final')
 
    output:
    set val(sample), file("*.allValidPairs") into all_valid_pairs
@@ -705,7 +733,7 @@ process remove_duplicates {
    file("stats/") into all_mergestat
 
    script:
-   if ( params.rm_dup ){
+   if ( ! params.keep_dups ){
    """
    mkdir -p stats/${sample}
 
