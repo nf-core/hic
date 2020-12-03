@@ -11,7 +11,6 @@ Hi there!
 
 Thanks for suggesting a new feature for the pipeline!
 Please delete this text and anything that's not relevant from the template below:
-
 -->
 
 ## Is your feature request related to a problem? Please describe

@@ -1,10 +1,8 @@
-FROM nfcore/base:1.12
+FROM nfcore/base:1.12.1
 LABEL authors="Nicolas Servant" \
       description="Docker image containing all software requirements for the nf-core/hic pipeline"
 
-## Install gcc for pip iced install
-RUN apt-get update && apt-get install -y gcc g++ && apt-get clean -y
-
+# Install the conda environment
 COPY environment.yml /
 RUN conda env create --quiet -f /environment.yml && conda clean -a
 
