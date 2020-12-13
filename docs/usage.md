@@ -126,3 +126,426 @@ We recommend adding the following line to your environment to limit this (typica
 ```bash
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
+
+## Use case
+
+### Hi-C digestion protocol
+
+Here is an command line example for standard DpnII digestion protocols.
+Alignment will be performed on the `mm10` genome with default paramters.
+Multi-hits will not be considered and duplicates will be removed.
+Note that by default, no filters are applied on DNA and restriction fragment sizes.
+
+```bash
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
+```
+
+### DNase Hi-C protocol
+
+Here is an command line example for DNase protocol.
+Alignment will be performed on the `mm10` genome with default paramters.
+Multi-hits will not be considered and duplicates will be removed.
+Contacts involving fragments separated by less than 1000bp will be discarded.
+
+```bash
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
+```
+
+## Inputs
+
+### `--input`
+
+Use this to specify the location of your input FastQ files. For example:
+
+```bash
+--input 'path/to/data/sample_*_{1,2}.fastq'
+```
+
+Please note the following requirements:
+
+1. The path must be enclosed in quotes
+2. The path must have at least one `*` wildcard character
+3. When using the pipeline with paired end data, the path must use `{1,2}`
+notation to specify read pairs.
+
+If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
+
+Note that the Hi-C data analysis requires paired-end data.
+
+## Reference genomes
+
+The pipeline config files come bundled with paths to the illumina iGenomes reference
+index files. If running with docker or AWS, the configuration is set up to use the
+[AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
+
+### `--genome` (using iGenomes)
+
+There are many different species supported in the iGenomes references. To run
+the pipeline, you must specify which to use with the `--genome` flag.
+
+You can find the keys to specify the genomes in the
+[iGenomes config file](../conf/igenomes.config).
+
+### `--fasta`
+
+If you prefer, you can specify the full path to your reference genome when you
+run the pipeline:
+
+```bash
+--fasta '[path to Fasta reference]'
+```
+
+### `--bwt2_index`
+
+The bowtie2 indexes are required to run the Hi-C pipeline. If the
+`--bwt2_index` is not specified, the pipeline will either use the igenome
+bowtie2 indexes (see `--genome` option) or build the indexes on-the-fly
+(see `--fasta` option)
+
+```bash
+--bwt2_index '[path to bowtie2 index (with basename)]'
+```
+
+### `--chromosome_size`
+
+The Hi-C pipeline will also requires a two-columns text file with the
+chromosome name and its size (tab separated).
+If not specified, this file will be automatically created by the pipeline.
+In the latter case, the `--fasta` reference genome has to be specified.
+
+```bash
+   chr1    249250621
+   chr2    243199373
+   chr3    198022430
+   chr4    191154276
+   chr5    180915260
+   chr6    171115067
+   chr7    159138663
+   chr8    146364022
+   chr9    141213431
+   chr10   135534747
+   (...)
+```
+
+```bash
+--chromosome_size '[path to chromosome size file]'
+```
+
+### `--restriction_fragments`
+
+Finally, Hi-C experiments based on restriction enzyme digestion requires a BED
+file with coordinates of restriction fragments.
+
+```bash
+   chr1   0       16007   HIC_chr1_1    0   +
+   chr1   16007   24571   HIC_chr1_2    0   +
+   chr1   24571   27981   HIC_chr1_3    0   +
+   chr1   27981   30429   HIC_chr1_4    0   +
+   chr1   30429   32153   HIC_chr1_5    0   +
+   chr1   32153   32774   HIC_chr1_6    0   +
+   chr1   32774   37752   HIC_chr1_7    0   +
+   chr1   37752   38369   HIC_chr1_8    0   +
+   chr1   38369   38791   HIC_chr1_9    0   +
+   chr1   38791   39255   HIC_chr1_10   0   +
+   (...)
+```
+
+If not specified, this file will be automatically created by the pipline.
+In this case, the `--fasta` reference genome will be used.
+Note that the `--restriction_site` parameter is mandatory to create this file.
+
+## Hi-C specific options
+
+The following options are defined in the `nextflow.config` file, and can be
+updated either using a custom configuration file (see `-c` option) or using
+command line parameter.
+
+### Reads mapping
+
+The reads mapping is currently based on the two-steps strategy implemented in
+the HiC-pro pipeline. The idea is to first align reads from end-to-end.
+Reads that do not aligned are then trimmed at the ligation site, and their 5'
+end is re-aligned to the reference genome.
+Note that the default option are quite stringent, and can be updated according
+to the reads quality or the reference genome.
+
+#### `--bwt2_opts_end2end`
+
+Bowtie2 alignment option for end-to-end mapping.
+Default: '--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end
+--reorder'
+
+```bash
+--bwt2_opts_end2end '[Options for bowtie2 step1 mapping on full reads]'
+```
+
+#### `--bwt2_opts_trimmed`
+
+Bowtie2 alignment option for trimmed reads mapping (step 2).
+Default: '--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end
+--reorder'
+
+```bash
+--bwt2_opts_trimmed '[Options for bowtie2 step2 mapping on trimmed reads]'
+```
+
+#### `--min_mapq`
+
+Minimum mapping quality. Reads with lower quality are discarded. Default: 10
+
+```bash
+--min_mapq '[Minimum quality value]'
+```
+
+### Digestion Hi-C
+
+#### `--digestion`
+
+This parameter allows to automatically set the `--restriction_site` and
+`--ligation_site` parameter according to the restriction enzyme you used.
+Available keywords are  'hindiii', 'dpnii', 'mboi', 'arima'.
+
+```bash
+--digestion 'hindiii'
+```
+
+#### `--restriction_site`
+
+If the restriction enzyme is not available through the `--digestion`
+parameter, you can also defined manually the restriction motif(s) for
+Hi-C digestion protocol.
+The restriction motif(s) is(are) used to generate the list of restriction fragments.
+The precise cutting site of the restriction enzyme has to be specified using
+the '^' character. Default: 'A^AGCTT'
+Here are a few examples:
+
+* MboI: ^GATC
+* DpnII: ^GATC
+* HindIII: A^AGCTT
+* ARIMA kit: ^GATC,G^ANTC
+
+Note that multiples restriction motifs can be provided (comma-separated) and
+that 'N' base are supported.
+
+```bash
+--restriction_size '[Cutting motif]'
+```
+
+#### `--ligation_site`
+
+Ligation motif after reads ligation. This motif is used for reads trimming and
+depends on the fill in strategy.
+Note that multiple ligation sites can be specified (comma separated) and that
+'N' base is interpreted and replaced by 'A','C','G','T'.
+Default: 'AAGCTAGCTT'
+
+```bash
+--ligation_site '[Ligation motif]'
+```
+
+Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
+
+#### `--min_restriction_fragment_size`
+
+Minimum size of restriction fragments to consider for the Hi-C processing.
+Default: '0' - no filter
+
+```bash
+--min_restriction_fragment_size '[numeric]'
+```
+
+#### `--max_restriction_fragment_size`
+
+Maximum size of restriction fragments to consider for the Hi-C processing.
+Default: '0' - no filter
+
+```bash
+--max_restriction_fragment_size '[numeric]'
+```
+
+#### `--min_insert_size`
+
+Minimum reads insert size. Shorter 3C products are discarded.
+Default: '0' - no filter
+
+```bash
+--min_insert_size '[numeric]'
+```
+
+#### `--max_insert_size`
+
+Maximum reads insert size. Longer 3C products are discarded.
+Default: '0' - no filter
+
+```bash
+--max_insert_size '[numeric]'
+```
+
+### DNAse Hi-C
+
+#### `--dnase`
+
+In DNAse Hi-C mode, all options related to digestion Hi-C
+(see previous section) are ignored.
+In this case, it is highly recommanded to use the `--min_cis_dist` parameter
+to remove spurious ligation products.
+
+```bash
+--dnase'
+```
+
+### Hi-C processing
+
+#### `--min_cis_dist`
+
+Filter short range contact below the specified distance.
+Mainly useful for DNase Hi-C. Default: '0'
+
+```bash
+--min_cis_dist '[numeric]'
+```
+
+#### `--keep_dups`
+
+If specified, duplicates reads are not discarded before building contact maps.
+
+```bash
+--keep_dups
+```
+
+#### `--keep_multi`
+
+If specified, reads that aligned multiple times on the genome are not discarded.
+Note the default mapping options are based on random hit assignment, meaning
+that only one position is kept per read.
+Note that in this case the `--min_mapq` parameter is ignored.
+
+```bash
+--keep_multi
+```
+
+## Genome-wide contact maps
+
+### `--bin_size`
+
+Resolution of contact maps to generate (space separated).
+Default:'1000000,500000'
+
+```bash
+--bins_size '[numeric]'
+```
+
+### `--ice_max_iter`
+
+Maximum number of iteration for ICE normalization.
+Default: 100
+
+```bash
+--ice_max_iter '[numeric]'
+```
+
+### `--ice_filer_low_count_perc`
+
+Define which pourcentage of bins with low counts should be force to zero.
+Default: 0.02
+
+```bash
+--ice_filter_low_count_perc '[numeric]'
+```
+
+### `--ice_filer_high_count_perc`
+
+Define which pourcentage of bins with low counts should be discarded before
+normalization. Default: 0
+
+```bash
+--ice_filter_high_count_perc '[numeric]'
+```
+
+### `--ice_eps`
+
+The relative increment in the results before declaring convergence for ICE
+normalization. Default: 0.1
+
+```bash
+--ice_eps '[numeric]'
+```
+
+## Inputs/Outputs
+
+### `--split_fastq`
+
+By default, the nf-core Hi-C pipeline expects one read pairs per sample.
+However, for large Hi-C data processing single fastq files can be very
+time consuming.
+The `--split_fastq` option allows to automatically split input read pairs
+into chunks of reads of size `--fastq_chunks_size` (Default : 20000000). In this case, all chunks will be processed in parallel
+and merged before generating the contact maps, thus leading to a significant
+increase of processing performance.
+
+```bash
+--split_fastq --fastq_chunks_size '[numeric]'
+```
+
+### `--save_reference`
+
+If specified, annotation files automatically generated from the `--fasta` file
+are exported in the results folder. Default: false
+
+```bash
+--save_reference
+```
+
+### `--save_aligned_intermediates`
+
+If specified, all intermediate mapping files are saved and exported in the
+results folder. Default: false
+
+```bash
+--save_aligned_inermediates
+```
+
+### `--save_interaction_bam`
+
+If specified, write a BAM file with all classified reads (valid paires,
+dangling end, self-circle, etc.) and its tags.
+
+```bash
+--save_interaction_bam
+```
+
+## Skip options
+
+### `--skip_maps`
+
+If defined, the workflow stops with the list of valid interactions, and the
+genome-wide maps are not built. Usefult for capture-C analysis. Default: false
+
+```bash
+--skip_maps
+```
+
+### `--skip_ice`
+
+If defined, the ICE normalization is not run on the raw contact maps.
+Default: false
+
+```bash
+--skip_ice
+```
+
+### `--skip_cool`
+
+If defined, cooler files are not generated. Default: false
+
+```bash
+--skip_cool
+```
+
+### `--skip_multiQC`
+
+If defined, the MultiQC report is not generated. Default: false
+
+```bash
+--skip_multiQC
+```
