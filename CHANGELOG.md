@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.3.0dev
+## v1.3.0dev - 2020-11-01
 
 * New `--digestion` parameter to automatically set the restriction_site and ligation_site motifs
 * New `--keep_multi` and `keep_dup` options. Default: false

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a new feature for this pipeline
+about: Suggest an idea for the nf-core website
 labels: enhancement
 ---
 
