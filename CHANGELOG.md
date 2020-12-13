@@ -14,11 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Fix recurrent bug in input file extension (#86)
 * Fix bug in `--bin_size` parameter (#85)
-* `min_mapq` is ignored if `--keep_multi` is used
+* `--min_mapq` is ignored if `--keep_multi` is used
 
 ### Deprecated
 
-* `--rm_dup` and `rm_multi` are replaced by `--keep_dup` and `--keep_multi`
+* `--rm_dup` and `--rm_multi` are replaced by `--keep_dup` and `--keep_multi`
 
 ## v1.2.2 - 2020-09-02
 
