@@ -244,8 +244,40 @@ else if (! params.dnase) {
     exit 1, "No restriction fragments file specified!"
 }
 
+
+if (params.res_tads){
+  Channel.from( "${params.res_tads}" )
+    .splitCsv()
+    .flatten()
+    .into {tads_res_hicexplorer; tads_res_insulation; tads_bin }
+}else{
+  tads_res=Channel.create()
+  tads_bin=Channel.create()
+  if (!params.skip_tads){
+    log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads" 
+  }
+}
+
+if (params.res_dist_decay){
+  Channel.from( "${params.res_dist_decay}" )
+    .splitCsv()
+    .flatten()
+    .into {ddecay_res; ddecay_bin }
+}else{
+  ddecay_res = Channel.create()
+  ddecay_bin = Channel.create()
+  if (!params.skip_dist_decay){
+    log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay" 
+  }
+}
+
+
 // Resolutions for contact maps
-map_res = Channel.from( params.bin_size.toString() ).splitCsv().flatten()
+map_res = Channel.from( params.bin_size ).splitCsv().flatten()
+map_res.concat(comp_bin, tads_bin, ddecay_bin)
+  .unique()
+  .set { map_res }
+
 
 /**********************************************************
  * SET UP LOGS
@@ -728,8 +760,7 @@ process remove_duplicates {
    set val(sample), file(vpairs) from valid_pairs.groupTuple().dump(tag:'final')
 
    output:
-   set val(sample), file("*.allValidPairs") into all_valid_pairs
-   set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
+   set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_4cool
    file("stats/") into all_mergestat
 
    script:
@@ -796,11 +827,11 @@ process build_contact_maps{
    !params.skip_maps
 
    input:
-   set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
+   set val(sample), file(vpairs), val(mres) from ch_vpairs.combine(map_res)
    file chrsize from chromosome_size.collect()
 
    output:
-   file("*.matrix") into raw_maps
+   file("*.matrix") into raw_maps, raw_maps_4cool
    file "*.bed"
 
    script:
@@ -826,7 +857,7 @@ process run_ice{
    file "*.biases"
 
    output:
-   file("*iced.matrix") into iced_maps
+   file("*iced.matrix") into iced_maps_4h5, iced_maps_4cool
 
    script:
    prefix = rmaps.toString() - ~/(\.matrix)?$/
@@ -840,33 +871,154 @@ process run_ice{
 
 
 /*
- * STEP 5 - COOLER FILE
+ * Create cool file
  */
-process generate_cool{
+ 
+process convert_to_cool {
    tag "$sample"
    label 'process_medium'
-   publishDir "${params.outdir}/export/cool", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/contact_maps/cool", mode: 'copy'
 
    when:
    !params.skip_cool
 
    input:
-   set val(sample), file(vpairs) from all_valid_pairs_4cool
-   file chrsize from chromosome_size_cool.collect()
+   set val(sample), val(res), file(mat), file(bed) from iced_maps_4cool
+   file chrsize from chrsize_cool.collect()
 
    output:
-   file("*mcool") into cool_maps
+   set val(sample), val(res), file("*cool") into cool_maps
+   file("*.mcool") into mcools_maps
 
    script:
    """
-   hicpro2higlass.sh -p ${task.cpus} -i $vpairs -r 5000 -c ${chrsize} -n
+   cooler load --count-as-float -f coo --one-based ${bed} ${mat} ${sample}_${res}.cool
+   cooler zoomify --nproc ${task.cpus} ${sample}_${res}.cool
    """
 }
 
 
 /*
+ * Create h5 file
+ */
+
+process convert_to_h5 {
+  tag "$sample"
+  label 'process_medium'
+  publishDir "${params.outdir}/contact_maps/h5", mode: 'copy'
+
+  input:
+  set val(sample), val(res), file(maps), file(bed) from iced_maps_4h5
+
+  output:
+  set val(sample), val(res), file("*.h5") into h5maps_ddecay, h5maps_ccomp, h5maps_tads
+
+  script:
+  prefix = maps.toString() - ~/(\.matrix)?$/ 
+  """
+  hicConvertFormat --matrices ${maps} \
+  		   --outFileName ${prefix}.h5 \
+		   --resolution ${res} \
+		   --inputFormat hicpro \
+		   --outputFormat h5 \
+		   -bf ${bed}
+  """
+}
+
+
+/****************************************************
+ * DOWNSTREAM ANALYSIS
+ */
+
+/*
+ * Counts vs distance QC
+ */
+
+chddecay = h5maps_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: "ddecay") 
+
+process dist_decay {
+  tag "$sample"
+  label 'process_medium'
+  publishDir "${params.outdir}/hic_results/dist", mode: 'copy'
+
+  when:
+  !params.skip_dist_decay
+
+  input:
+  set val(sample), val(res), file(h5mat), val(r) from chddecay
+  
+  output:
+  file("*_distcount.txt")
+  file("*.png")
+
+
+  script:
+  prefix = h5mat.toString() - ~/(\.h5)?$/
+  """
+  hicPlotDistVsCounts --matrices ${h5mat} \
+                      --plotFile ${prefix}_distcount.png \
+  		      --outFileData ${prefix}_distcount.txt
+  """
+}
+
+
+/*
+ * TADs calling
+ */
+
+chtads = h5maps_tads.combine(tads_res_hicexplorer).filter{ it[1] == it[3] }.dump(tag: "hicexp")
+
+process tads_hicexplorer {
+  tag "$sample - $res"
+  label 'process_medium'
+  publishDir "${params.outdir}/tads", mode: 'copy'
+
+  when:
+  !params.skip_tads && params.tads_caller =~ 'hicexplorer'
+
+  input:
+  set val(sample), val(res), file(h5mat), val(r) from chtads
+
+  output:
+  file("*.{bed,bedgraph,gff}") into hicexplorer_tads
+
+  script:
+  """
+  hicFindTADs --matrix ${h5mat} \
+  	      --outPrefix tad \
+	      --correctForMultipleTesting fdr \
+	      --numberOfProcessors ${task.cpus}
+  """
+}
+
+chIS = cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
+
+process tads_insulation {
+  tag "$sample - $res"
+  label 'process_medium'
+  publishDir "${params.outdir}/tads", mode: 'copy'
+
+  when:
+  !params.skip_tads && params.tads_caller =~ 'insulation'
+
+  input:
+  set val(sample), val(res), file(cool), val(r) from chIS
+
+  output:
+  file("*tsv") into insulation_tads
+
+  script:
+  """
+  cooltools diamond-insulation --window-pixels ${cool} 15 25 50 > ${sample}_insulation.tsv
+  """
+}
+
+
+
+/*
  * STEP 6 - MultiQC
  */
+
 process multiqc {
    label 'process_low'
    publishDir "${params.outdir}/MultiQC", mode: params.publish_dir_mode
