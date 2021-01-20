@@ -274,7 +274,7 @@ if (params.res_dist_decay){
 
 // Resolutions for contact maps
 map_res = Channel.from( params.bin_size ).splitCsv().flatten()
-map_res.concat(comp_bin, tads_bin, ddecay_bin)
+map_res.concat(tads_bin, ddecay_bin)
   .unique()
   .set { map_res }
 
@@ -831,9 +831,8 @@ process build_contact_maps{
    file chrsize from chromosome_size.collect()
 
    output:
-   file("*.matrix") into raw_maps, raw_maps_4cool
-   file "*.bed"
-
+   set val(sample), val(mres), file("*.matrix"), file("*.bed") into raw_maps, raw_maps_4cool
+   
    script:
    """
    build_matrix --matrix-format upper  --binsize ${mres} --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_${mres}
@@ -853,11 +852,11 @@ process run_ice{
    !params.skip_maps && !params.skip_ice
 
    input:
-   file(rmaps) from raw_maps
-   file "*.biases"
+   set val(sample), val(res), file(rmaps), file(bed) from raw_maps
 
    output:
-   file("*iced.matrix") into iced_maps_4h5, iced_maps_4cool
+   set val(sample), val(res), file("*iced.matrix"), file(bed) into iced_maps_4h5, iced_maps_4cool
+   file ("*.biases") into iced_bias
 
    script:
    prefix = rmaps.toString() - ~/(\.matrix)?$/
@@ -884,10 +883,10 @@ process convert_to_cool {
 
    input:
    set val(sample), val(res), file(mat), file(bed) from iced_maps_4cool
-   file chrsize from chrsize_cool.collect()
+   file chrsize from chromosome_size_cool.collect()
 
    output:
-   set val(sample), val(res), file("*cool") into cool_maps
+   set val(sample), val(res), file("*.cool") into cool_maps
    file("*.mcool") into mcools_maps
 
    script:
@@ -993,6 +992,7 @@ process tads_hicexplorer {
 
 chIS = cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
 
+/*
 process tads_insulation {
   tag "$sample - $res"
   label 'process_medium'
@@ -1012,7 +1012,7 @@ process tads_insulation {
   cooltools diamond-insulation --window-pixels ${cool} 15 25 50 > ${sample}_insulation.tsv
   """
 }
-
+*/
 
 
 /*
@@ -1131,7 +1131,7 @@ workflow.onComplete {
     def email_html = html_template.toString()
 
     // Render the sendmail template
-    def smail_fields = [ email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$projectDir", mqcFile: mqc_report, mqcMaxSize: params.max_multiqc_email_size.toBytes() ]
+    def smail_fields = [ email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, projectDir: "$projectDir", mqcFile: mqc_report, mqcMaxSize: params.max_multiqc_email_size.toBytes() ]
     def sf = new File("$projectDir/assets/sendmail_template.txt")
     def sendmail_template = engine.createTemplate(sf).make(smail_fields)
     def sendmail_html = sendmail_template.toString()
