@@ -219,7 +219,7 @@ else {
 // Chromosome size
 if ( params.chromosome_size ){
    Channel.fromPath( params.chromosome_size , checkIfExists: true)
-         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance}
+         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance; chrsize_zoom}
 }
 else if ( params.fasta ){
    Channel.fromPath( params.fasta )
@@ -438,7 +438,7 @@ if(!params.chromosome_size && params.fasta){
         file fasta from fasta_for_chromsize
 
         output:
-        file "*.size" into chsize, chrsize_cool
+        file "*.size" into chrsize, chrsize_build, chrsize_raw, chrsize_balance, chrsize_zoom
 
         script:
         """
@@ -681,7 +681,7 @@ if (!params.dnase){
    process get_valid_interaction{
       tag "$sample"
       label 'process_low'
-      publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
+      publishDir "${params.outdir}/valid_pairs", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
@@ -720,7 +720,7 @@ else{
    process get_valid_interaction_dnase{
       tag "$sample"
       label 'process_low'
-      publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
+      publishDir "${params.outdir}/valid_pairs", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
@@ -753,7 +753,7 @@ else{
 process remove_duplicates {
    tag "$sample"
    label 'process_highmem'
-   publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
+   publishDir "${params.outdir}/valid_pairs", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
@@ -799,7 +799,7 @@ process remove_duplicates {
 process merge_stats {
    tag "$ext"
    label 'process_low'
-   publishDir "${params.outdir}/hic_results/stats/${sample}", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/stats/${sample}", mode: params.publish_dir_mode
 
    input:
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
@@ -820,14 +820,14 @@ process merge_stats {
 
 /*
  * HiC-Pro build matrix processes
- * TODO - TO REPLACED BY COOLER ?
+ * ONGOING VALIDATION - TO REPLACED BY COOLER ?
  */
 
 
 process build_contact_maps{
    tag "$sample - $mres"
    label 'process_highmem'
-   publishDir "${params.outdir}/hic_results/matrix/raw", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/matrix/raw", mode: params.publish_dir_mode
 
    when:
    !params.skip_maps
@@ -848,7 +848,7 @@ process build_contact_maps{
 process run_ice{
    tag "$rmaps"
    label 'process_highmem'
-   publishDir "${params.outdir}/hic_results/matrix/iced", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/matrix/iced", mode: params.publish_dir_mode
 
    when:
    !params.skip_maps && !params.skip_ice
@@ -884,7 +884,7 @@ process cooler_build {
    file chrsize from chrsize_build.collect()
 
    output:
-   set val(sample), file("contacts.sorted.txt.gz"), file("contacts.sorted.txt.gz.px2") into cool_build
+   set val(sample), file("contacts.sorted.txt.gz"), file("contacts.sorted.txt.gz.px2") into cool_build, cool_build_zoom
 
    script:
    """
@@ -915,7 +915,7 @@ process cooler_raw {
   """
   cooler makebins ${chrsize} ${res} > ${sample}_${res}.bed
   cooler cload pairix --nproc ${task.cpus} ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
-  cooler dump ${sample}_${res}.cool --one-based-ids | awk '{OFS="\t"; print \$1+1,\$2+1,\$3}' > ${sample}_${res}.txt
+  cooler dump ${sample}_${res}.cool | awk '{OFS="\t"; print \$1+1,\$2+1,\$3}' > ${sample}_${res}.txt
   """
 }
 
@@ -938,18 +938,30 @@ process cooler_balance {
   """
   cp ${cool} ${sample}_${res}_norm.cool
   cooler balance ${sample}_${res}_norm.cool -p ${task.cpus} --force
-  cooler dump ${sample}_${res}_norm.cool --one-based-ids --balanced --na-rep 0 | awk '{OFS="\t"; print \$1+1,\$2+1,\$4}' > ${sample}_${res}_norm.txt
+  cooler dump ${sample}_${res}_norm.cool --balanced --na-rep 0 | awk '{OFS="\t"; print \$1+1,\$2+1,\$4}' > ${sample}_${res}_norm.txt
   """
 }
 
-/*
- -- TODO--
- 
 process cooler_zoomify {
+   tag "$sample"
+   label 'process_medium'
+   publishDir "${params.outdir}/contact_maps/norm/mcool", mode: 'copy'
 
+   input:
+   set val(sample), file(contacts), file(index) from cool_build_zoom
+   file chrsize from chrsize_zoom.collect()
+
+   output:
+   file("*mcool") into mcool_maps
+
+   script:
+   """
+   cooler makebins ${chrsize} 5000 > bins.bed
+   cooler cload pairix --nproc ${task.cpus} bins.bed contacts.sorted.txt.gz ${sample}.cool
+   cooler zoomify --nproc ${task.cpus} --balance ${sample}.cool
+   """
 }
 
-*/
 
 /*
  * Create h5 file
@@ -990,7 +1002,7 @@ chddecay = h5maps_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: 
 process dist_decay {
   tag "$sample"
   label 'process_medium'
-  publishDir "${params.outdir}/hic_results/dist", mode: 'copy'
+  publishDir "${params.outdir}/dist_decay", mode: 'copy'
 
   when:
   !params.skip_dist_decay
@@ -1063,7 +1075,6 @@ process tads_insulation {
   cooltools diamond-insulation --window-pixels ${cool} 15 25 50 > ${sample}_insulation.tsv
   """
 }
-
 
 
 /*
