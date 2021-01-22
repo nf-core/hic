@@ -219,7 +219,7 @@ else {
 // Chromosome size
 if ( params.chromosome_size ){
    Channel.fromPath( params.chromosome_size , checkIfExists: true)
-         .into {chromosome_size; chromosome_size_cool}
+         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance}
 }
 else if ( params.fasta ){
    Channel.fromPath( params.fasta )
@@ -276,7 +276,7 @@ if (params.res_dist_decay){
 map_res = Channel.from( params.bin_size ).splitCsv().flatten()
 map_res.concat(tads_bin, ddecay_bin)
   .unique()
-  .set { map_res }
+  .into { map_res; map_res_cool }
 
 
 /**********************************************************
@@ -438,7 +438,7 @@ if(!params.chromosome_size && params.fasta){
         file fasta from fasta_for_chromsize
 
         output:
-        file "*.size" into chromosome_size, chromosome_size_cool
+        file "*.size" into chsize, chrsize_cool
 
         script:
         """
@@ -473,8 +473,8 @@ if(!params.restriction_fragments && params.fasta && !params.dnase){
  */
 
 /*
- * STEP 1 - Two-steps Reads Mapping
-*/
+ * HiC-pro - Two-steps Reads Mapping
+ */
 
 process bowtie2_end_to_end {
    tag "$sample"
@@ -674,7 +674,7 @@ process combine_mates{
 
 
 /*
- * STEP2 - DETECT VALID PAIRS
+ * HiC-Pro - detect valid interaction from aligned data
  */
 
 if (!params.dnase){
@@ -682,7 +682,7 @@ if (!params.dnase){
       tag "$sample"
       label 'process_low'
       publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -721,7 +721,7 @@ else{
       tag "$sample"
       label 'process_low'
       publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -747,20 +747,20 @@ else{
 
 
 /*
- * STEP3 - BUILD MATRIX
-*/
+ * Remove duplicates
+ */
 
 process remove_duplicates {
    tag "$sample"
    label 'process_highmem'
    publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}
+   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
    set val(sample), file(vpairs) from valid_pairs.groupTuple().dump(tag:'final')
 
    output:
-   set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_4cool
+   set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_cool
    file("stats/") into all_mergestat
 
    script:
@@ -796,7 +796,7 @@ process remove_duplicates {
    }
 }
 
-process merge_sample {
+process merge_stats {
    tag "$ext"
    label 'process_low'
    publishDir "${params.outdir}/hic_results/stats/${sample}", mode: params.publish_dir_mode
@@ -818,6 +818,12 @@ process merge_sample {
   """
 }
 
+/*
+ * HiC-Pro build matrix processes
+ * TODO - TO REPLACED BY COOLER ?
+ */
+
+
 process build_contact_maps{
    tag "$sample - $mres"
    label 'process_highmem'
@@ -828,7 +834,7 @@ process build_contact_maps{
 
    input:
    set val(sample), file(vpairs), val(mres) from ch_vpairs.combine(map_res)
-   file chrsize from chromosome_size.collect()
+   file chrsize from chrsize.collect()
 
    output:
    set val(sample), val(mres), file("*.matrix"), file("*.bed") into raw_maps, raw_maps_4cool
@@ -838,10 +844,6 @@ process build_contact_maps{
    build_matrix --matrix-format upper  --binsize ${mres} --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_${mres}
    """
 }
-
-/*
- * STEP 4 - NORMALIZE MATRIX
-*/
 
 process run_ice{
    tag "$rmaps"
@@ -870,32 +872,84 @@ process run_ice{
 
 
 /*
- * Create cool file
+ * Cooler
  */
- 
-process convert_to_cool {
+
+process cooler_build {
    tag "$sample"
    label 'process_medium'
-   publishDir "${params.outdir}/contact_maps/cool", mode: 'copy'
-
-   when:
-   !params.skip_cool
 
    input:
-   set val(sample), val(res), file(mat), file(bed) from iced_maps_4cool
-   file chrsize from chromosome_size_cool.collect()
+   set val(sample), file(vpairs) from ch_vpairs_cool
+   file chrsize from chrsize_build.collect()
 
    output:
-   set val(sample), val(res), file("*.cool") into cool_maps
-   file("*.mcool") into mcools_maps
+   set val(sample), file("contacts.sorted.txt.gz"), file("contacts.sorted.txt.gz.px2") into cool_build
 
    script:
    """
-   cooler load --count-as-float -f coo --one-based ${bed} ${mat} ${sample}_${res}.cool
-   cooler zoomify --nproc ${task.cpus} ${sample}_${res}.cool
+   awk '{OFS="\t";print \$2,\$3,\$4,\$5,\$6,\$7,1}' $vpairs | sed -e 's/+/1/g' -e 's/-/16/g' > contacts.txt
+   cooler csort --nproc ${task.cpus} -c1 1 -p1 2 -s1 3 -c2 4 -p2 5 -s2 6 \
+	  contacts.txt \
+          -o contacts.sorted.txt.gz \
+	  ${chrsize}
    """
 }
 
+process cooler_raw {
+  tag "$sample - ${res}"
+  label 'process_medium'
+
+  publishDir "${params.outdir}/contact_maps/", mode: 'copy',
+              saveAs: {filename -> filename.indexOf(".cool") > 0 ? "raw/cool/$filename" : "raw/txt/$filename"}
+
+  input:
+  set val(sample), file(contacts), file(index), val(res) from cool_build.combine(map_res_cool)
+  file chrsize from chrsize_raw.collect()
+
+  output:
+  set val(sample), val(res), file("*cool") into raw_cool_maps
+  set file("*.bed"), file("${sample}_${res}.txt") into raw_txt_maps
+
+  script:
+  """
+  cooler makebins ${chrsize} ${res} > ${sample}_${res}.bed
+  cooler cload pairix --nproc ${task.cpus} ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
+  cooler dump ${sample}_${res}.cool --one-based-ids | awk '{OFS="\t"; print \$1+1,\$2+1,\$3}' > ${sample}_${res}.txt
+  """
+}
+
+process cooler_balance {
+  tag "$sample - ${res}"
+  label 'process_medium'
+
+  publishDir "${params.outdir}/contact_maps/", mode: 'copy',
+              saveAs: {filename -> filename.indexOf(".cool") > 0 ? "norm/cool/$filename" : "norm/txt/$filename"}
+
+  input:
+  set val(sample), val(res), file(cool) from raw_cool_maps
+  file chrsize from chrsize_balance.collect()
+
+  output:
+  set val(sample), val(res), file("${sample}_${res}_norm.cool") into norm_cool_maps, norm_cool_maps_h5
+  file("${sample}_${res}_norm.txt") into norm_txt_maps
+
+  script:
+  """
+  cp ${cool} ${sample}_${res}_norm.cool
+  cooler balance ${sample}_${res}_norm.cool -p ${task.cpus} --force
+  cooler dump ${sample}_${res}_norm.cool --one-based-ids --balanced --na-rep 0 | awk '{OFS="\t"; print \$1+1,\$2+1,\$4}' > ${sample}_${res}_norm.txt
+  """
+}
+
+/*
+ -- TODO--
+ 
+process cooler_zoomify {
+
+}
+
+*/
 
 /*
  * Create h5 file
@@ -904,23 +958,21 @@ process convert_to_cool {
 process convert_to_h5 {
   tag "$sample"
   label 'process_medium'
-  publishDir "${params.outdir}/contact_maps/h5", mode: 'copy'
+  publishDir "${params.outdir}/contact_maps/norm/h5", mode: 'copy'
 
   input:
-  set val(sample), val(res), file(maps), file(bed) from iced_maps_4h5
+  set val(sample), val(res), file(maps)  from norm_cool_maps_h5
 
   output:
   set val(sample), val(res), file("*.h5") into h5maps_ddecay, h5maps_ccomp, h5maps_tads
 
   script:
-  prefix = maps.toString() - ~/(\.matrix)?$/ 
   """
   hicConvertFormat --matrices ${maps} \
-  		   --outFileName ${prefix}.h5 \
+  		   --outFileName ${sample}.h5 \
 		   --resolution ${res} \
-		   --inputFormat hicpro \
+		   --inputFormat cool \
 		   --outputFormat h5 \
-		   -bf ${bed}
   """
 }
 
@@ -990,9 +1042,8 @@ process tads_hicexplorer {
   """
 }
 
-chIS = cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
+chIS = norm_cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
 
-/*
 process tads_insulation {
   tag "$sample - $res"
   label 'process_medium'
@@ -1012,11 +1063,11 @@ process tads_insulation {
   cooltools diamond-insulation --window-pixels ${cool} 15 25 50 > ${sample}_insulation.tsv
   """
 }
-*/
+
 
 
 /*
- * STEP 6 - MultiQC
+ * MultiQC
  */
 
 process multiqc {
