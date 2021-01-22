@@ -23,8 +23,10 @@ well as protocols that do not require restriction enzymes such as DNase Hi-C.
 In practice, this workflow was successfully applied to many data-sets including
 dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or
 HiChip data.
-Contact maps are generated in standard format including HiC-Pro, cooler, and h5 format.
-Addition downstream analysis steps such as TADs calling are also available.
+
+Contact maps are generated in standard format including HiC-Pro, cooler, and h5 format for
+downstream analysis and visualization.
+Addition analysis steps such as TADs calling are also available.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 to run tasks across multiple compute infrastructures in a very portable manner.
@@ -39,9 +41,10 @@ sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
 3. Duplicates removal
 4. Create genome-wide contact maps at various resolution ([`cooler`](https://github.com/open2c/cooler))
 5. Contact maps normalization using the ICE algorithm ([`cooler`](https://github.com/open2c/cooler))
-6. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
-7. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooler`](https://github.com/open2c/cooler))
-8. Quality control report ([`MultiQC`](https://multiqc.info/))
+6. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
+7. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
+8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooler`](https://github.com/open2c/cooler))
+9. Quality control report ([`MultiQC`](https://multiqc.info/))
 
 ## Quick Start
 
