@@ -5,6 +5,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0dev - 2020-11-01
 
+* Add HiCExplorer distance decay quality control
+* Add HiCExplorer TADs calling
+* Add insulation score TADs calling
+* Generate cooler/h5/txt contact maps
+* Normalize Hi-C data with cooler instead of iced
 * New `--digestion` parameter to automatically set the restriction_site and ligation_site motifs
 * New `--keep_multi` and `keep_dup` options. Default: false
 * Template update for nf-core/tools v1.11

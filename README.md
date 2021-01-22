@@ -14,7 +14,7 @@
 
 ## Introduction
 
-This pipeline is based on the
+This pipeline was originally set up from the
 [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
 It was designed to process Hi-C data from raw FastQ files (paired-end Illumina
 data) to normalized contact maps.
@@ -23,6 +23,8 @@ well as protocols that do not require restriction enzymes such as DNase Hi-C.
 In practice, this workflow was successfully applied to many data-sets including
 dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or
 HiChip data.
+Contact maps are generated in standard format including HiC-Pro, cooler, and h5 format.
+Addition downstream analysis steps such as TADs calling are also available.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 to run tasks across multiple compute infrastructures in a very portable manner.
@@ -32,13 +34,14 @@ results highly reproducible.
 ## Pipeline summary
 
 1. Mapping using a two steps strategy to rescue reads spanning the ligation
-sites (bowtie2)
-2. Detection of valid interaction products
+sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
+2. Detection of valid interaction products([`HiC-Pro`](https://github.com/nservant/HiC-Pro))
 3. Duplicates removal
-4. Create genome-wide contact maps at various resolution
-5. Contact maps normalization using the ICE algorithm (iced)
-6. Quality controls and report (MultiQC)
-7. Addition export for visualisation and downstream analysis (cooler)
+4. Create genome-wide contact maps at various resolution ([`cooler`](https://github.com/open2c/cooler))
+5. Contact maps normalization using the ICE algorithm ([`cooler`](https://github.com/open2c/cooler))
+6. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
+7. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooler`](https://github.com/open2c/cooler))
+8. Quality control report ([`MultiQC`](https://multiqc.info/))
 
 ## Quick Start
 
