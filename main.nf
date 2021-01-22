@@ -68,8 +68,10 @@ def helpMessage() {
 
     Workflow
       --skip_maps [bool]                        Skip generation of contact maps. Useful for capture-C. Default: False
-      --skip_ice [bool]                         Skip ICE normalization. Default: False
-      --skip_cool [bool]                        Skip generation of cool files. Default: False
+      --skip_balancing [bool]                   Skip contact maps normalization. Default: False
+      --skip_mcool                              Skip mcool file generation. Default: False
+      --skip_dist_decay                         Skip distance decay quality control. Default: False
+      --skip_tads [bool]                        Skip TADs calling. Default: False
       --skip_multiqc [bool]                     Skip MultiQC. Default: False
 
     Other options:
@@ -879,6 +881,9 @@ process cooler_build {
    tag "$sample"
    label 'process_medium'
 
+   when:
+   !params.skip_maps
+
    input:
    set val(sample), file(vpairs) from ch_vpairs_cool
    file chrsize from chrsize_build.collect()
@@ -926,6 +931,9 @@ process cooler_balance {
   publishDir "${params.outdir}/contact_maps/", mode: 'copy',
               saveAs: {filename -> filename.indexOf(".cool") > 0 ? "norm/cool/$filename" : "norm/txt/$filename"}
 
+  when:
+  !params.skip_balancing
+
   input:
   set val(sample), val(res), file(cool) from raw_cool_maps
   file chrsize from chrsize_balance.collect()
@@ -947,6 +955,9 @@ process cooler_zoomify {
    label 'process_medium'
    publishDir "${params.outdir}/contact_maps/norm/mcool", mode: 'copy'
 
+   when:
+   !params.skip_mcool
+
    input:
    set val(sample), file(contacts), file(index) from cool_build_zoom
    file chrsize from chrsize_zoom.collect()
@@ -956,7 +967,7 @@ process cooler_zoomify {
 
    script:
    """
-   cooler makebins ${chrsize} 5000 > bins.bed
+   cooler makebins ${chrsize} ${params.res_zoomify} > bins.bed
    cooler cload pairix --nproc ${task.cpus} bins.bed contacts.sorted.txt.gz ${sample}.cool
    cooler zoomify --nproc ${task.cpus} --balance ${sample}.cool
    """
