@@ -1024,6 +1024,34 @@ process dist_decay {
   """
 }
 
+/*
+ * Compartment calling
+ */
+
+/*
+chcomp = iced_maps_comp.combine(comp_res).filter{ it[1] == it[4] }.dump(tag: "comp")
+
+process compartment_calling {
+  tag "$sample - $res"
+  label 'process_medium'
+  publishDir "${params.outdir}/compartments", mode: 'copy'
+
+  when:
+  !params.skip_compartments
+
+  input:
+  set val(sample), val(res), file(mat), file(bed), val(r) from chcomp
+
+  output:
+  file("*.bedgraph") optional true into out_compartments
+
+  script:
+  """
+  call_compartments.r --matrix ${mat} --bed ${bed}
+  """
+}
+*/
+
 
 /*
  * TADs calling
