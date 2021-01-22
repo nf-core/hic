@@ -24,7 +24,7 @@ In practice, this workflow was successfully applied to many data-sets including
 dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or
 HiChip data.
 
-Contact maps are generated in standard format including HiC-Pro, cooler, and h5 format for
+Contact maps are generated in standard formats including HiC-Pro, cooler, and h5 format for
 downstream analysis and visualization.
 Addition analysis steps such as TADs calling are also available.
 
