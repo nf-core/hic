@@ -5,11 +5,11 @@
     "description": "Analysis of Chromosome Conformation Capture data (Hi-C)",
     "type": "object",
     "definitions": {
-        "mandatory_arguments": {
-            "title": "Mandatory arguments",
+        "input_output_options": {
+            "title": "Input/output options",
             "type": "object",
             "fa_icon": "fas fa-terminal",
-            "description": "Mandatory arguments to run the pipeline",
+            "description": "Define where the pipeline should find input data and save output data.",
             "required": [
                 "input"
             ],
@@ -53,6 +53,12 @@
             "fa_icon": "fas fa-dna",
             "description": "Options for the reference genome indices used to align reads.",
             "properties": {
+                "genome": {
+                    "type": "string",
+                    "description": "Name of iGenomes reference.",
+                    "fa_icon": "fas fa-book",
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`.\n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                },
                 "fasta": {
                     "type": "string",
                     "fa_icon": "fas fa-font",
@@ -445,7 +451,8 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/mandatory_arguments"
+
+            "$ref": "#/definitions/input_output_options"
         },
         {
             "$ref": "#/definitions/reference_genome_options"

@@ -10,7 +10,6 @@
 */
 
 def helpMessage() {
-    // Add to this help message with new command line parameters
     log.info nfcoreHeader()
     log.info"""
 
@@ -143,13 +142,10 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_output_docs = file("$projectDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 
-/**********************************************************
- * SET UP CHANNELS
- */
-
 /*
  * input read files
  */
+
 if (params.input_paths){
 
    raw_reads = Channel.create()
@@ -381,26 +377,6 @@ process get_software_versions {
    scrape_software_versions.py &> software_versions_mqc.yaml
    """
 }
-
-def create_workflow_summary(summary) {
-
-    def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
-    yaml_file.text  = """
-    id: 'nf-core-hic-summary'
-    description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/hic Workflow Summary'
-    section_href: 'https://github.com/nf-core/hic'
-    plot_type: 'html'
-    data: |
-        <dl class=\"dl-horizontal\">
-${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }.join("\n")}
-        </dl>
-    """.stripIndent()
-
-   return yaml_file
-}
-
-
 
 /****************************************************
  * PRE-PROCESSING
@@ -674,7 +650,6 @@ process combine_mates{
    """
 }
 
-
 /*
  * HiC-Pro - detect valid interaction from aligned data
  */
@@ -746,7 +721,6 @@ else{
       """
    }
 }
-
 
 /*
  * Remove duplicates
@@ -1146,8 +1120,9 @@ process multiqc {
    """
 }
 
+
 /*
- * STEP 7 - Output Description HTML
+ * Output Description HTML
  */
 process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
@@ -1156,13 +1131,13 @@ process output_documentation {
     file output_docs from ch_output_docs
     file images from ch_output_docs_images
 
-   output:
-   file "results_description.html"
+    output:
+    file "results_description.html"
 
-   script:
-   """
-   markdown_to_html.py $output_docs -o results_description.html
-   """
+    script:
+    """
+    markdown_to_html.py $output_docs -o results_description.html
+    """
 }
 
 /*
@@ -1199,7 +1174,6 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
     // On success try attach the multiqc report
     def mqc_report = null
     try {
@@ -1282,7 +1256,6 @@ workflow.onComplete {
         checkHostname()
         log.info "-${c_purple}[nf-core/hic]${c_red} Pipeline completed with errors${c_reset}-"
     }
-
 }
 
 

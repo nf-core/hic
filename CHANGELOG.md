@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix bug in `--bin_size` parameter (#85)
 * `--min_mapq` is ignored if `--keep_multi` is used
 
-### Deprecated
+### `Deprecated`
 
 * `--rm_dup` and `--rm_multi` are replaced by `--keep_dup` and `--keep_multi`
 
@@ -130,3 +130,4 @@ if not provided.
 * Normalization of the contact maps using the ICE algorithm
 * Generation of cooler file for visualization on [higlass](https://higlass.io/)
 * Quality report based on HiC-Pro MultiQC module
+
