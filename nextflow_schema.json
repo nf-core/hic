@@ -26,12 +26,6 @@
                     "description": "Input FastQ files for test only",
                     "default": "undefined"
                 },
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`.\n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
                 "outdir": {
                     "type": "string",
                     "description": "The output directory where the results will be saved.",
@@ -257,6 +251,34 @@
                     "type": "integer",
                     "default": "100",
                     "description": "Maximum number of iteraction for ICE normalization"
+                },
+                "res_zoomify": {
+                    "type": "integer",
+                    "default": 5000,
+                    "description": "Maximum resolution to build mcool file"
+                }
+            }
+        },
+        "downstream_analysis": {
+            "title": "Downstream Analysis",
+            "type": "object",
+            "description": "Set up downstream analysis from contact maps",
+            "default": "",
+            "properties": {
+                "res_dist_decay": {
+                    "type": "integer",
+                    "default": 1000000,
+                    "description": "Resolution to build count/distance plot"
+                },
+                "tads_caller": {
+                    "type": "string",
+                    "default": "hicexplorer,insulation",
+                    "description": "Define methods for TADs calling"
+                },
+                "res_tads": {
+                    "type": "string",
+                    "default": "40000,20000",
+                    "description": "Resolution to run TADs callers (comma separated)"
                 }
             }
         },
@@ -272,12 +294,29 @@
                     "description": "Do not build contact maps"
                 },
                 "skip_ice": {
-                    "type": "boolean",
-                    "description": "Do not normalize contact maps"
+                    "type": "string",
+                    "description": "Do not run ICE normalization",
+                    "default": "False"
                 },
-                "skip_cool": {
-                    "type": "boolean",
-                    "description": "Do not generate cooler file"
+                "skip_dist_decay": {
+                    "type": "string",
+                    "description": "Do not run distance/decay plot",
+                    "default": "False"
+                },
+                "skip_tads": {
+                    "type": "string",
+                    "description": "Do not run TADs calling",
+                    "default": "False"
+                },
+                "skip_balancing": {
+                    "type": "string",
+                    "description": "Do not run cooler balancing normalization",
+                    "default": "False"
+                },
+                "skip_mcool": {
+                    "type": "string",
+                    "description": "Do not generate mcool file for Higlass visualization",
+                    "default": "False"
                 },
                 "skip_multiqc": {
                     "type": "boolean",
@@ -451,7 +490,6 @@
     },
     "allOf": [
         {
-
             "$ref": "#/definitions/input_output_options"
         },
         {
@@ -471,6 +509,9 @@
         },
         {
             "$ref": "#/definitions/contact_maps_options"
+        },
+        {
+            "$ref": "#/definitions/downstream_analysis"
         },
         {
             "$ref": "#/definitions/skip_options"
