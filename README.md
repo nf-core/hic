@@ -108,4 +108,3 @@ In addition, references of tools and data used in this pipeline are as follows:
 > Nicolas Servant, Nelle Varoquaux, Bryan R. Lajoie, Eric Viara, Chongjian Chen, Jean-Philippe Vert, Job Dekker, Edith Heard, Emmanuel Barillot.
 >
 > Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
-
