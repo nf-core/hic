@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0dev
 
+* Change min_mapq behavior by removing pairs only when the two mates have a mapq<min_mapq
 * Add HiCExplorer distance decay quality control
 * Add HiCExplorer TADs calling
 * Add insulation score TADs calling
