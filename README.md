@@ -1,4 +1,4 @@
-# ![nf-core/hic](docs/images/nfcore-hic_logo.png)
+# ![nf-core/hic](docs/images/nf-core-hic_logo.png)
 
 **Analysis of Chromosome Conformation Capture data (Hi-C)**.
 
@@ -70,8 +70,6 @@ sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
     nextflow run nf-core/hic -profile <docker/singularity/podman/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
     ```
 
-See [usage docs](https://nf-co.re/hic/usage) for all of the available options when running the pipeline.
-
 ## Documentation
 
 The nf-core/hic pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/hic/usage) and [output](https://nf-co.re/hic/output).
@@ -87,9 +85,7 @@ nf-core/hic was originally written by Nicolas Servant.
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on the
-[Slack `#hic` channel](https://nfcore.slack.com/channels/hic)
-(you can join with [this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch on the [Slack `#hic` channel](https://nfcore.slack.com/channels/hic) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citation
 
@@ -100,8 +96,15 @@ You can cite the `nf-core` publication as follows:
 
 > **The nf-core framework for community-curated bioinformatics pipelines.**
 >
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg,
-Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
 >
 > _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
 > ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
+
+In addition, references of tools and data used in this pipeline are as follows:
+
+> **HiC-Pro: An optimized and flexible pipeline for Hi-C processing.**
+>
+> Nicolas Servant, Nelle Varoquaux, Bryan R. Lajoie, Eric Viara, Chongjian Chen, Jean-Philippe Vert, Job Dekker, Edith Heard, Emmanuel Barillot.
+>
+> Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)

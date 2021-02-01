@@ -33,8 +33,10 @@ jobs:
   nf-core:
     runs-on: ubuntu-latest
     steps:
+
       - name: Check out pipeline code
         uses: actions/checkout@v2
+
       - name: Install Nextflow
         env:
           CAPSULE_LOG: none
@@ -72,5 +74,3 @@ jobs:
             lint_log.txt
             lint_results.md
             PR_number.txt
-
-

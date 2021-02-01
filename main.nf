@@ -10,7 +10,6 @@
 */
 
 def helpMessage() {
-    // Add to this help message with new command line parameters
     log.info nfcoreHeader()
     log.info"""
 
@@ -107,6 +106,7 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
    exit 1, "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
 }
+
 params.restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
 params.ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
 
@@ -143,13 +143,10 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_output_docs = file("$projectDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 
-/**********************************************************
- * SET UP CHANNELS
- */
-
 /*
  * input read files
  */
+
 if (params.input_paths){
 
    raw_reads = Channel.create()
@@ -381,26 +378,6 @@ process get_software_versions {
    scrape_software_versions.py &> software_versions_mqc.yaml
    """
 }
-
-def create_workflow_summary(summary) {
-
-    def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
-    yaml_file.text  = """
-    id: 'nf-core-hic-summary'
-    description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/hic Workflow Summary'
-    section_href: 'https://github.com/nf-core/hic'
-    plot_type: 'html'
-    data: |
-        <dl class=\"dl-horizontal\">
-${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }.join("\n")}
-        </dl>
-    """.stripIndent()
-
-   return yaml_file
-}
-
-
 
 /****************************************************
  * PRE-PROCESSING
@@ -674,7 +651,6 @@ process combine_mates{
    """
 }
 
-
 /*
  * HiC-Pro - detect valid interaction from aligned data
  */
@@ -746,7 +722,6 @@ else{
       """
    }
 }
-
 
 /*
  * Remove duplicates
@@ -877,7 +852,7 @@ process run_ice{
  * Cooler
  */
 
-process cooler_build {
+process convert_to_pairs {
    tag "$sample"
    label 'process_medium'
 
@@ -889,17 +864,16 @@ process cooler_build {
    file chrsize from chrsize_build.collect()
 
    output:
-   set val(sample), file("contacts.sorted.txt.gz"), file("contacts.sorted.txt.gz.px2") into cool_build, cool_build_zoom
+   set val(sample), file("*.txt.gz") into cool_build, cool_build_zoom
 
    script:
    """
-   awk '{OFS="\t";print \$2,\$3,\$4,\$5,\$6,\$7,1}' $vpairs | sed -e 's/+/1/g' -e 's/-/16/g' > contacts.txt
-   cooler csort --nproc ${task.cpus} -c1 1 -p1 2 -s1 3 -c2 4 -p2 5 -s2 6 \
-	  contacts.txt \
-          -o contacts.sorted.txt.gz \
-	  ${chrsize}
+   ## chr/pos/strand/chr/pos/strand
+   awk '{OFS="\t";print \$2,\$3,\$4,\$5,\$6,\$7}' $vpairs | sed -e 's/+/1/g' -e 's/-/16/g' > contacts.txt
+   gzip contacts.txt
    """
 }
+
 
 process cooler_raw {
   tag "$sample - ${res}"
@@ -909,7 +883,7 @@ process cooler_raw {
               saveAs: {filename -> filename.indexOf(".cool") > 0 ? "raw/cool/$filename" : "raw/txt/$filename"}
 
   input:
-  set val(sample), file(contacts), file(index), val(res) from cool_build.combine(map_res_cool)
+  set val(sample), file(contacts), val(res) from cool_build.combine(map_res_cool)
   file chrsize from chrsize_raw.collect()
 
   output:
@@ -919,7 +893,7 @@ process cooler_raw {
   script:
   """
   cooler makebins ${chrsize} ${res} > ${sample}_${res}.bed
-  cooler cload pairix --nproc ${task.cpus} ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
+  cooler cload pairs -c1 1 -p1 2 -c2 4 -p2 5 ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
   cooler dump ${sample}_${res}.cool | awk '{OFS="\t"; print \$1+1,\$2+1,\$3}' > ${sample}_${res}.txt
   """
 }
@@ -959,7 +933,7 @@ process cooler_zoomify {
    !params.skip_mcool
 
    input:
-   set val(sample), file(contacts), file(index) from cool_build_zoom
+   set val(sample), file(contacts)  from cool_build_zoom
    file chrsize from chrsize_zoom.collect()
 
    output:
@@ -968,7 +942,7 @@ process cooler_zoomify {
    script:
    """
    cooler makebins ${chrsize} ${params.res_zoomify} > bins.bed
-   cooler cload pairix --nproc ${task.cpus} bins.bed contacts.sorted.txt.gz ${sample}.cool
+   cooler cload pairs -c1 1 -p1 2 -c2 4 -p2 5 bins.bed ${contacts} ${sample}.cool
    cooler zoomify --nproc ${task.cpus} --balance ${sample}.cool
    """
 }
@@ -992,7 +966,7 @@ process convert_to_h5 {
   script:
   """
   hicConvertFormat --matrices ${maps} \
-  		   --outFileName ${sample}.h5 \
+  		   --outFileName ${maps.baseName}.h5 \
 		   --resolution ${res} \
 		   --inputFormat cool \
 		   --outputFormat h5 \
@@ -1027,11 +1001,10 @@ process dist_decay {
 
 
   script:
-  prefix = h5mat.toString() - ~/(\.h5)?$/
   """
   hicPlotDistVsCounts --matrices ${h5mat} \
-                      --plotFile ${prefix}_distcount.png \
-  		      --outFileData ${prefix}_distcount.txt
+                      --plotFile ${h5mat.baseName}_distcount.png \
+  		      --outFileData ${h5mat.baseName}_distcount.txt
   """
 }
 
@@ -1132,7 +1105,7 @@ process multiqc {
    file (mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])
    file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
    file ('software_versions/*') from software_versions_yaml
-   file workflow_summary from create_workflow_summary(summary)
+   file workflow_summary from ch_workflow_summary.collect()
 
    output:
    file "*multiqc_report.html" into multiqc_report
@@ -1146,8 +1119,9 @@ process multiqc {
    """
 }
 
+
 /*
- * STEP 7 - Output Description HTML
+ * Output Description HTML
  */
 process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
@@ -1156,13 +1130,13 @@ process output_documentation {
     file output_docs from ch_output_docs
     file images from ch_output_docs_images
 
-   output:
-   file "results_description.html"
+    output:
+    file "results_description.html"
 
-   script:
-   """
-   markdown_to_html.py $output_docs -o results_description.html
-   """
+    script:
+    """
+    markdown_to_html.py $output_docs -o results_description.html
+    """
 }
 
 /*
@@ -1199,7 +1173,6 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
     // On success try attach the multiqc report
     def mqc_report = null
     try {
@@ -1282,7 +1255,6 @@ workflow.onComplete {
         checkHostname()
         log.info "-${c_purple}[nf-core/hic]${c_red} Pipeline completed with errors${c_reset}-"
     }
-
 }
 
 
