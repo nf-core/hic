@@ -106,6 +106,7 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
    exit 1, "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
 }
+
 params.restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
 params.ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
 
