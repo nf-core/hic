@@ -869,7 +869,7 @@ process convert_to_pairs {
    script:
    """
    ## chr/pos/strand/chr/pos/strand
-   awk '{OFS="\t";print \$2,\$3,\$4,\$5,\$6,\$7}' $vpairs | sed -e 's/+/1/g' -e 's/-/16/g' > contacts.txt
+   awk '{OFS="\t";print \$1,\$2,\$3,\$5,\$6,\$4,\$7}' $vpairs > contacts.txt
    gzip contacts.txt
    """
 }
@@ -893,7 +893,7 @@ process cooler_raw {
   script:
   """
   cooler makebins ${chrsize} ${res} > ${sample}_${res}.bed
-  cooler cload pairs -c1 1 -p1 2 -c2 4 -p2 5 ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
+  cooler cload pairs -c1 2 -p1 3 -c2 4 -p2 5 ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
   cooler dump ${sample}_${res}.cool | awk '{OFS="\t"; print \$1+1,\$2+1,\$3}' > ${sample}_${res}.txt
   """
 }
@@ -942,7 +942,7 @@ process cooler_zoomify {
    script:
    """
    cooler makebins ${chrsize} ${params.res_zoomify} > bins.bed
-   cooler cload pairs -c1 1 -p1 2 -c2 4 -p2 5 bins.bed ${contacts} ${sample}.cool
+   cooler cload pairs -c1 2 -p1 3 -c2 4 -p2 5 bins.bed ${contacts} ${sample}.cool
    cooler zoomify --nproc ${task.cpus} --balance ${sample}.cool
    """
 }
