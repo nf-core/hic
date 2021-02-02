@@ -243,25 +243,32 @@ else if (! params.dnase) {
     exit 1, "No restriction fragments file specified!"
 }
 
-
-if (params.res_tads){
+// Resolutions for contact maps
+map_res = Channel.from( params.bin_size ).splitCsv().flatten()
+all_res = params.bin_size
+if (params.res_tads && !params.skip_tads){
   Channel.from( "${params.res_tads}" )
     .splitCsv()
     .flatten()
-    .into {tads_res_hicexplorer; tads_res_insulation; tads_bin }
+    .into {tads_bin; tads_res_hicexplorer; tads_res_insulation}
+    map_res = map_res.concat(tads_bin)
+    all_res = all_res + ',' + params.res_tads
 }else{
-  tads_res=Channel.create()
-  tads_bin=Channel.create()
+  tads_res_hicexplorer=Channel.empty()
+  tads_res_insulation=Channel.empty()
+  tads_bin=Channel.empty()
   if (!params.skip_tads){
     log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads" 
   }
 }
 
-if (params.res_dist_decay){
+if (params.res_dist_decay && !params.skip_dist_decay){
   Channel.from( "${params.res_dist_decay}" )
     .splitCsv()
     .flatten()
     .into {ddecay_res; ddecay_bin }
+    map_res = map_res.concat(ddecay_bin)
+    all_res = all_res + ',' + params.res_dist_decay
 }else{
   ddecay_res = Channel.create()
   ddecay_bin = Channel.create()
@@ -270,13 +277,9 @@ if (params.res_dist_decay){
   }
 }
 
-
-// Resolutions for contact maps
-map_res = Channel.from( params.bin_size ).splitCsv().flatten()
-map_res.concat(tads_bin, ddecay_bin)
+map_res
   .unique()
-  .into { map_res; map_res_cool }
-
+  .into { map_res_summary; map_res; map_res_cool }
 
 /**********************************************************
  * SET UP LOGS
@@ -307,7 +310,7 @@ if (params.restriction_site){
 summary['Min MAPQ']         = params.min_mapq
 summary['Keep Duplicates']  = params.keep_dups ? 'Yes' : 'No'
 summary['Keep Multihits']   = params.keep_multi ? 'Yes' : 'No'
-summary['Maps resolution']  = params.bin_size
+summary['Maps resolution']  = all_res
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
@@ -458,7 +461,7 @@ if(!params.restriction_fragments && params.fasta && !params.dnase){
 process bowtie2_end_to_end {
    tag "$sample"
    label 'process_medium'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
    input:
@@ -496,7 +499,7 @@ process bowtie2_end_to_end {
 process trim_reads {
    tag "$sample"
    label 'process_low'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
    when:
@@ -520,7 +523,7 @@ process trim_reads {
 process bowtie2_on_trimmed_reads {
    tag "$sample"
    label 'process_medium'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
    when:
@@ -548,7 +551,7 @@ if (!params.dnase){
    process bowtie2_merge_mapping_steps{
       tag "$prefix = $bam1 + $bam2"
       label 'process_medium'
-      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
       input:
@@ -591,7 +594,7 @@ if (!params.dnase){
    process dnase_mapping_stats{
       tag "$sample = $bam"
       label 'process_medium'
-      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
       input:
@@ -623,7 +626,7 @@ if (!params.dnase){
 process combine_mates{
    tag "$sample = $r1_prefix + $r2_prefix"
    label 'process_low'
-   publishDir "${params.outdir}/mapping", mode: params.publish_dir_mode,
+   publishDir "${params.outdir}/hicpro/mapping", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
 
    input:
@@ -659,7 +662,7 @@ if (!params.dnase){
    process get_valid_interaction{
       tag "$sample"
       label 'process_low'
-      publishDir "${params.outdir}/valid_pairs", mode: params.publish_dir_mode,
+      publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
@@ -698,7 +701,7 @@ else{
    process get_valid_interaction_dnase{
       tag "$sample"
       label 'process_low'
-      publishDir "${params.outdir}/valid_pairs", mode: params.publish_dir_mode,
+      publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
@@ -730,7 +733,7 @@ else{
 process remove_duplicates {
    tag "$sample"
    label 'process_highmem'
-   publishDir "${params.outdir}/valid_pairs", mode: params.publish_dir_mode,
+   publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
@@ -776,7 +779,7 @@ process remove_duplicates {
 process merge_stats {
    tag "$ext"
    label 'process_low'
-   publishDir "${params.outdir}/stats/${sample}", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/stats/${sample}", mode: params.publish_dir_mode
 
    input:
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
@@ -982,7 +985,11 @@ process convert_to_h5 {
  * Counts vs distance QC
  */
 
-chddecay = h5maps_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: "ddecay") 
+if (!params.skip_dist_decay){
+  chddecay = h5maps_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: "ddecay") 
+}else{
+  chddecay = Channel.empty()
+}
 
 process dist_decay {
   tag "$sample"
@@ -1013,7 +1020,11 @@ process dist_decay {
  */
 
 /*
-chcomp = iced_maps_comp.combine(comp_res).filter{ it[1] == it[4] }.dump(tag: "comp")
+if(!params.skip_compartments){
+  chcomp = iced_maps_comp.combine(comp_res).filter{ it[1] == it[4] }.dump(tag: "comp")
+}else{
+  chcomp = Channel.empty()
+}
 
 process compartment_calling {
   tag "$sample - $res"
@@ -1041,7 +1052,11 @@ process compartment_calling {
  * TADs calling
  */
 
-chtads = h5maps_tads.combine(tads_res_hicexplorer).filter{ it[1] == it[3] }.dump(tag: "hicexp")
+if (!params.skip_tads){
+  chtads = h5maps_tads.combine(tads_res_hicexplorer).filter{ it[1] == it[3] }.dump(tag: "hicexp")
+}else{
+  chtads = Channel.empty()
+}
 
 process tads_hicexplorer {
   tag "$sample - $res"
@@ -1066,7 +1081,11 @@ process tads_hicexplorer {
   """
 }
 
-chIS = norm_cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
+if (!params.skip_tads){
+  chIS = norm_cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
+}else{
+  chIS = Channel.empty()
+}
 
 process tads_insulation {
   tag "$sample - $res"
