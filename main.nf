@@ -916,7 +916,7 @@ process cooler_balance {
   file chrsize from chrsize_balance.collect()
 
   output:
-  set val(sample), val(res), file("${sample}_${res}_norm.cool") into norm_cool_maps, norm_cool_maps_h5
+  set val(sample), val(res), file("${sample}_${res}_norm.cool") into balanced_cool_maps
   file("${sample}_${res}_norm.txt") into norm_txt_maps
 
   script:
@@ -953,7 +953,6 @@ process cooler_zoomify {
 
 /*
  * Create h5 file
- */
 
 process convert_to_h5 {
   tag "$sample"
@@ -975,18 +974,20 @@ process convert_to_h5 {
 		   --outputFormat h5 \
   """
 }
-
+*/
 
 /****************************************************
  * DOWNSTREAM ANALYSIS
  */
+
+(maps_cool_insulation, maps_cool_comp, maps_hicexplorer_ddecay, maps_hicexplorer_tads) = balanced_cool_maps.into(4)
 
 /*
  * Counts vs distance QC
  */
 
 if (!params.skip_dist_decay){
-  chddecay = h5maps_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: "ddecay") 
+  chddecay = maps_hicexplorer_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: "ddecay") 
 }else{
   chddecay = Channel.empty()
 }
@@ -1021,7 +1022,7 @@ process dist_decay {
 
 /*
 if(!params.skip_compartments){
-  chcomp = iced_maps_comp.combine(comp_res).filter{ it[1] == it[4] }.dump(tag: "comp")
+  chcomp = maps_cool_comp.combine(comp_res).filter{ it[1] == it[4] }.dump(tag: "comp")
 }else{
   chcomp = Channel.empty()
 }
@@ -1053,7 +1054,7 @@ process compartment_calling {
  */
 
 if (!params.skip_tads){
-  chtads = h5maps_tads.combine(tads_res_hicexplorer).filter{ it[1] == it[3] }.dump(tag: "hicexp")
+  chtads = maps_hicexplorer_tads.combine(tads_res_hicexplorer).filter{ it[1] == it[3] }.dump(tag: "hicexp")
 }else{
   chtads = Channel.empty()
 }
@@ -1061,7 +1062,7 @@ if (!params.skip_tads){
 process tads_hicexplorer {
   tag "$sample - $res"
   label 'process_medium'
-  publishDir "${params.outdir}/tads", mode: 'copy'
+  publishDir "${params.outdir}/tads/hicexplorer", mode: 'copy'
 
   when:
   !params.skip_tads && params.tads_caller =~ 'hicexplorer'
@@ -1082,7 +1083,7 @@ process tads_hicexplorer {
 }
 
 if (!params.skip_tads){
-  chIS = norm_cool_maps.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
+  chIS = maps_cool_insulation.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
 }else{
   chIS = Channel.empty()
 }
@@ -1090,7 +1091,7 @@ if (!params.skip_tads){
 process tads_insulation {
   tag "$sample - $res"
   label 'process_medium'
-  publishDir "${params.outdir}/tads", mode: 'copy'
+  publishDir "${params.outdir}/tads/insulation", mode: 'copy'
 
   when:
   !params.skip_tads && params.tads_caller =~ 'insulation'
