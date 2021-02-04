@@ -279,6 +279,11 @@
                     "type": "string",
                     "default": "40000,20000",
                     "description": "Resolution to run TADs callers (comma separated)"
+                },
+                "res_compartments": {
+                    "type": "integer",
+                    "default": 250000,
+                    "description": "Resolution for compartments calling"
                 }
             }
         },
@@ -307,6 +312,10 @@
                     "type": "string",
                     "description": "Do not run TADs calling",
                     "default": "False"
+                },
+                "skip_compartments": {
+                    "type": "string",
+                    "description": "Do not run compartments calling"
                 },
                 "skip_balancing": {
                     "type": "string",
