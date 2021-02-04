@@ -277,9 +277,23 @@ if (params.res_dist_decay && !params.skip_dist_decay){
   }
 }
 
+if (params.res_compartments && !params.skip_compartments){
+  Channel.from( "${params.res_compartments}" )
+    .splitCsv()
+    .flatten()
+    .into {comp_bin; comp_res}
+    map_res = map_res.concat(comp_bin)
+    all_res = all_res + ',' + params.res_compartments
+}else{
+  comp_res = Channel.create()
+  if (!params.skip_compartments){
+    log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
+  }
+}
+
 map_res
   .unique()
-  .into { map_res_summary; map_res; map_res_cool }
+  .into { map_res_summary; map_res; map_res_cool; map_comp }
 
 /**********************************************************
  * SET UP LOGS
@@ -1020,9 +1034,8 @@ process dist_decay {
  * Compartment calling
  */
 
-/*
 if(!params.skip_compartments){
-  chcomp = maps_cool_comp.combine(comp_res).filter{ it[1] == it[4] }.dump(tag: "comp")
+  chcomp = maps_cool_comp.combine(comp_res).filter{ it[1] == it[3] }.dump(tag: "comp")
 }else{
   chcomp = Channel.empty()
 }
@@ -1036,17 +1049,16 @@ process compartment_calling {
   !params.skip_compartments
 
   input:
-  set val(sample), val(res), file(mat), file(bed), val(r) from chcomp
+  set val(sample), val(res), file(cool), val(r) from chcomp
 
   output:
-  file("*.bedgraph") optional true into out_compartments
+  file("*compartments*") optional true into out_compartments
 
   script:
   """
-  call_compartments.r --matrix ${mat} --bed ${bed}
+  cooltools call-compartments --contact-type cis -o ${sample}_compartments ${cool}
   """
 }
-*/
 
 
 /*
@@ -1068,14 +1080,14 @@ process tads_hicexplorer {
   !params.skip_tads && params.tads_caller =~ 'hicexplorer'
 
   input:
-  set val(sample), val(res), file(h5mat), val(r) from chtads
+  set val(sample), val(res), file(cool), val(r) from chtads
 
   output:
   file("*.{bed,bedgraph,gff}") into hicexplorer_tads
 
   script:
   """
-  hicFindTADs --matrix ${h5mat} \
+  hicFindTADs --matrix ${cool} \
   	      --outPrefix tad \
 	      --correctForMultipleTesting fdr \
 	      --numberOfProcessors ${task.cpus}
