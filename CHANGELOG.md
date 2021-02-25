@@ -3,8 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.3.0dev - 2020-11-01
+## v1.3.0dev
 
+* Add HiCExplorer distance decay quality control
+* Add HiCExplorer TADs calling
+* Add insulation score TADs calling
+* Generate cooler/h5/txt contact maps
+* Normalize Hi-C data with cooler instead of iced
 * New `--digestion` parameter to automatically set the restriction_site and ligation_site motifs
 * New `--keep_multi` and `keep_dup` options. Default: false
 * Template update for nf-core/tools v1.11
@@ -14,11 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Fix recurrent bug in input file extension (#86)
 * Fix bug in `--bin_size` parameter (#85)
-* `min_mapq` is ignored if `--keep_multi` is used
+* `--min_mapq` is ignored if `--keep_multi` is used
 
-### Deprecated
+### `Deprecated`
 
-* `--rm_dup` and `rm_multi` are replaced by `--keep_dup` and `--keep_multi`
+* `--rm_dup` and `--rm_multi` are replaced by `--keep_dups` and `--keep_multi`
 
 ## v1.2.2 - 2020-09-02
 

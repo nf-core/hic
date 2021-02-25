@@ -10,7 +10,6 @@
 */
 
 def helpMessage() {
-    // Add to this help message with new command line parameters
     log.info nfcoreHeader()
     log.info"""
 
@@ -68,8 +67,10 @@ def helpMessage() {
 
     Workflow
       --skip_maps [bool]                        Skip generation of contact maps. Useful for capture-C. Default: False
-      --skip_ice [bool]                         Skip ICE normalization. Default: False
-      --skip_cool [bool]                        Skip generation of cool files. Default: False
+      --skip_balancing [bool]                   Skip contact maps normalization. Default: False
+      --skip_mcool                              Skip mcool file generation. Default: False
+      --skip_dist_decay                         Skip distance decay quality control. Default: False
+      --skip_tads [bool]                        Skip TADs calling. Default: False
       --skip_multiqc [bool]                     Skip MultiQC. Default: False
 
     Other options:
@@ -105,6 +106,7 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
 if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
    exit 1, "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
 }
+
 params.restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
 params.ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
 
@@ -141,13 +143,10 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ch_output_docs = file("$projectDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 
-/**********************************************************
- * SET UP CHANNELS
- */
-
 /*
  * input read files
  */
+
 if (params.input_paths){
 
    raw_reads = Channel.create()
@@ -219,7 +218,7 @@ else {
 // Chromosome size
 if ( params.chromosome_size ){
    Channel.fromPath( params.chromosome_size , checkIfExists: true)
-         .into {chromosome_size; chromosome_size_cool}
+         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance; chrsize_zoom}
 }
 else if ( params.fasta ){
    Channel.fromPath( params.fasta )
@@ -245,7 +244,56 @@ else if (! params.dnase) {
 }
 
 // Resolutions for contact maps
-map_res = Channel.from( params.bin_size.toString() ).splitCsv().flatten()
+map_res = Channel.from( params.bin_size ).splitCsv().flatten()
+all_res = params.bin_size
+if (params.res_tads && !params.skip_tads){
+  Channel.from( "${params.res_tads}" )
+    .splitCsv()
+    .flatten()
+    .into {tads_bin; tads_res_hicexplorer; tads_res_insulation}
+    map_res = map_res.concat(tads_bin)
+    all_res = all_res + ',' + params.res_tads
+}else{
+  tads_res_hicexplorer=Channel.empty()
+  tads_res_insulation=Channel.empty()
+  tads_bin=Channel.empty()
+  if (!params.skip_tads){
+    log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads" 
+  }
+}
+
+if (params.res_dist_decay && !params.skip_dist_decay){
+  Channel.from( "${params.res_dist_decay}" )
+    .splitCsv()
+    .flatten()
+    .into {ddecay_res; ddecay_bin }
+    map_res = map_res.concat(ddecay_bin)
+    all_res = all_res + ',' + params.res_dist_decay
+}else{
+  ddecay_res = Channel.create()
+  ddecay_bin = Channel.create()
+  if (!params.skip_dist_decay){
+    log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay" 
+  }
+}
+
+if (params.res_compartments && !params.skip_compartments){
+  Channel.from( "${params.res_compartments}" )
+    .splitCsv()
+    .flatten()
+    .into {comp_bin; comp_res}
+    map_res = map_res.concat(comp_bin)
+    all_res = all_res + ',' + params.res_compartments
+}else{
+  comp_res = Channel.create()
+  if (!params.skip_compartments){
+    log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
+  }
+}
+
+map_res
+  .unique()
+  .into { map_res_summary; map_res; map_res_cool; map_comp }
 
 /**********************************************************
  * SET UP LOGS
@@ -276,7 +324,7 @@ if (params.restriction_site){
 summary['Min MAPQ']         = params.min_mapq
 summary['Keep Duplicates']  = params.keep_dups ? 'Yes' : 'No'
 summary['Keep Multihits']   = params.keep_multi ? 'Yes' : 'No'
-summary['Maps resolution']  = params.bin_size
+summary['Maps resolution']  = all_res
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
@@ -348,26 +396,6 @@ process get_software_versions {
    """
 }
 
-def create_workflow_summary(summary) {
-
-    def yaml_file = workDir.resolve('workflow_summary_mqc.yaml')
-    yaml_file.text  = """
-    id: 'nf-core-hic-summary'
-    description: " - this information is collected when the pipeline is started."
-    section_name: 'nf-core/hic Workflow Summary'
-    section_href: 'https://github.com/nf-core/hic'
-    plot_type: 'html'
-    data: |
-        <dl class=\"dl-horizontal\">
-${summary.collect { k,v -> "            <dt>$k</dt><dd><samp>${v ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>" }.join("\n")}
-        </dl>
-    """.stripIndent()
-
-   return yaml_file
-}
-
-
-
 /****************************************************
  * PRE-PROCESSING
  */
@@ -406,7 +434,7 @@ if(!params.chromosome_size && params.fasta){
         file fasta from fasta_for_chromsize
 
         output:
-        file "*.size" into chromosome_size, chromosome_size_cool
+        file "*.size" into chrsize, chrsize_build, chrsize_raw, chrsize_balance, chrsize_zoom
 
         script:
         """
@@ -441,13 +469,13 @@ if(!params.restriction_fragments && params.fasta && !params.dnase){
  */
 
 /*
- * STEP 1 - Two-steps Reads Mapping
-*/
+ * HiC-pro - Two-steps Reads Mapping
+ */
 
 process bowtie2_end_to_end {
    tag "$sample"
    label 'process_medium'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
    input:
@@ -485,7 +513,7 @@ process bowtie2_end_to_end {
 process trim_reads {
    tag "$sample"
    label 'process_low'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
    when:
@@ -509,7 +537,7 @@ process trim_reads {
 process bowtie2_on_trimmed_reads {
    tag "$sample"
    label 'process_medium'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
    when:
@@ -537,7 +565,7 @@ if (!params.dnase){
    process bowtie2_merge_mapping_steps{
       tag "$prefix = $bam1 + $bam2"
       label 'process_medium'
-      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
       input:
@@ -580,7 +608,7 @@ if (!params.dnase){
    process dnase_mapping_stats{
       tag "$sample = $bam"
       label 'process_medium'
-      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping" : params.outdir },
+      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
    	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
 
       input:
@@ -612,7 +640,7 @@ if (!params.dnase){
 process combine_mates{
    tag "$sample = $r1_prefix + $r2_prefix"
    label 'process_low'
-   publishDir "${params.outdir}/mapping", mode: params.publish_dir_mode,
+   publishDir "${params.outdir}/hicpro/mapping", mode: params.publish_dir_mode,
    	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
 
    input:
@@ -640,17 +668,16 @@ process combine_mates{
    """
 }
 
-
 /*
- * STEP2 - DETECT VALID PAIRS
+ * HiC-Pro - detect valid interaction from aligned data
  */
 
 if (!params.dnase){
    process get_valid_interaction{
       tag "$sample"
       label 'process_low'
-      publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
+      publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
+   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -688,8 +715,8 @@ else{
    process get_valid_interaction_dnase{
       tag "$sample"
       label 'process_low'
-      publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$filename" : "$filename"}
+      publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
+   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -713,23 +740,21 @@ else{
    }
 }
 
-
 /*
- * STEP3 - BUILD MATRIX
-*/
+ * Remove duplicates
+ */
 
 process remove_duplicates {
    tag "$sample"
    label 'process_highmem'
-   publishDir "${params.outdir}/hic_results/data", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf("*stat") > 0 ? "stats/$sample/$filename" : "$filename"}
+   publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
+   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$sample/$filename" : "$filename"}
 
    input:
    set val(sample), file(vpairs) from valid_pairs.groupTuple().dump(tag:'final')
 
    output:
-   set val(sample), file("*.allValidPairs") into all_valid_pairs
-   set val(sample), file("*.allValidPairs") into all_valid_pairs_4cool
+   set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_cool
    file("stats/") into all_mergestat
 
    script:
@@ -765,10 +790,10 @@ process remove_duplicates {
    }
 }
 
-process merge_sample {
+process merge_stats {
    tag "$ext"
    label 'process_low'
-   publishDir "${params.outdir}/hic_results/stats/${sample}", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/stats/${sample}", mode: params.publish_dir_mode
 
    input:
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
@@ -787,46 +812,47 @@ process merge_sample {
   """
 }
 
+/*
+ * HiC-Pro build matrix processes
+ * ONGOING VALIDATION - TO REPLACED BY COOLER ?
+ */
+
+
 process build_contact_maps{
    tag "$sample - $mres"
    label 'process_highmem'
-   publishDir "${params.outdir}/hic_results/matrix/raw", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/matrix/raw", mode: params.publish_dir_mode
 
    when:
    !params.skip_maps
 
    input:
-   set val(sample), file(vpairs), val(mres) from all_valid_pairs.combine(map_res)
-   file chrsize from chromosome_size.collect()
+   set val(sample), file(vpairs), val(mres) from ch_vpairs.combine(map_res)
+   file chrsize from chrsize.collect()
 
    output:
-   file("*.matrix") into raw_maps
-   file "*.bed"
-
+   set val(sample), val(mres), file("*.matrix"), file("*.bed") into raw_maps, raw_maps_4cool
+   
    script:
    """
    build_matrix --matrix-format upper  --binsize ${mres} --chrsizes ${chrsize} --ifile ${vpairs} --oprefix ${sample}_${mres}
    """
 }
 
-/*
- * STEP 4 - NORMALIZE MATRIX
-*/
-
 process run_ice{
    tag "$rmaps"
    label 'process_highmem'
-   publishDir "${params.outdir}/hic_results/matrix/iced", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/matrix/iced", mode: params.publish_dir_mode
 
    when:
    !params.skip_maps && !params.skip_ice
 
    input:
-   file(rmaps) from raw_maps
-   file "*.biases"
+   set val(sample), val(res), file(rmaps), file(bed) from raw_maps
 
    output:
-   file("*iced.matrix") into iced_maps
+   set val(sample), val(res), file("*iced.matrix"), file(bed) into iced_maps_4h5, iced_maps_4cool
+   file ("*.biases") into iced_bias
 
    script:
    prefix = rmaps.toString() - ~/(\.matrix)?$/
@@ -840,33 +866,265 @@ process run_ice{
 
 
 /*
- * STEP 5 - COOLER FILE
+ * Cooler
  */
-process generate_cool{
+
+process convert_to_pairs {
    tag "$sample"
    label 'process_medium'
-   publishDir "${params.outdir}/export/cool", mode: params.publish_dir_mode
 
    when:
-   !params.skip_cool
+   !params.skip_maps
 
    input:
-   set val(sample), file(vpairs) from all_valid_pairs_4cool
-   file chrsize from chromosome_size_cool.collect()
+   set val(sample), file(vpairs) from ch_vpairs_cool
+   file chrsize from chrsize_build.collect()
 
    output:
-   file("*mcool") into cool_maps
+   set val(sample), file("*.txt.gz") into cool_build, cool_build_zoom
 
    script:
    """
-   hicpro2higlass.sh -p ${task.cpus} -i $vpairs -r 5000 -c ${chrsize} -n
+   ## chr/pos/strand/chr/pos/strand
+   awk '{OFS="\t";print \$1,\$2,\$3,\$5,\$6,\$4,\$7}' $vpairs > contacts.txt
+   gzip contacts.txt
+   """
+}
+
+
+process cooler_raw {
+  tag "$sample - ${res}"
+  label 'process_medium'
+
+  publishDir "${params.outdir}/contact_maps/", mode: 'copy',
+              saveAs: {filename -> filename.indexOf(".cool") > 0 ? "raw/cool/$filename" : "raw/txt/$filename"}
+
+  input:
+  set val(sample), file(contacts), val(res) from cool_build.combine(map_res_cool)
+  file chrsize from chrsize_raw.collect()
+
+  output:
+  set val(sample), val(res), file("*cool") into raw_cool_maps
+  set file("*.bed"), file("${sample}_${res}.txt") into raw_txt_maps
+
+  script:
+  """
+  cooler makebins ${chrsize} ${res} > ${sample}_${res}.bed
+  cooler cload pairs -c1 2 -p1 3 -c2 4 -p2 5 ${sample}_${res}.bed ${contacts} ${sample}_${res}.cool
+  cooler dump ${sample}_${res}.cool | awk '{OFS="\t"; print \$1+1,\$2+1,\$3}' > ${sample}_${res}.txt
+  """
+}
+
+process cooler_balance {
+  tag "$sample - ${res}"
+  label 'process_medium'
+
+  publishDir "${params.outdir}/contact_maps/", mode: 'copy',
+              saveAs: {filename -> filename.indexOf(".cool") > 0 ? "norm/cool/$filename" : "norm/txt/$filename"}
+
+  when:
+  !params.skip_balancing
+
+  input:
+  set val(sample), val(res), file(cool) from raw_cool_maps
+  file chrsize from chrsize_balance.collect()
+
+  output:
+  set val(sample), val(res), file("${sample}_${res}_norm.cool") into balanced_cool_maps
+  file("${sample}_${res}_norm.txt") into norm_txt_maps
+
+  script:
+  """
+  cp ${cool} ${sample}_${res}_norm.cool
+  cooler balance ${sample}_${res}_norm.cool -p ${task.cpus} --force
+  cooler dump ${sample}_${res}_norm.cool --balanced --na-rep 0 | awk '{OFS="\t"; print \$1+1,\$2+1,\$4}' > ${sample}_${res}_norm.txt
+  """
+}
+
+process cooler_zoomify {
+   tag "$sample"
+   label 'process_medium'
+   publishDir "${params.outdir}/contact_maps/norm/mcool", mode: 'copy'
+
+   when:
+   !params.skip_mcool
+
+   input:
+   set val(sample), file(contacts)  from cool_build_zoom
+   file chrsize from chrsize_zoom.collect()
+
+   output:
+   file("*mcool") into mcool_maps
+
+   script:
+   """
+   cooler makebins ${chrsize} ${params.res_zoomify} > bins.bed
+   cooler cload pairs -c1 2 -p1 3 -c2 4 -p2 5 bins.bed ${contacts} ${sample}.cool
+   cooler zoomify --nproc ${task.cpus} --balance ${sample}.cool
    """
 }
 
 
 /*
- * STEP 6 - MultiQC
+ * Create h5 file
+
+process convert_to_h5 {
+  tag "$sample"
+  label 'process_medium'
+  publishDir "${params.outdir}/contact_maps/norm/h5", mode: 'copy'
+
+  input:
+  set val(sample), val(res), file(maps)  from norm_cool_maps_h5
+
+  output:
+  set val(sample), val(res), file("*.h5") into h5maps_ddecay, h5maps_ccomp, h5maps_tads
+
+  script:
+  """
+  hicConvertFormat --matrices ${maps} \
+  		   --outFileName ${maps.baseName}.h5 \
+		   --resolution ${res} \
+		   --inputFormat cool \
+		   --outputFormat h5 \
+  """
+}
+*/
+
+/****************************************************
+ * DOWNSTREAM ANALYSIS
  */
+
+(maps_cool_insulation, maps_cool_comp, maps_hicexplorer_ddecay, maps_hicexplorer_tads) = balanced_cool_maps.into(4)
+
+/*
+ * Counts vs distance QC
+ */
+
+if (!params.skip_dist_decay){
+  chddecay = maps_hicexplorer_ddecay.combine(ddecay_res).filter{ it[1] == it[3] }.dump(tag: "ddecay") 
+}else{
+  chddecay = Channel.empty()
+}
+
+process dist_decay {
+  tag "$sample"
+  label 'process_medium'
+  publishDir "${params.outdir}/dist_decay", mode: 'copy'
+
+  when:
+  !params.skip_dist_decay
+
+  input:
+  set val(sample), val(res), file(h5mat), val(r) from chddecay
+  
+  output:
+  file("*_distcount.txt")
+  file("*.png")
+
+
+  script:
+  """
+  hicPlotDistVsCounts --matrices ${h5mat} \
+                      --plotFile ${h5mat.baseName}_distcount.png \
+  		      --outFileData ${h5mat.baseName}_distcount.txt
+  """
+}
+
+/*
+ * Compartment calling
+ */
+
+if(!params.skip_compartments){
+  chcomp = maps_cool_comp.combine(comp_res).filter{ it[1] == it[3] }.dump(tag: "comp")
+}else{
+  chcomp = Channel.empty()
+}
+
+process compartment_calling {
+  tag "$sample - $res"
+  label 'process_medium'
+  publishDir "${params.outdir}/compartments", mode: 'copy'
+
+  when:
+  !params.skip_compartments
+
+  input:
+  set val(sample), val(res), file(cool), val(r) from chcomp
+
+  output:
+  file("*compartments*") optional true into out_compartments
+
+  script:
+  """
+  cooltools call-compartments --contact-type cis -o ${sample}_compartments ${cool}
+  """
+}
+
+
+/*
+ * TADs calling
+ */
+
+if (!params.skip_tads){
+  chtads = maps_hicexplorer_tads.combine(tads_res_hicexplorer).filter{ it[1] == it[3] }.dump(tag: "hicexp")
+}else{
+  chtads = Channel.empty()
+}
+
+process tads_hicexplorer {
+  tag "$sample - $res"
+  label 'process_medium'
+  publishDir "${params.outdir}/tads/hicexplorer", mode: 'copy'
+
+  when:
+  !params.skip_tads && params.tads_caller =~ 'hicexplorer'
+
+  input:
+  set val(sample), val(res), file(cool), val(r) from chtads
+
+  output:
+  file("*.{bed,bedgraph,gff}") into hicexplorer_tads
+
+  script:
+  """
+  hicFindTADs --matrix ${cool} \
+  	      --outPrefix tad \
+	      --correctForMultipleTesting fdr \
+	      --numberOfProcessors ${task.cpus}
+  """
+}
+
+if (!params.skip_tads){
+  chIS = maps_cool_insulation.combine(tads_res_insulation).filter{ it[1] == it[3] }.dump(tag : "ins")
+}else{
+  chIS = Channel.empty()
+}
+
+process tads_insulation {
+  tag "$sample - $res"
+  label 'process_medium'
+  publishDir "${params.outdir}/tads/insulation", mode: 'copy'
+
+  when:
+  !params.skip_tads && params.tads_caller =~ 'insulation'
+
+  input:
+  set val(sample), val(res), file(cool), val(r) from chIS
+
+  output:
+  file("*tsv") into insulation_tads
+
+  script:
+  """
+  cooltools diamond-insulation --window-pixels ${cool} 15 25 50 > ${sample}_insulation.tsv
+  """
+}
+
+
+/*
+ * MultiQC
+ */
+
 process multiqc {
    label 'process_low'
    publishDir "${params.outdir}/MultiQC", mode: params.publish_dir_mode
@@ -879,7 +1137,7 @@ process multiqc {
    file (mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])
    file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
    file ('software_versions/*') from software_versions_yaml
-   file workflow_summary from create_workflow_summary(summary)
+   file workflow_summary from ch_workflow_summary.collect()
 
    output:
    file "*multiqc_report.html" into multiqc_report
@@ -893,8 +1151,9 @@ process multiqc {
    """
 }
 
+
 /*
- * STEP 7 - Output Description HTML
+ * Output Description HTML
  */
 process output_documentation {
     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode
@@ -903,13 +1162,13 @@ process output_documentation {
     file output_docs from ch_output_docs
     file images from ch_output_docs_images
 
-   output:
-   file "results_description.html"
+    output:
+    file "results_description.html"
 
-   script:
-   """
-   markdown_to_html.py $output_docs -o results_description.html
-   """
+    script:
+    """
+    markdown_to_html.py $output_docs -o results_description.html
+    """
 }
 
 /*
@@ -946,7 +1205,6 @@ workflow.onComplete {
     email_fields['summary']['Nextflow Build'] = workflow.nextflow.build
     email_fields['summary']['Nextflow Compile Timestamp'] = workflow.nextflow.timestamp
 
-    // If not using MultiQC, strip out this code (including params.maxMultiqcEmailFileSize)
     // On success try attach the multiqc report
     def mqc_report = null
     try {
@@ -979,7 +1237,7 @@ workflow.onComplete {
     def email_html = html_template.toString()
 
     // Render the sendmail template
-    def smail_fields = [ email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, baseDir: "$projectDir", mqcFile: mqc_report, mqcMaxSize: params.max_multiqc_email_size.toBytes() ]
+    def smail_fields = [ email: email_address, subject: subject, email_txt: email_txt, email_html: email_html, projectDir: "$projectDir", mqcFile: mqc_report, mqcMaxSize: params.max_multiqc_email_size.toBytes() ]
     def sf = new File("$projectDir/assets/sendmail_template.txt")
     def sendmail_template = engine.createTemplate(sf).make(smail_fields)
     def sendmail_html = sendmail_template.toString()
@@ -1029,7 +1287,6 @@ workflow.onComplete {
         checkHostname()
         log.info "-${c_purple}[nf-core/hic]${c_red} Pipeline completed with errors${c_reset}-"
     }
-
 }
 
 

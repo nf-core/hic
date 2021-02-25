@@ -36,11 +36,6 @@ for k in list(results):
     if not results[k]:
         del results[k]
 
-# Remove software set to false in results
-for k in results:
-    if not results[k]:
-        del(results[k])
-
 # Dump to YAML
 print(
     """
@@ -61,4 +56,3 @@ print("    </dl>")
 with open("software_versions.csv", "w") as f:
     for k, v in results.items():
         f.write("{}\t{}\n".format(k, v))
-

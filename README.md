@@ -1,4 +1,4 @@
-# ![nf-core/hic](docs/images/nfcore-hic_logo.png)
+# ![nf-core/hic](docs/images/nf-core-hic_logo.png)
 
 **Analysis of Chromosome Conformation Capture data (Hi-C)**.
 
@@ -14,7 +14,7 @@
 
 ## Introduction
 
-This pipeline is based on the
+This pipeline was originally set up from the
 [HiC-Pro workflow](https://github.com/nservant/HiC-Pro).
 It was designed to process Hi-C data from raw FastQ files (paired-end Illumina
 data) to normalized contact maps.
@@ -24,6 +24,10 @@ In practice, this workflow was successfully applied to many data-sets including
 dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or
 HiChip data.
 
+Contact maps are generated in standard formats including HiC-Pro, cooler, and h5 format for
+downstream analysis and visualization.
+Addition analysis steps such as TADs calling are also available.
+
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 to run tasks across multiple compute infrastructures in a very portable manner.
 It comes with docker / singularity containers making installation trivial and
@@ -32,13 +36,15 @@ results highly reproducible.
 ## Pipeline summary
 
 1. Mapping using a two steps strategy to rescue reads spanning the ligation
-sites (bowtie2)
-2. Detection of valid interaction products
+sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
+2. Detection of valid interaction products([`HiC-Pro`](https://github.com/nservant/HiC-Pro))
 3. Duplicates removal
-4. Create genome-wide contact maps at various resolution
-5. Contact maps normalization using the ICE algorithm (iced)
-6. Quality controls and report (MultiQC)
-7. Addition export for visualisation and downstream analysis (cooler)
+4. Create genome-wide contact maps at various resolution ([`cooler`](https://github.com/open2c/cooler))
+5. Contact maps normalization using the ICE algorithm ([`cooler`](https://github.com/open2c/cooler))
+6. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
+7. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
+8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooler`](https://github.com/open2c/cooler))
+9. Quality control report ([`MultiQC`](https://multiqc.info/))
 
 ## Quick Start
 
@@ -64,8 +70,6 @@ sites (bowtie2)
     nextflow run nf-core/hic -profile <docker/singularity/podman/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
     ```
 
-See [usage docs](https://nf-co.re/hic/usage) for all of the available options when running the pipeline.
-
 ## Documentation
 
 The nf-core/hic pipeline comes with documentation about the pipeline: [usage](https://nf-co.re/hic/usage) and [output](https://nf-co.re/hic/output).
@@ -81,9 +85,7 @@ nf-core/hic was originally written by Nicolas Servant.
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on the
-[Slack `#hic` channel](https://nfcore.slack.com/channels/hic)
-(you can join with [this invite](https://nf-co.re/join/slack)).
+For further information or help, don't hesitate to get in touch on the [Slack `#hic` channel](https://nfcore.slack.com/channels/hic) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citation
 
@@ -94,8 +96,15 @@ You can cite the `nf-core` publication as follows:
 
 > **The nf-core framework for community-curated bioinformatics pipelines.**
 >
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg,
-Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
 >
 > _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
 > ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
+
+In addition, references of tools and data used in this pipeline are as follows:
+
+> **HiC-Pro: An optimized and flexible pipeline for Hi-C processing.**
+>
+> Nicolas Servant, Nelle Varoquaux, Bryan R. Lajoie, Eric Viara, Chongjian Chen, Jean-Philippe Vert, Job Dekker, Edith Heard, Emmanuel Barillot.
+>
+> Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
