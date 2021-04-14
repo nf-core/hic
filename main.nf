@@ -121,19 +121,19 @@ if (params.split_fastq ){
 
 // Reference genome
 if ( params.bwt2_index ){
-   lastPath = params.bwt2_index.lastIndexOf(File.separator)
-   bwt2_dir =  params.bwt2_index.substring(0,lastPath+1)
-   bwt2_base = params.bwt2_index.substring(lastPath+1)
+   //lastPath = params.bwt2_index.lastIndexOf(File.separator)
+   //bwt2_dir =  params.bwt2_index.substring(0,lastPath+1)
+   //bwt2_base = params.bwt2_index.substring(lastPath+1)
 
-   Channel.fromPath( bwt2_dir , checkIfExists: true)
+   Channel.fromPath( params.bwt2_index , checkIfExists: true)
       .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
       .into { bwt2_index_end2end; bwt2_index_trim }
 
 }
 else if ( params.fasta ) {
-   lastPath = params.fasta.lastIndexOf(File.separator)
-   fasta_base = params.fasta.substring(lastPath+1)
-   bwt2_base = fasta_base.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
+   //lastPath = params.fasta.lastIndexOf(File.separator)
+   //fasta_base = params.fasta.substring(lastPath+1)
+   //fasta_base = fasta_base.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
 
    Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
@@ -329,7 +329,7 @@ process get_software_versions {
 
 if(!params.bwt2_index && params.fasta){
     process makeBowtie2Index {
-        tag "$bwt2_base"
+        tag "$fasta_base"
         label 'process_highmem'
         publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.save_reference ? it : null }, mode: params.publish_dir_mode
@@ -342,9 +342,10 @@ if(!params.bwt2_index && params.fasta){
 	file "bowtie2_index" into bwt2_index_trim
 
         script:
+        fasta_base = fasta.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
         """
         mkdir bowtie2_index
-	bowtie2-build ${fasta} bowtie2_index/${bwt2_base}
+	bowtie2-build ${fasta} bowtie2_index/${fasta_base}
 	"""
       }
  }
@@ -418,19 +419,21 @@ process bowtie2_end_to_end {
    def bwt2_opts = params.bwt2_opts_end2end
    if (!params.dnase){
    """
+   INDEX=`find -L ./ -name "*.rev.1.bt2" | sed 's/.rev.1.bt2//'`
    bowtie2 --rg-id BMG --rg SM:${prefix} \\
 	${bwt2_opts} \\
 	-p ${task.cpus} \\
-	-x ${index}/${bwt2_base} \\
+	-x \${INDEX} \\
 	--un ${prefix}_unmap.fastq \\
  	-U ${reads} | samtools view -F 4 -bS - > ${prefix}.bam
    """
    }else{
    """
+   INDEX=`find -L ./ -name "*.rev.1.bt2" | sed 's/.rev.1.bt2//'`
    bowtie2 --rg-id BMG --rg SM:${prefix} \\
 	${bwt2_opts} \\
 	-p ${task.cpus} \\
-	-x ${index}/${bwt2_base} \\
+	-x \${INDEX} \\
 	--un ${prefix}_unmap.fastq \\
  	-U ${reads} > ${prefix}.bam
    """
@@ -480,10 +483,11 @@ process bowtie2_on_trimmed_reads {
    script:
    prefix = reads.toString() - ~/(_trimmed)?(\.fq)?(\.fastq)?(\.gz)?$/
    """
+   INDEX=`find -L ./ -name "*.rev.1.bt2" | sed 's/.rev.1.bt2//'`
    bowtie2 --rg-id BMG --rg SM:${prefix} \\
            ${params.bwt2_opts_trimmed} \\
            -p ${task.cpus} \\
-           -x ${index}/${bwt2_base} \\
+           -x \${INDEX} \\
            -U ${reads} | samtools view -bS - > ${prefix}_trimmed.bam
    """
 }
@@ -784,9 +788,9 @@ process run_ice{
    script:
    prefix = rmaps.toString() - ~/(\.matrix)?$/
    """
-   ice --filter_low_counts_perc ${params.ice_filer_low_count_perc} \
+   ice --filter_low_counts_perc ${params.ice_filter_low_count_perc} \
    --results_filename ${prefix}_iced.matrix \
-   --filter_high_counts_perc ${params.ice_filer_high_count_perc} \
+   --filter_high_counts_perc ${params.ice_filter_high_count_perc} \
    --max_iter ${params.ice_max_iter} --eps ${params.ice_eps} --remove-all-zeros-loci --output-bias 1 --verbose 1 ${rmaps}
    """
 }
