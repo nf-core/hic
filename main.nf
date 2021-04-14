@@ -9,98 +9,28 @@
 ----------------------------------------------------------------------------------------
 */
 
-def helpMessage() {
-    log.info nfcoreHeader()
-    log.info"""
+log.info Headers.nf_core(workflow, params.monochrome_logs)
 
-    Usage:
-
-    The typical command for running the pipeline is as follows:
-
-    nextflow run nf-core/hic --input '*_R{1,2}.fastq.gz' -profile docker
-
-    Mandatory arguments:
-      --input [file]                            Path to input data (must be surrounded with quotes)
-      --genome [str]                            Name of iGenomes reference
-      -profile [str]                            Configuration profile to use. Can use multiple (comma separated)
-                                                Available: conda, docker, singularity, awsbatch, test and more.
-
-    References                                  If not specified in the configuration file or you wish to overwrite any of the references.
-      --bwt2_index [file]                       Path to Bowtie2 index
-      --fasta [file]                            Path to Fasta reference
-
-    Digestion Hi-C                              If not specified in the configuration file or you wish to set up specific digestion protocol
-      --digestion [str]                         Digestion Hi-C. Name of restriction enzyme used for digestion pre-configuration. Default: 'hindiii'
-      --ligation_site [str]                     Ligation motifs to trim (comma separated) if not available in --digestion. Default: false
-      --restriction_site [str]                  Cutting motif(s) of restriction enzyme(s) (comma separated) if not available in --digestion. Default: false
-      --chromosome_size [file]                  Path to chromosome size file
-      --restriction_fragments [file]            Path to restriction fragment file (bed)
-      --save_reference [bool]                   Save reference genome to output folder. Default: False
-
-    DNase Hi-C
-      --dnase [bool]                            Run DNase Hi-C mode. All options related to restriction fragments are not considered. Default: False
-      --min_cis_dist [int]                      Minimum intra-chromosomal distance to consider. Default: None 
-
-    Alignments
-      --bwt2_opts_end2end [str]                 Options for bowtie2 end-to-end mappinf (first mapping step). See hic.config for default.
-      --bwt2_opts_trimmed [str]                 Options for bowtie2 mapping after ligation site trimming. See hic.config for default.
-      --min_mapq [int]                          Minimum mapping quality values to consider. Default: 10
-      --keep_multi [bool]                       Keep multi-mapped reads (--min_mapq is ignored). Default: false
-      --keep_dups [bool]                        Keep duplicates. Default: false
-      --save_aligned_intermediates [bool]       Save intermediates alignment files. Default: False
-      --split_fastq [bool]                      Split fastq files in reads chunks to speed up computation. Default: false
-      --fastq_chunks_size [int]                 Size of read chunks if split_fastq is true. Default: 20000000
-
-    Valid Pairs Detection
-      --min_restriction_fragment_size [int]     Minimum size of restriction fragments to consider. Default: None
-      --max_restriction_fragment_size [int]     Maximum size of restriction fragments to consider. Default: None
-      --min_insert_size [int]                   Minimum insert size of mapped reads to consider. Default: None
-      --max_insert_size [int]                   Maximum insert size of mapped reads to consider. Default: None
-      --save_interaction_bam [bool]             Save BAM file with interaction tags (dangling-end, self-circle, etc.). Default: False
-
-    Contact maps
-      --bin_size [str]                          Bin size for contact maps (comma separated). Default: '1000000,500000'
-      --ice_max_iter [int]                      Maximum number of iteration for ICE normalization. Default: 100
-      --ice_filter_low_count_perc [float]       Percentage of low counts columns/rows to filter before ICE normalization. Default: 0.02
-      --ice_filter_high_count_perc [float]      Percentage of high counts columns/rows to filter before ICE normalization. Default: 0
-      --ice_eps [float]                         Convergence criteria for ICE normalization. Default: 0.1
-
-    Workflow
-      --skip_maps [bool]                        Skip generation of contact maps. Useful for capture-C. Default: False
-      --skip_balancing [bool]                   Skip contact maps normalization. Default: False
-      --skip_mcool                              Skip mcool file generation. Default: False
-      --skip_dist_decay                         Skip distance decay quality control. Default: False
-      --skip_tads [bool]                        Skip TADs calling. Default: False
-      --skip_multiqc [bool]                     Skip MultiQC. Default: False
-
-    Other options:
-      --outdir [file]                           The output directory where the results will be saved
-      --publish_dir_mode [str]                  Mode for publishing results in the output directory. Available: symlink, rellink, link, copy, copyNoFollow, move (Default: copy)
-      --email [email]                           Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. Default: None
-      --email_on_fail [email]                   Same as --email, except only send mail if the workflow is not successful
-      --max_multiqc_email_size [str]            Theshold size for MultiQC report to be attached in notification email. If file generated by pipeline exceeds the threshold, it will not be attached (Default: 25MB)
-      -name [str]                               Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic. Default: None
-
-    AWSBatch options:
-      --awsqueue [str]                          The AWSBatch JobQueue that needs to be set when running on AWSBatch
-      --awsregion [str]                         The AWS Region for your AWS Batch job to run on
-      --awscli [str]                            Path to the AWS CLI tool
-    """.stripIndent()
+////////////////////////////////////////////////////
+/* --               PRINT HELP                 -- */
+////////////////////////////////////////////////////+
+def json_schema = "$projectDir/nextflow_schema.json"
+if (params.help) {
+    def command = "nextflow run nf-core/hic --input '*_R{1,2}.fastq.gz' -profile docker"
+    log.info NfcoreSchema.params_help(workflow, params, json_schema, command)
+    exit 0
 }
 
-/**********************************************************
- * SET UP CONFIGURATION VARIABLES
- */
-
-// Show help message
-if (params.help){
-    helpMessage()
-    exit 0
+////////////////////////////////////////////////////
+/* --         VALIDATE PARAMETERS              -- */
+////////////////////////////////////////////////////+
+if (params.validate_params) {
+    NfcoreSchema.validateParameters(params, json_schema, log)
 }
 
 // Check if genome exists in the config file
 if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-    exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
+    exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(', ')}"
 }
 
 if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
@@ -119,22 +49,20 @@ if (!params.dnase && !params.ligation_site) {
 params.bwt2_index = params.genome ? params.genomes[ params.genome ].bowtie2 ?: false : false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
 
-// Has the run name been specified by the user?
-// this has the bonus effect of catching both -name and --name
-custom_runName = params.name
-if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
-    custom_runName = workflow.runName
-}
+
+////////////////////////////////////////////////////
+/* --     Collect configuration parameters     -- */
+////////////////////////////////////////////////////
 
 // Check AWS batch settings
 if (workflow.profile.contains('awsbatch')) {
     // AWSBatch sanity checking
-    if (!params.awsqueue || !params.awsregion) exit 1, "Specify correct --awsqueue and --awsregion parameters on AWSBatch!"
+    if (!params.awsqueue || !params.awsregion) exit 1, 'Specify correct --awsqueue and --awsregion parameters on AWSBatch!'
     // Check outdir paths to be S3 buckets if running on AWSBatch
     // related: https://github.com/nextflow-io/nextflow/issues/813
-    if (!params.outdir.startsWith('s3:')) exit 1, "Outdir not on S3 - specify S3 Bucket to run on AWSBatch!"
+    if (!params.outdir.startsWith('s3:')) exit 1, 'Outdir not on S3 - specify S3 Bucket to run on AWSBatch!'
     // Prevent trace files to be stored on S3 since S3 does not support rolling files.
-    if (params.tracedir.startsWith('s3:')) exit 1, "Specify a local tracedir or run without trace! S3 cannot be used for tracefiles."
+    if (params.tracedir.startsWith('s3:')) exit 1, 'Specify a local tracedir or run without trace! S3 cannot be used for tracefiles.'
 }
 
 // Stage config files
@@ -295,15 +223,16 @@ map_res
   .unique()
   .into { map_res_summary; map_res; map_res_cool; map_comp }
 
-/**********************************************************
- * SET UP LOGS
- */
+
+////////////////////////////////////////////////////
+/* --         PRINT PARAMETER SUMMARY          -- */
+////////////////////////////////////////////////////
+log.info NfcoreSchema.params_summary_log(workflow, params, json_schema)
 
 // Header log info
-log.info nfcoreHeader()
 def summary = [:]
-if(workflow.revision) summary['Pipeline Release'] = workflow.revision
-summary['Run Name']         = custom_runName ?: workflow.runName
+if (workflow.revision) summary['Pipeline Release'] = workflow.revision
+summary['Run Name']         = workflow.runName
 summary['Input']            = params.input
 summary['splitFastq']       = params.split_fastq
 if (params.split_fastq)
@@ -347,8 +276,6 @@ if (params.email || params.email_on_fail) {
     summary['E-mail on failure'] = params.email_on_fail
     summary['MultiQC maxsize']   = params.max_multiqc_email_size
 }
-log.info summary.collect { k,v -> "${k.padRight(18)}: $v" }.join("\n")
-log.info "-\033[2m--------------------------------------------------\033[0m-"
 
 // Check the hostnames against configured profiles
 checkHostname()
@@ -376,13 +303,13 @@ Channel.from(summary.collect{ [it.key, it.value] })
 process get_software_versions {
     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode,
         saveAs: { filename ->
-                      if (filename.indexOf(".csv") > 0) filename
+                      if (filename.indexOf('.csv') > 0) filename
                       else null
-                }
+        }
 
-   output:
-   file 'software_versions_mqc.yaml' into software_versions_yaml
-   file "software_versions.csv"
+    output:
+    file 'software_versions_mqc.yaml' into ch_software_versions_yaml
+    file 'software_versions.csv'
 
    script:
    """
@@ -1136,7 +1063,7 @@ process multiqc {
    file multiqc_config from ch_multiqc_config
    file (mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])
    file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
-   file ('software_versions/*') from software_versions_yaml
+   file ('software_versions/*') from ch_software_versions_yaml
    file workflow_summary from ch_workflow_summary.collect()
 
    output:
@@ -1144,13 +1071,17 @@ process multiqc {
    file "*_data"
 
    script:
-   rtitle = custom_runName ? "--title \"$custom_runName\"" : ''
-   rfilename = custom_runName ? "--filename " + custom_runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
+   rtitle = ''
+   rfilename = ''
+   if (!(workflow.runName ==~ /[a-z]+_[a-z]+/)) {
+     rtitle = "--title \"${workflow.runName}\""
+     rfilename = "--filename " + workflow.runName.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report"
+   }
+   custom_config_file = params.multiqc_config ? "--config $mqc_custom_config" : ''
    """
-   multiqc -f $rtitle $rfilename --config $multiqc_config .
+   multiqc -f $rtitle $rfilename $custom_config_file .
    """
 }
-
 
 /*
  * Output Description HTML
@@ -1163,7 +1094,7 @@ process output_documentation {
     file images from ch_output_docs_images
 
     output:
-    file "results_description.html"
+    file 'results_description.html'
 
     script:
     """
@@ -1184,7 +1115,7 @@ workflow.onComplete {
     }
     def email_fields = [:]
     email_fields['version'] = workflow.manifest.version
-    email_fields['runName'] = custom_runName ?: workflow.runName
+    email_fields['runName'] = workflow.runName
     email_fields['success'] = workflow.success
     email_fields['dateComplete'] = workflow.complete
     email_fields['duration'] = workflow.duration
@@ -1289,28 +1220,9 @@ workflow.onComplete {
     }
 }
 
-
-def nfcoreHeader() {
-    // Log colors ANSI codes
-    c_black = params.monochrome_logs ? '' : "\033[0;30m";
-    c_blue = params.monochrome_logs ? '' : "\033[0;34m";
-    c_cyan = params.monochrome_logs ? '' : "\033[0;36m";
-    c_dim = params.monochrome_logs ? '' : "\033[2m";
-    c_green = params.monochrome_logs ? '' : "\033[0;32m";
-    c_purple = params.monochrome_logs ? '' : "\033[0;35m";
-    c_reset = params.monochrome_logs ? '' : "\033[0m";
-    c_white = params.monochrome_logs ? '' : "\033[0;37m";
-    c_yellow = params.monochrome_logs ? '' : "\033[0;33m";
-
-    return """    -${c_dim}--------------------------------------------------${c_reset}-
-                                            ${c_green},--.${c_black}/${c_green},-.${c_reset}
-    ${c_blue}        ___     __   __   __   ___     ${c_green}/,-._.--~\'${c_reset}
-    ${c_blue}  |\\ | |__  __ /  ` /  \\ |__) |__         ${c_yellow}}  {${c_reset}
-    ${c_blue}  | \\| |       \\__, \\__/ |  \\ |___     ${c_green}\\`-._,-`-,${c_reset}
-                                            ${c_green}`._,._,\'${c_reset}
-    ${c_purple}  nf-core/hic v${workflow.manifest.version}${c_reset}
-    -${c_dim}--------------------------------------------------${c_reset}-
-    """.stripIndent()
+workflow.onError {
+    // Print unexpected parameters - easiest is to just rerun validation
+    NfcoreSchema.validateParameters(params, json_schema, log)
 }
 
 def checkHostname() {
@@ -1319,15 +1231,15 @@ def checkHostname() {
     def c_red = params.monochrome_logs ? '' : "\033[1;91m"
     def c_yellow_bold = params.monochrome_logs ? '' : "\033[1;93m"
     if (params.hostnames) {
-        def hostname = "hostname".execute().text.trim()
+        def hostname = 'hostname'.execute().text.trim()
         params.hostnames.each { prof, hnames ->
             hnames.each { hname ->
                 if (hostname.contains(hname) && !workflow.profile.contains(prof)) {
-                    log.error "====================================================\n" +
+                    log.error '====================================================\n' +
                             "  ${c_red}WARNING!${c_reset} You are running with `-profile $workflow.profile`\n" +
                             "  but your machine hostname is ${c_white}'$hostname'${c_reset}\n" +
                             "  ${c_yellow_bold}It's highly recommended that you use `-profile $prof${c_reset}`\n" +
-                            "============================================================"
+                            '============================================================'
                 }
             }
         }

@@ -65,7 +65,7 @@ fails after three times then the pipeline is stopped.
 Use this parameter to choose a configuration profile. Profiles can give
 configuration presets for different compute environments.
 
-Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Conda) - see below.
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Conda) - see below.
 
 > We highly recommend the use of Docker or Singularity containers for full
 pipeline reproducibility, however when this is not possible, Conda is also supported.
@@ -96,8 +96,14 @@ installed and available on the `PATH`. This is _not_ recommended.
 * `podman`
   * A generic configuration profile to be used with [Podman](https://podman.io/)
   * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+* `shifter`
+  * A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+* `charliecloud`
+  * A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
 * `conda`
-  * Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity or Podman.
+  * Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
   * A generic configuration profile to be used with [Conda](https://conda.io/docs/)
   * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `test`
@@ -139,8 +145,9 @@ process {
 }
 ```
 
-See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html)
-for more information.
+To find the exact name of a process you wish to modify the compute resources, check the live-status of a nextflow run displayed on your terminal or check the nextflow error for a line like so: `Error executing process > 'bwa'`. In this case the name to specify in the custom config file is `bwa`.
+
+See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information.
 
 If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition above). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
 
