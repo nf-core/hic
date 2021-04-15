@@ -514,7 +514,7 @@ if (!params.dnase){
                      ${bam1} ${bam2}
 
       samtools sort -@ ${task.cpus} -m 800M \\
-      	            -n -T ./tmp/ \\
+      	            -n  \\
 	            -o ${prefix}_bwt2merged.sorted.bam \\
 	            ${prefix}_bwt2merged.bam
 
@@ -635,7 +635,7 @@ if (!params.dnase){
       prefix = pe_bam.toString() - ~/.bam/
       """
       mapped_2hic_fragments.py -f ${frag_file} -r ${pe_bam} --all ${opts}
-      sort -T ./tmp/ -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
+      sort -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
       """
    }
 }
@@ -663,7 +663,7 @@ else{
       prefix = pe_bam.toString() - ~/.bam/
       """
       mapped_2hic_dnase.py -r ${pe_bam} ${opts}
-      sort -T ./tmp/ -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
+      sort -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
       """
    }
 }
@@ -690,7 +690,7 @@ process remove_duplicates {
    mkdir -p stats/${sample}
 
    ## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
-   sort -T ./tmp/ -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
+   sort -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
    awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs
 
    echo -n "valid_interaction\t" > stats/${sample}/${sample}_allValidPairs.mergestat
