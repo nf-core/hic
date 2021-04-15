@@ -5,15 +5,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0dev
 
+* Change the /tmp/ folder by ./tmp/ folder so that all tmp files are now in the work (#24)
 * Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
-* Add HiCExplorer distance decay quality control
-* Add HiCExplorer TADs calling
-* Add insulation score TADs calling
-* Generate cooler/h5/txt contact maps
+* Add HiCExplorer distance decay quality control (#54)
+* Add HiCExplorer TADs calling (#55)
+* Add insulation score TADs calling (#55)
+* Generate cooler/txt contact maps
 * Normalize Hi-C data with cooler instead of iced
 * New `--digestion` parameter to automatically set the restriction_site and ligation_site motifs
 * New `--keep_multi` and `keep_dup` options. Default: false
-* Template update for nf-core/tools v1.11
+* Template update for nf-core/tools
 * Minor fix to summary log messages in pipeline header
 
 ### `Fixed`
