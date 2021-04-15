@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0dev
 
+* Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
 * Add HiCExplorer distance decay quality control
 * Add HiCExplorer TADs calling
 * Add insulation score TADs calling

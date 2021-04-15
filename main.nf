@@ -730,7 +730,7 @@ process merge_stats {
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
 
    output:
-   file("mstats/") into all_mstats
+   file("mstats/${sample}/*") into all_mstats
 
   script:
   sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
@@ -745,7 +745,7 @@ process merge_stats {
 
 /*
  * HiC-Pro build matrix processes
- * ONGOING VALIDATION - TO REPLACED BY COOLER ?
+ * kept for backward compatibility
  */
 
 
@@ -755,7 +755,7 @@ process build_contact_maps{
    publishDir "${params.outdir}/hicpro/matrix/raw", mode: params.publish_dir_mode
 
    when:
-   !params.skip_maps
+   !params.skip_maps && params.hicpro_maps
 
    input:
    set val(sample), file(vpairs), val(mres) from ch_vpairs.combine(map_res)
@@ -776,14 +776,14 @@ process run_ice{
    publishDir "${params.outdir}/hicpro/matrix/iced", mode: params.publish_dir_mode
 
    when:
-   !params.skip_maps && !params.skip_ice
+   !params.skip_maps && !params.skip_balancing && params.hicpro_maps
 
    input:
    set val(sample), val(res), file(rmaps), file(bed) from raw_maps
 
    output:
-   set val(sample), val(res), file("*iced.matrix"), file(bed) into iced_maps_4h5, iced_maps_4cool
-   file ("*.biases") into iced_bias
+   set val(sample), val(res), file("*iced.matrix"), file(bed) into hicpro_iced_maps
+   file ("*.biases") into hicpro_iced_bias
 
    script:
    prefix = rmaps.toString() - ~/(\.matrix)?$/
@@ -896,31 +896,6 @@ process cooler_zoomify {
 }
 
 
-/*
- * Create h5 file
-
-process convert_to_h5 {
-  tag "$sample"
-  label 'process_medium'
-  publishDir "${params.outdir}/contact_maps/norm/h5", mode: 'copy'
-
-  input:
-  set val(sample), val(res), file(maps)  from norm_cool_maps_h5
-
-  output:
-  set val(sample), val(res), file("*.h5") into h5maps_ddecay, h5maps_ccomp, h5maps_tads
-
-  script:
-  """
-  hicConvertFormat --matrices ${maps} \
-  		   --outFileName ${maps.baseName}.h5 \
-		   --resolution ${res} \
-		   --inputFormat cool \
-		   --outputFormat h5 \
-  """
-}
-*/
-
 /****************************************************
  * DOWNSTREAM ANALYSIS
  */
@@ -946,7 +921,7 @@ process dist_decay {
   !params.skip_dist_decay
 
   input:
-  set val(sample), val(res), file(h5mat), val(r) from chddecay
+  set val(sample), val(res), file(maps), val(r) from chddecay
   
   output:
   file("*_distcount.txt")
@@ -955,9 +930,9 @@ process dist_decay {
 
   script:
   """
-  hicPlotDistVsCounts --matrices ${h5mat} \
-                      --plotFile ${h5mat.baseName}_distcount.png \
-  		      --outFileData ${h5mat.baseName}_distcount.txt
+  hicPlotDistVsCounts --matrices ${maps} \
+                      --plotFile ${maps.baseName}_distcount.png \
+  		      --outFileData ${maps.baseName}_distcount.txt
   """
 }
 
