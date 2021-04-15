@@ -302,10 +302,7 @@ Channel.from(summary.collect{ [it.key, it.value] })
 
 process get_software_versions {
     publishDir "${params.outdir}/pipeline_info", mode: params.publish_dir_mode,
-        saveAs: { filename ->
-                      if (filename.indexOf('.csv') > 0) filename
-                      else null
-        }
+        saveAs: { filename -> if (filename.indexOf('.csv') > 0) filename else null }
 
     output:
     file 'software_versions_mqc.yaml' into ch_software_versions_yaml
@@ -331,7 +328,7 @@ if(!params.bwt2_index && params.fasta){
     process makeBowtie2Index {
         tag "$fasta_base"
         label 'process_highmem'
-        publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
+	publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.save_reference ? it : null }, mode: params.publish_dir_mode
 
         input:
@@ -355,7 +352,7 @@ if(!params.chromosome_size && params.fasta){
     process makeChromSize {
         tag "$fasta"
 	label 'process_low'
-        publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
+	publishDir path: { params.save_reference ? "${params.outdir}/reference_genome" : params.outdir },
                    saveAs: { params.save_reference ? it : null }, mode: params.publish_dir_mode
 
         input:
@@ -403,8 +400,8 @@ if(!params.restriction_fragments && params.fasta && !params.dnase){
 process bowtie2_end_to_end {
    tag "$sample"
    label 'process_medium'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
-   	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping/bwt2_end2end" : params.outdir },
+              saveAs: { filename -> if (params.save_aligned_intermediates) filename }, mode: params.publish_dir_mode
 
    input:
    set val(sample), file(reads) from raw_reads
@@ -443,9 +440,9 @@ process bowtie2_end_to_end {
 process trim_reads {
    tag "$sample"
    label 'process_low'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
-   	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
-
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping/bwt2_trimmed" : params.outdir },
+              saveAs: { filename -> if (params.save_aligned_intermediates) filename }, mode: params.publish_dir_mode
+              
    when:
    !params.dnase
 
@@ -467,8 +464,8 @@ process trim_reads {
 process bowtie2_on_trimmed_reads {
    tag "$sample"
    label 'process_medium'
-   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
-   	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
+   publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/mapping/bwt2_trimmed" : params.outdir },
+   	      saveAs: { filename -> if (params.save_aligned_intermediates) filename }, mode: params.publish_dir_mode
 
    when:
    !params.dnase
@@ -496,8 +493,9 @@ if (!params.dnase){
    process bowtie2_merge_mapping_steps{
       tag "$prefix = $bam1 + $bam2"
       label 'process_medium'
-      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
-   	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
+      publishDir "${params.outdir}/hicpro/mapping", mode: params.publish_dir_mode,
+   	      saveAs: { filename -> if (params.save_aligned_intermediates && filename.endsWith("stat")) "stats/$filename"
+			else if (params.save_aligned_intermediates) filename}
 
       input:
       set val(prefix), file(bam1), file(bam2) from end_to_end_bam.join( trimmed_bam ).dump(tag:'merge')
@@ -507,9 +505,7 @@ if (!params.dnase){
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      //sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
       sample = prefix.toString() - ~/(_R1|_R2)/
-      //tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
       tag = prefix.toString() =~/_R1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
       """
@@ -539,8 +535,9 @@ if (!params.dnase){
    process dnase_mapping_stats{
       tag "$sample = $bam"
       label 'process_medium'
-      publishDir path: { params.save_aligned_intermediates ? "${params.outdir}/hicpro/mapping" : params.outdir },
-   	      saveAs: { params.save_aligned_intermediates ? it : null }, mode: params.publish_dir_mode
+      publishDir "${params.outdir}/hicpro/mapping",  mode: params.publish_dir_mode, 
+   	      saveAs: { filename -> if (params.save_aligned_intermediates && filename.endsWith("stat")) "stats/$filename"
+	                else if (params.save_aligned_intermediates) filename}
 
       input:
       set val(prefix), file(bam) from end_to_end_bam
@@ -572,7 +569,7 @@ process combine_mates{
    tag "$sample = $r1_prefix + $r2_prefix"
    label 'process_low'
    publishDir "${params.outdir}/hicpro/mapping", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf(".pairstat") > 0 ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> filename.endsWith(".pairstat") ? "stats/$filename" : "$filename"}
 
    input:
    set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple().dump(tag:'mates')
@@ -608,7 +605,7 @@ if (!params.dnase){
       tag "$sample"
       label 'process_low'
       publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> filename.endsWith("stat") ? "stats/$filename" : "$filename"}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -647,7 +644,7 @@ else{
       tag "$sample"
       label 'process_low'
       publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> filename.endsWith(".stat") ? "stats/$filename" : "$filename"}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -678,11 +675,10 @@ else{
 process remove_duplicates {
    tag "$sample"
    label 'process_highmem'
-   publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.indexOf(".stat") > 0 ? "stats/$sample/$filename" : "$filename"}
+   publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode
 
    input:
-   set val(sample), file(vpairs) from valid_pairs.groupTuple().dump(tag:'final')
+   set val(sample), file(vpairs) from valid_pairs.groupTuple()
 
    output:
    set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_cool
@@ -724,13 +720,13 @@ process remove_duplicates {
 process merge_stats {
    tag "$ext"
    label 'process_low'
-   publishDir "${params.outdir}/hicpro/stats/${sample}", mode: params.publish_dir_mode
+   publishDir "${params.outdir}/hicpro/", mode: params.publish_dir_mode
 
    input:
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
 
    output:
-   file("mstats/${sample}/*") into all_mstats
+   file("stats/") into all_mstats
 
   script:
   sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
@@ -738,8 +734,8 @@ process merge_stats {
   if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
   if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
   """
-  mkdir -p mstats/${sample}
-  merge_statfiles.py -f ${fstat} > mstats/${sample}/${prefix}.${ext}
+  mkdir -p stats/${sample}
+  merge_statfiles.py -f ${fstat} > stats/${sample}/${prefix}.${ext}
   """
 }
 
@@ -828,7 +824,7 @@ process cooler_raw {
   label 'process_medium'
 
   publishDir "${params.outdir}/contact_maps/", mode: 'copy',
-              saveAs: {filename -> filename.indexOf(".cool") > 0 ? "raw/cool/$filename" : "raw/txt/$filename"}
+              saveAs: {filename -> filename.endsWith(".cool") ? "raw/cool/$filename" : "raw/txt/$filename"}
 
   input:
   set val(sample), file(contacts), val(res) from cool_build.combine(map_res_cool)
@@ -851,7 +847,7 @@ process cooler_balance {
   label 'process_medium'
 
   publishDir "${params.outdir}/contact_maps/", mode: 'copy',
-              saveAs: {filename -> filename.indexOf(".cool") > 0 ? "norm/cool/$filename" : "norm/txt/$filename"}
+              saveAs: {filename -> filename.endsWith(".cool") ? "norm/cool/$filename" : "norm/txt/$filename"}
 
   when:
   !params.skip_balancing
