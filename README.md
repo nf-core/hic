@@ -46,8 +46,8 @@ results highly reproducible.
 4. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler))
 5. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
 6. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/))
-8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooltools`](https://cooltools.readthedocs.io/en/latest/))
-9. Quality control report ([`MultiQC`](https://multiqc.info/))
+7. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooltools`](https://cooltools.readthedocs.io/en/latest/))
+8. Quality control report ([`MultiQC`](https://multiqc.info/))
 
 ## Quick Start
 

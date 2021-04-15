@@ -398,7 +398,6 @@ Default: 'AAGCTAGCTT'
 
 Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 
-
 ### DNAse Hi-C
 
 #### `--dnase`

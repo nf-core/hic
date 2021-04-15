@@ -15,7 +15,7 @@ and processes data using the following steps:
   * [Valid pairs detection](#valid-pairs-detection)
   * [Duplicates removal](#duplicates-removal)
   * [Contact maps](#hicpro-contact-maps)
-* [Contact maps](#contact-maps)
+* [Hi-C contact maps](#hic-contact-maps)
 * [Downstream analysis](#downstream-analysis)
   * [Distance decay](#distance-decay)
   * [Compartments calling](#compartments calling)
@@ -193,7 +193,7 @@ files.
 This format is memory efficient, and is compatible with several software for
 downstream analysis.
 
-## Contact maps
+## Hi-C contact maps
 
 Contact maps are usually stored as simple txt (`HiC-Pro`), .hic (`Juicer/Juicebox`) and .(m)cool (`cooler/Higlass`) formats.
 Note that .cool and .hic format are compressed and usually much more efficient that the txt format.  
@@ -227,6 +227,7 @@ Although different methods have been proposed for compartment calling, the stand
 Here, we use the implementation available in the [`cooltools`](https://cooltools.readthedocs.io/en/lates) package.
 
 Results are available in **`results/compartments/`** folder and includes :
+
 * `*cis.vecs.tsv`: eigenvectors decomposition along the genome
 * `*cis.lam.txt`: eigenvalues associated with the eigenvectors
 
@@ -236,9 +237,11 @@ TADs has been described as functional units of the genome.
 While contacts between genes and regulatority elements can occur within a single TADs, contacts between TADs are much less frequent, mainly due to the presence of insulation protein (such as CTCF) at their boundaries. Looking at Hi-C maps, TADs look like triangles around the diagonal. According to the contact map resolutions, TADs appear as hierarchical structures with a median size around 1Mb (in mammals), as well as smaller structures usually called sub-TADs of smaller size.
 
 TADs calling remains a challenging task, and even if many methods have been proposed in the last decade, little overlap have been found between their results.
+
 Currently, the pipeline proposes two approaches :
-- Insulation score using the [`cooltools`](https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-diamond-insulation) package. Results are availabe in **`results/tads/insulation`**.
-- [`HiCExplorer TADs calling`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicFindTADs.html). Results are available at **`results/tads/hicexplorer`**.
+
+* Insulation score using the [`cooltools`](https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-diamond-insulation) package. Results are availabe in **`results/tads/insulation`**.
+* [`HiCExplorer TADs calling`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicFindTADs.html). Results are available at **`results/tads/hicexplorer`**.
 
 Usually, TADs results are presented as simple BED files, or bigWig files, with the position of boundaries along the genome.
 
