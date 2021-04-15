@@ -35,13 +35,13 @@ results highly reproducible.
 
 ## Pipeline summary
 
-1. HiC-Pro data processing [`HiC-Pro`](https://github.com/nservant/HiC-Pro)
+1. HiC-Pro data processing ([`HiC-Pro`](https://github.com/nservant/HiC-Pro))
    1. Mapping using a two steps strategy to rescue reads spanning the ligation
    sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
    2. Detection of valid interaction products
    3. Duplicates removal
    4. Generate raw and normalized contact maps ([`iced`](https://github.com/hiclib/iced))
-2. Create genome-wide contact maps at various resolution ([`cooler`](https://github.com/open2c/cooler))
+2. Create genome-wide contact maps at various resolutions ([`cooler`](https://github.com/open2c/cooler))
 3. Contact maps normalization using balancing algorithm ([`cooler`](https://github.com/open2c/cooler))
 4. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler))
 5. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))

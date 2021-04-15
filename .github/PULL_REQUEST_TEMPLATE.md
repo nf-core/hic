@@ -24,4 +24,3 @@ Learn more about contributing: [CONTRIBUTING.md](https://github.com/nf-core/hic/
 - [ ] Output Documentation in `docs/output.md` is updated.
 - [ ] `CHANGELOG.md` is updated.
 - [ ] `README.md` is updated (including new tool citations and authors/contributors).
-
