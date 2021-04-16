@@ -146,7 +146,7 @@ else {
 // Chromosome size
 if ( params.chromosome_size ){
    Channel.fromPath( params.chromosome_size , checkIfExists: true)
-         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance; chrsize_zoom, chrsize_compartments}
+         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance; chrsize_zoom; chrsize_compartments}
 }
 else if ( params.fasta ){
    Channel.fromPath( params.fasta )
@@ -363,7 +363,7 @@ if(!params.chromosome_size && params.fasta){
         file fasta from fasta_for_chromsize
 
         output:
-        file "*.size" into chrsize, chrsize_build, chrsize_raw, chrsize_balance, chrsize_zoom
+        file "*.size" into chrsize, chrsize_build, chrsize_raw, chrsize_balance, chrsize_zoom, chrsize_compartments
 
         script:
         """
@@ -689,7 +689,8 @@ process remove_duplicates {
 
    output:
    set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_cool
-   file("stats/*") into all_mergestat
+   file("stats/") into mqc_mergestat
+   file("stats/*/*") into all_mergestat
 
    script:
    if ( ! params.keep_dups ){
@@ -733,7 +734,8 @@ process merge_stats {
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
 
    output:
-   file("stats/") into all_mstats
+   file("stats/") into mqc_mstats
+   file("stats/*/*") into all_mstats
 
   script:
   sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
@@ -959,7 +961,7 @@ process compartment_calling {
 
   input:
   set val(sample), val(res), file(cool), val(r) from chcomp
-  file(fasta) from fasta_for_compartments
+  file(fasta) from fasta_for_compartments.collect()
   file(chrsize) from chrsize_compartments.collect()
 
   output:
@@ -969,8 +971,8 @@ process compartment_calling {
   """
   cooltools genome binnify ${chrsize} ${res} > genome_bins.txt
   cooltools genome gc genome_bins.txt ${fasta} > genome_gc.txt 
-  cooltools call-compartments --reference-tracks genome_gc.txt --contact-type cis -o ${sample}_compartments ${cool}
-  awk -F"\t" 'NR>1{OFS="\t"; if($6==""){$6=0}; print $1,$2,$3,$6}' ${sample]_compartments.cis.vecs.tsv | sort -k1,1 -k2,2n > ${sample]_compartments.cis.E1.bedgraph
+  cooltools call-compartments --reference-track genome_gc.txt --contact-type cis -o ${sample}_compartments ${cool}
+  awk -F"\t" 'NR>1{OFS="\t"; if(\$6==""){\$6=0}; print \$1,\$2,\$3,\$6}' ${sample}_compartments.cis.vecs.tsv | sort -k1,1 -k2,2n > ${sample}_compartments.cis.E1.bedgraph
   """
 }
 
@@ -1049,7 +1051,7 @@ process multiqc {
    input:
    file multiqc_config from ch_multiqc_config
    file (mqc_custom_config) from ch_multiqc_custom_config.collect().ifEmpty([])
-   file ('input_*/*') from all_mstats.concat(all_mergestat).collect()
+   file ('input_*/*') from mqc_mstats.concat(mqc_mergestat).collect()
    file ('software_versions/*') from ch_software_versions_yaml
    file workflow_summary from ch_workflow_summary.collect()
 
