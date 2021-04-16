@@ -969,10 +969,10 @@ process compartment_calling {
 
   script:
   """
-  cooltools genome binnify ${chrsize} ${res} > genome_bins.txt
-  cooltools genome gc genome_bins.txt ${fasta} > genome_gc.txt 
-  cooltools call-compartments --reference-track genome_gc.txt --contact-type cis -o ${sample}_compartments ${cool}
-  awk -F"\t" 'NR>1{OFS="\t"; if(\$6==""){\$6=0}; print \$1,\$2,\$3,\$6}' ${sample}_compartments.cis.vecs.tsv | sort -k1,1 -k2,2n > ${sample}_compartments.cis.E1.bedgraph
+  #cooltools genome binnify ${chrsize} ${res} > genome_bins.txt
+  #cooltools genome gc genome_bins.txt ${fasta} > genome_gc.txt 
+  cooltools call-compartments --contact-type cis -o ${sample}_compartments ${cool}
+  #awk -F"\t" 'NR>1{OFS="\t"; if(\$6==""){\$6=0}; print \$1,\$2,\$3,\$6}' ${sample}_compartments.cis.vecs.tsv | sort -k1,1 -k2,2n > ${sample}_compartments.cis.E1.bedgraph
   """
 }
 
