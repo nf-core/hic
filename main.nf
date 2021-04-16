@@ -137,7 +137,7 @@ else if ( params.fasta ) {
 
    Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-        .set { fasta_for_index }
+        .into { fasta_for_index }
 }
 else {
    exit 1, "No reference genome specified!"
@@ -146,7 +146,7 @@ else {
 // Chromosome size
 if ( params.chromosome_size ){
    Channel.fromPath( params.chromosome_size , checkIfExists: true)
-         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance; chrsize_zoom}
+         .into {chrsize; chrsize_build; chrsize_raw; chrsize_balance; chrsize_zoom, chrsize_compartments}
 }
 else if ( params.fasta ){
    Channel.fromPath( params.fasta )
@@ -206,6 +206,9 @@ if (params.res_dist_decay && !params.skip_dist_decay){
 }
 
 if (params.res_compartments && !params.skip_compartments){
+  Channel.fromPath( params.fasta )
+    .ifEmpty { exit 1, "Compartments calling: Fasta file not found: ${params.fasta}" }
+    .set { fasta_for_compartments }
   Channel.from( "${params.res_compartments}" )
     .splitCsv()
     .flatten()
@@ -213,6 +216,7 @@ if (params.res_compartments && !params.skip_compartments){
     map_res = map_res.concat(comp_bin)
     all_res = all_res + ',' + params.res_compartments
 }else{
+  fasta_for_compartments = Channel.empty()
   comp_res = Channel.create()
   if (!params.skip_compartments){
     log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
@@ -572,7 +576,7 @@ process combine_mates{
    	      saveAs: {filename -> filename.endsWith(".pairstat") ? "stats/$filename" : "$filename"}
 
    input:
-   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple().dump(tag:'mates')
+   set val(sample), file(aligned_bam) from bwt2_merged_bam.groupTuple()
 
    output:
    set val(oname), file("${sample}_bwt2pairs.bam") into paired_bam
@@ -605,7 +609,9 @@ if (!params.dnase){
       tag "$sample"
       label 'process_low'
       publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.endsWith("stat") ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> if (filename.endsWith("RSstat")) "stats/$filename"
+                                   else if (filename.endsWith(".validPairs")) filename
+                                   else if (params.save_nonvalid_pairs) filename}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -644,7 +650,8 @@ else{
       tag "$sample"
       label 'process_low'
       publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> filename.endsWith(".stat") ? "stats/$filename" : "$filename"}
+   	      saveAs: {filename -> if (filename.endsWith("RSstat")) "stats/$filename" 
+                                   else filename}
 
       input:
       set val(sample), file(pe_bam) from paired_bam
@@ -682,7 +689,7 @@ process remove_duplicates {
 
    output:
    set val(sample), file("*.allValidPairs") into ch_vpairs, ch_vpairs_cool
-   file("stats/") into all_mergestat
+   file("stats/*") into all_mergestat
 
    script:
    if ( ! params.keep_dups ){
@@ -952,13 +959,18 @@ process compartment_calling {
 
   input:
   set val(sample), val(res), file(cool), val(r) from chcomp
+  file(fasta) from fasta_for_compartments
+  file(chrsize) from chrsize_compartments.collect()
 
   output:
   file("*compartments*") optional true into out_compartments
 
   script:
   """
-  cooltools call-compartments --contact-type cis -o ${sample}_compartments ${cool}
+  cooltools genome binnify ${chrsize} ${res} > genome_bins.txt
+  cooltools genome gc genome_bins.txt ${fasta} > genome_gc.txt 
+  cooltools call-compartments --reference-tracks genome_gc.txt --contact-type cis -o ${sample}_compartments ${cool}
+  awk -F"\t" 'NR>1{OFS="\t"; if($6==""){$6=0}; print $1,$2,$3,$6}' ${sample]_compartments.cis.vecs.tsv | sort -k1,1 -k2,2n > ${sample]_compartments.cis.E1.bedgraph
   """
 }
 
