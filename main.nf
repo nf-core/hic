@@ -683,7 +683,8 @@ process remove_duplicates {
    tag "$sample"
    label 'process_highmem'
    publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-               saveAs: {filename -> filename.endsWith("stat") ? "stats/$filename" : "$filename"}
+               saveAs: {filename -> if (filename.endsWith("mergestat")) "stats/$filename" 
+                                    else if (filename.endsWith("allValidPairs")) "$filename"}
    input:
    set val(sample), file(vpairs) from valid_pairs.groupTuple()
 
@@ -735,7 +736,7 @@ process merge_stats {
    tag "$ext"
    label 'process_low'
    publishDir "${params.outdir}/hicpro/", mode: params.publish_dir_mode,
-               saveAs: {filename -> filename.endsWith("stat") ? "stats/$filename" : "$filename"}
+               saveAs: {filename -> if (filename.endsWith("stat")) "stats/$filename"}
 
    input:
    set val(prefix), file(fstat) from all_mapstat.groupTuple().concat(all_pairstat.groupTuple(), all_rsstat.groupTuple())
