@@ -1,5 +1,4 @@
 files_unchanged:
-  - assets/multiqc_config.yaml
   - .github/CONTRIBUTING.md
   - .github/ISSUE_TEMPLATE/bug_report.md
-  - docs/README.md
+  - .github/PULL_REQUEST_TEMPLATE.md
