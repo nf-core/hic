@@ -3,11 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.3.0dev
+## v1.3.0 - 2021-13-05
 
 * Fix bug in stats export
 * Change the /tmp/ folder by ./tmp/ folder so that all tmp files are now in the work (#24)
 * Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
+* Add chromosome compartments calling with cooltools (#53)
 * Add HiCExplorer distance decay quality control (#54)
 * Add HiCExplorer TADs calling (#55)
 * Add insulation score TADs calling (#55)
