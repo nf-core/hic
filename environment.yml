@@ -8,6 +8,7 @@ channels:
 dependencies:
   - conda-forge::python=3.7.6
   - pip=20.0.1
+  - conda-forge::tbb=2020.2=hc9558a2_0 
   - conda-forge::scipy=1.4.1
   - conda-forge::numpy=1.18.1
   - bioconda::iced=0.5.6
@@ -26,5 +27,5 @@ dependencies:
   - bioconda::ucsc-bedgraphtobigwig=357
   - conda-forge::cython=0.29.19
   - pip:
-    - cooltools==0.3.2
+    - cooltools==0.4.0
     - fanc==0.8.30

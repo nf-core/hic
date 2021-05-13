@@ -24,9 +24,9 @@ In practice, this workflow was successfully applied to many data-sets including
 dilution Hi-C, in situ Hi-C, DNase Hi-C, Micro-C, capture-C, capture Hi-C or
 HiChip data.
 
-Contact maps are generated in standard formats including HiC-Pro, cooler, and h5 format for
+Contact maps are generated in standard formats including HiC-Pro, and cooler for
 downstream analysis and visualization.
-Addition analysis steps such as TADs calling are also available.
+Addition analysis steps such as compartments and TADs calling are also available.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 to run tasks across multiple compute infrastructures in a very portable manner.
@@ -35,27 +35,30 @@ results highly reproducible.
 
 ## Pipeline summary
 
-1. Mapping using a two steps strategy to rescue reads spanning the ligation
-sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
-2. Detection of valid interaction products([`HiC-Pro`](https://github.com/nservant/HiC-Pro))
-3. Duplicates removal
-4. Create genome-wide contact maps at various resolution ([`cooler`](https://github.com/open2c/cooler))
-5. Contact maps normalization using the ICE algorithm ([`cooler`](https://github.com/open2c/cooler))
-6. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
-7. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
-8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooler`](https://github.com/open2c/cooler))
-9. Quality control report ([`MultiQC`](https://multiqc.info/))
+1. HiC-Pro data processing ([`HiC-Pro`](https://github.com/nservant/HiC-Pro))
+   1. Mapping using a two steps strategy to rescue reads spanning the ligation
+   sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
+   2. Detection of valid interaction products
+   3. Duplicates removal
+   4. Generate raw and normalized contact maps ([`iced`](https://github.com/hiclib/iced))
+2. Create genome-wide contact maps at various resolutions ([`cooler`](https://github.com/open2c/cooler))
+3. Contact maps normalization using balancing algorithm ([`cooler`](https://github.com/open2c/cooler))
+4. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler))
+5. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
+6. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/))
+7. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooltools`](https://cooltools.readthedocs.io/en/latest/))
+8. Quality control report ([`MultiQC`](https://multiqc.info/))
 
 ## Quick Start
 
-1. Install [`nextflow`](https://nf-co.re/usage/installation)
+1. Install [`nextflow`](https://nf-co.re/usage/installation) (`>=20.04.0`)
 
-2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) or [`Podman`](https://podman.io/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
 
 3. Download the pipeline and test it on a minimal dataset with a single command
 
     ```bash
-    nextflow run nf-core/hic -profile test,<docker/singularity/podman/conda/institute>
+    nextflow run nf-core/hic -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
     ```
 
     > Please check [nf-core/configs](https://github.com/nf-core/configs#documentation)
@@ -67,7 +70,7 @@ sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
 4. Start running your own analysis!
 
     ```bash
-    nextflow run nf-core/hic -profile <docker/singularity/podman/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
+    nextflow run nf-core/hic -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input '*_R{1,2}.fastq.gz' --genome GRCh37
     ```
 
 ## Documentation
@@ -99,7 +102,6 @@ You can cite the `nf-core` publication as follows:
 > Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
 >
 > _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
-> ReadCube: [Full Access Link](https://rdcu.be/b1GjZ)
 
 In addition, references of tools and data used in this pipeline are as follows:
 
