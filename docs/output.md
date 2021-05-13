@@ -18,7 +18,7 @@ and processes data using the following steps:
 * [Hi-C contact maps](#hic-contact-maps)
 * [Downstream analysis](#downstream-analysis)
   * [Distance decay](#distance-decay)
-  * [Compartments calling](#compartments calling)
+  * [Compartments calling](#compartments-calling)
   * [TADs calling](#tads-calling)
 * [MultiQC](#multiqc) - aggregate report and quality controls, describing
 results of the whole pipeline
