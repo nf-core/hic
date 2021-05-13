@@ -18,7 +18,7 @@ Please delete this text and anything that's not relevant from the template below
 I have checked the following places for your error:
 
 - [ ] [nf-core website: troubleshooting](https://nf-co.re/usage/troubleshooting)
-- [ ] [nf-core/hic pipeline documentation](https://nf-co.re/nf-core/hic/usage)
+- [ ] [nf-core/hic pipeline documentation](https://nf-co.re/hic/usage)
 
 ## Description of the bug
 
