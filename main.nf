@@ -551,9 +551,7 @@ if (!params.dnase){
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      //sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
       sample = prefix.toString() - ~/(_R1|_R2)/
-      //tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
       tag = prefix.toString() =~/_R1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
       """
