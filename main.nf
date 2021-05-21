@@ -121,9 +121,6 @@ if (params.split_fastq ){
 
 // Reference genome
 if ( params.bwt2_index ){
-   //lastPath = params.bwt2_index.lastIndexOf(File.separator)
-   //bwt2_dir =  params.bwt2_index.substring(0,lastPath+1)
-   //bwt2_base = params.bwt2_index.substring(lastPath+1)
 
    Channel.fromPath( params.bwt2_index , checkIfExists: true)
       .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
