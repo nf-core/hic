@@ -128,10 +128,6 @@ if ( params.bwt2_index ){
 
 }
 else if ( params.fasta ) {
-   //lastPath = params.fasta.lastIndexOf(File.separator)
-   //fasta_base = params.fasta.substring(lastPath+1)
-   //fasta_base = fasta_base.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
-
    Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
         .into { fasta_for_index }
