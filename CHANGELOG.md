@@ -3,9 +3,8 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.3.0 - 2021-13-05
+## v1.3.0 - 2021-22-05
 
-* Fix bug in stats export
 * Change the /tmp/ folder by ./tmp/ folder so that all tmp files are now in the work (#24)
 * Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
 * Add chromosome compartments calling with cooltools (#53)
@@ -21,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+* Fix bug in stats report which were not all correcly exported in the results folder
 * Fix recurrent bug in input file extension (#86)
 * Fix bug in `--bin_size` parameter (#85)
 * `--min_mapq` is ignored if `--keep_multi` is used
