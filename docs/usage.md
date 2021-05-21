@@ -485,7 +485,7 @@ framework to build the raw and balanced contact maps in txt and (m)cool formats.
 ### `--bin_size`
 
 Resolution of contact maps to generate (comma separated).
-Default:'1000000'
+Default:'1000000,500000'
 
 ```bash
 --bins_size '[string]'
