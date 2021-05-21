@@ -697,7 +697,7 @@ process remove_duplicates {
    mkdir -p stats/${sample}
 
    ## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
-   sort -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
+   sort -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \\
    awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs
 
    echo -n "valid_interaction\t" > ${sample}_allValidPairs.mergestat
