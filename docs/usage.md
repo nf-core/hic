@@ -592,7 +592,7 @@ Default: 'insulation'
 #### `--res_tads`
 
 Resolution to run the TADs calling analysis (comma separated).
-Default: '40000'
+Default: '40000,20000'
 
 ```bash
 --res_tads '[string]'
