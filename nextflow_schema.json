@@ -228,7 +228,7 @@
                 "bin_size": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "'1000000,500000'",
+                    "default": "1000000,500000",
                     "description": "Resolution to build the maps (comma separated)"
                 },
                 "hicpro_maps": {
