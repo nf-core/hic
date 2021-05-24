@@ -1,3 +1,9 @@
+---
+name: Feature request
+about: Suggest an idea for the nf-core/hic pipeline
+labels: enhancement
+---
+
 <!--
 # nf-core/hic feature request
 
@@ -5,7 +11,6 @@ Hi there!
 
 Thanks for suggesting a new feature for the pipeline!
 Please delete this text and anything that's not relevant from the template below:
-
 -->
 
 ## Is your feature request related to a problem? Please describe
@@ -25,4 +30,3 @@ Please delete this text and anything that's not relevant from the template below
 ## Additional context
 
 <!-- Add any other context about the feature request here. -->
-

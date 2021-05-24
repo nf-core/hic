@@ -1,5 +1,11 @@
 # nf-core/hic: Usage
 
+## :warning: Please read this documentation on the nf-core website: [https://nf-co.re/hic/usage](https://nf-co.re/hic/usage)
+
+> _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
+
+## Introduction
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
@@ -22,12 +28,7 @@ results         # Finished results (configurable, see below)
 
 ### Updating the pipeline
 
-When you run the above command, Nextflow automatically pulls the pipeline code
-from GitHub and stores it as a cached version. When running the pipeline after
-this, it will always use the cached version if available - even if the pipeline
-has been updated since. To make sure that you're running the latest version of
-the pipeline, make sure that you regularly update the cached version of the
-pipeline:
+When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ```bash
 nextflow pull nf-core/hic
@@ -35,17 +36,7 @@ nextflow pull nf-core/hic
 
 ### Reproducibility
 
-It's a good idea to specify a pipeline version when running the pipeline on
-your data. This ensures that a specific version of the pipeline code and
-software are used when you run your pipeline. If you keep using the same tag,
-you'll be running the same version of the pipeline, even if there have been
-changes to the code since.
-
-It's a good idea to specify a pipeline version when running the pipeline on
-your data. This ensures that a specific version of the pipeline code and
-software are used when you run your pipeline. If you keep using the same tag,
-you'll be running the same version of the pipeline, even if there have been
-changes to the code since.
+It's a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
 First, go to the
 [nf-core/hic releases page](https://github.com/nf-core/hic/releases) and find
@@ -74,9 +65,7 @@ fails after three times then the pipeline is stopped.
 Use this parameter to choose a configuration profile. Profiles can give
 configuration presets for different compute environments.
 
-Several generic profiles are bundled with the pipeline which instruct
-the pipeline to use software packaged using different methods
-(Docker, Singularity, Conda) - see below.
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Conda) - see below.
 
 > We highly recommend the use of Docker or Singularity containers for full
 pipeline reproducibility, however when this is not possible, Conda is also supported.
@@ -104,9 +93,17 @@ installed and available on the `PATH`. This is _not_ recommended.
 * `singularity`
   * A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
   * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+* `podman`
+  * A generic configuration profile to be used with [Podman](https://podman.io/)
+  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+* `shifter`
+  * A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+* `charliecloud`
+  * A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
 * `conda`
-  * Please only use Conda as a last resort i.e. when it's not possible to run the
-  pipeline with Docker or Singularity.
+  * Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
   * A generic configuration profile to be used with [Conda](https://conda.io/docs/)
   * Pulls most software from [Bioconda](https://bioconda.github.io/)
 * `test`
@@ -148,18 +145,11 @@ process {
 }
 ```
 
-See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html)
-for more information.
+To find the exact name of a process you wish to modify the compute resources, check the live-status of a nextflow run displayed on your terminal or check the nextflow error for a line like so: `Error executing process > 'bowtie2_end_to_end'`. In this case the name to specify in the custom config file is `bowtie2_end_to_end`.
 
-If you are likely to be running `nf-core` pipelines regularly it may be a
-good idea to request that your custom config file is uploaded to the
-`nf-core/configs` git repository. Before you do this please can you test
-that the config file works with your pipeline of choice using the `-c`
-parameter (see definition below). You can then create a pull request to the
-`nf-core/configs` repository with the addition of your config file, associated
-documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)),
-and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config)
-to include your custom profile.
+See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information.
+
+If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition above). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
 
 If you have any questions or issues please send us a message on
 [Slack](https://nf-co.re/join/slack) on the
@@ -190,6 +180,30 @@ We recommend adding the following line to your environment to limit this
 NXF_OPTS='-Xms1g -Xmx4g'
 ```
 
+## Use case
+
+### Hi-C digestion protocol
+
+Here is an command line example for standard DpnII digestion protocols.
+Alignment will be performed on the `mm10` genome with default parameters.
+Multi-hits will not be considered and duplicates will be removed.
+Note that by default, no filters are applied on DNA and restriction fragment sizes.
+
+```bash
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
+```
+
+### DNase Hi-C protocol
+
+Here is an command line example for DNase protocol.
+Alignment will be performed on the `mm10` genome with default paramters.
+Multi-hits will not be considered and duplicates will be removed.
+Contacts involving fragments separated by less than 1000bp will be discarded.
+
+```bash
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
+```
+
 ## Inputs
 
 ### `--input`
@@ -209,16 +223,7 @@ notation to specify read pairs.
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-By default, the pipeline expects paired-end data. If you have single-end data,
-you need to specify `--single_end` on the command line when you launch the pipeline.
-A normal glob pattern, enclosed in quotation marks, can then be used for `--input`.
-For example:
-
-```bash
---single_end --reads '*.fastq'
-```
-
-It is not possible to run a mixture of single-end and paired-end files in one run.
+Note that the Hi-C data analysis requires paired-end data.
 
 ## Reference genomes
 
@@ -245,13 +250,13 @@ run the pipeline:
 
 ### `--bwt2_index`
 
-The bowtie2 indexes are required to run the Hi-C pipeline. If the
+The bowtie2 indexes are required to align the data with the HiC-Pro workflow. If the
 `--bwt2_index` is not specified, the pipeline will either use the igenome
 bowtie2 indexes (see `--genome` option) or build the indexes on-the-fly
 (see `--fasta` option)
 
 ```bash
---bwt2_index '[path to bowtie2 index (with basename)]'
+--bwt2_index '[path to bowtie2 index]'
 ```
 
 ### `--chromosome_size`
@@ -300,15 +305,15 @@ file with coordinates of restriction fragments.
 
 If not specified, this file will be automatically created by the pipline.
 In this case, the `--fasta` reference genome will be used.
-Note that the `--restriction_site` parameter is mandatory to create this file.
+Note that the `digestion` or `--restriction_site` parameter is mandatory to create this file.
 
 ## Hi-C specific options
 
-The following options are defined in the `hicpro.config` file, and can be
+The following options are defined in the `nextflow.config` file, and can be
 updated either using a custom configuration file (see `-c` option) or using
 command line parameter.
 
-### Reads mapping
+### HiC-pro mapping
 
 The reads mapping is currently based on the two-steps strategy implemented in
 the HiC-pro pipeline. The idea is to first align reads from end-to-end.
@@ -347,17 +352,28 @@ Minimum mapping quality. Reads with lower quality are discarded. Default: 10
 
 ### Digestion Hi-C
 
+#### `--digestion`
+
+This parameter allows to automatically set the `--restriction_site` and
+`--ligation_site` parameter according to the restriction enzyme you used.
+Available keywords are  'hindiii', 'dpnii', 'mboi', 'arima'.
+
+```bash
+--digestion 'hindiii'
+```
+
 #### `--restriction_site`
 
-Restriction motif(s) for Hi-C digestion protocol. The restriction motif(s)
-is(are) used to generate the list of restriction fragments.
+If the restriction enzyme is not available through the `--digestion`
+parameter, you can also defined manually the restriction motif(s) for
+Hi-C digestion protocol.
+The restriction motif(s) is(are) used to generate the list of restriction fragments.
 The precise cutting site of the restriction enzyme has to be specified using
 the '^' character. Default: 'A^AGCTT'
 Here are a few examples:
 
 * MboI: ^GATC
 * DpnII: ^GATC
-* BglII: A^GATCT
 * HindIII: A^AGCTT
 * ARIMA kit: ^GATC,G^ANTC
 
@@ -382,42 +398,6 @@ Default: 'AAGCTAGCTT'
 
 Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 
-#### `--min_restriction_fragment_size`
-
-Minimum size of restriction fragments to consider for the Hi-C processing.
-Default: ''
-
-```bash
---min_restriction_fragment_size '[numeric]'
-```
-
-#### `--max_restriction_fragment_size`
-
-Maximum size of restriction fragments to consider for the Hi-C processing.
-Default: ''
-
-```bash
---max_restriction_fragment_size '[numeric]'
-```
-
-#### `--min_insert_size`
-
-Minimum reads insert size. Shorter 3C products are discarded.
-Default: ''
-
-```bash
---min_insert_size '[numeric]'
-```
-
-#### `--max_insert_size`
-
-Maximum reads insert size. Longer 3C products are discarded.
-Default: ''
-
-```bash
---max_insert_size '[numeric]'
-```
-
 ### DNAse Hi-C
 
 #### `--dnase`
@@ -431,55 +411,110 @@ to remove spurious ligation products.
 --dnase'
 ```
 
-### Hi-C processing
+### HiC-pro processing
+
+#### `--min_restriction_fragment_size`
+
+Minimum size of restriction fragments to consider for the Hi-C processing.
+Default: '0' - no filter
+
+```bash
+--min_restriction_fragment_size '[numeric]'
+```
+
+#### `--max_restriction_fragment_size`
+
+Maximum size of restriction fragments to consider for the Hi-C processing.
+Default: '0' - no filter
+
+```bash
+--max_restriction_fragment_size '[numeric]'
+```
+
+#### `--min_insert_size`
+
+Minimum reads insert size. Shorter 3C products are discarded.
+Default: '0' - no filter
+
+```bash
+--min_insert_size '[numeric]'
+```
+
+#### `--max_insert_size`
+
+Maximum reads insert size. Longer 3C products are discarded.
+Default: '0' - no filter
+
+```bash
+--max_insert_size '[numeric]'
+```
 
 #### `--min_cis_dist`
 
 Filter short range contact below the specified distance.
-Mainly useful for DNase Hi-C. Default: ''
+Mainly useful for DNase Hi-C. Default: '0'
 
 ```bash
 --min_cis_dist '[numeric]'
 ```
 
-#### `--rm_singleton`
+#### `--keep_dups`
 
-If specified, singleton reads are discarded at the mapping step.
-
-```bash
---rm_singleton
-```
-
-#### `--rm_dup`
-
-If specified, duplicates reads are discarded before building contact maps.
+If specified, duplicates reads are not discarded before building contact maps.
 
 ```bash
---rm_dup
+--keep_dups
 ```
 
-#### `--rm_multi`
+#### `--keep_multi`
 
-If specified, reads that aligned multiple times on the genome are discarded.
+If specified, reads that aligned multiple times on the genome are not discarded.
 Note the default mapping options are based on random hit assignment, meaning
 that only one position is kept per read.
+Note that in this case the `--min_mapq` parameter is ignored.
 
 ```bash
---rm_multi
+--keep_multi
 ```
 
 ## Genome-wide contact maps
 
+Once the list of valid pairs is available, the standard is now to move on the `cooler`
+framework to build the raw and balanced contact maps in txt and (m)cool formats.
+
 ### `--bin_size`
 
-Resolution of contact maps to generate (space separated).
+Resolution of contact maps to generate (comma separated).
 Default:'1000000,500000'
 
 ```bash
---bins_size '[numeric]'
+--bins_size '[string]'
 ```
 
-### `--ice_max_iter`
+### `--res_zoomify`
+
+Define the maximum resolution to reach when zoomify the cool contact maps.
+Default:'5000'
+
+```bash
+--res_zoomify '[string]'
+```
+
+### HiC-Pro contact maps
+
+By default, the contact maps are now generated with the `cooler` framework.
+However, for backward compatibility, the raw and normalized maps can still be generated
+by HiC-pro if the `--hicpro_maps` parameter is set.
+
+#### `--hicpro_maps`
+
+If specified, the raw and ICE normalized contact maps will be generated by HiC-Pro.
+
+```bash
+--hicpro_maps
+```
+
+#### `--ice_max_iter`
 
 Maximum number of iteration for ICE normalization.
 Default: 100
@@ -488,7 +523,7 @@ Default: 100
 --ice_max_iter '[numeric]'
 ```
 
-### `--ice_filer_low_count_perc`
+#### `--ice_filer_low_count_perc`
 
 Define which pourcentage of bins with low counts should be force to zero.
 Default: 0.02
@@ -497,7 +532,7 @@ Default: 0.02
 --ice_filter_low_count_perc '[numeric]'
 ```
 
-### `--ice_filer_high_count_perc`
+#### `--ice_filer_high_count_perc`
 
 Define which pourcentage of bins with low counts should be discarded before
 normalization. Default: 0
@@ -506,13 +541,61 @@ normalization. Default: 0
 --ice_filter_high_count_perc '[numeric]'
 ```
 
-### `--ice_eps`
+#### `--ice_eps`
 
 The relative increment in the results before declaring convergence for ICE
 normalization. Default: 0.1
 
 ```bash
 --ice_eps '[numeric]'
+```
+
+## Downstream analysis
+
+### Additional quality controls
+
+#### `--res_dist_decay`
+
+Generates distance vs Hi-C counts plots at a given resolution using `HiCExplorer`.
+Several resolution can be specified (comma separeted). Default: '250000'
+
+```bash
+--res_dist_decay '[string]'
+```
+
+### Compartment calling
+
+Call open/close compartments for each chromosome, using the `cooltools` command.
+
+#### `--res_compartments`
+
+Resolution to call the chromosome compartments (comma separated).
+Default: '250000'
+
+```bash
+--res_compartments '[string]'
+```
+
+### TADs calling
+
+#### `--tads_caller`
+
+TADs calling can be performed using different approaches.
+Currently available options are `insulation` and `hicexplorer`.
+Note that all options can be specified (comma separated).
+Default: 'insulation'
+
+```bash
+--tads_caller '[string]'
+```
+
+#### `--res_tads`
+
+Resolution to run the TADs calling analysis (comma separated).
+Default: '40000,20000'
+
+```bash
+--res_tads '[string]'
 ```
 
 ## Inputs/Outputs
@@ -569,13 +652,13 @@ genome-wide maps are not built. Usefult for capture-C analysis. Default: false
 --skip_maps
 ```
 
-### `--skip_ice`
+### `--skip_balancing`
 
-If defined, the ICE normalization is not run on the raw contact maps.
+If defined, the contact maps normalization is not run on the raw contact maps.
 Default: false
 
 ```bash
---skip_ice
+--skip_balancing
 ```
 
 ### `--skip_cool`
@@ -584,6 +667,30 @@ If defined, cooler files are not generated. Default: false
 
 ```bash
 --skip_cool
+```
+
+### `skip_dist_decay`
+
+Do not run distance decay plots. Default: false
+
+```bash
+--skip_dist_decay
+```
+
+### `skip_compartments`
+
+Do not call compartments. Default: false
+
+```bash
+--skip_compartments
+```
+
+### `skip_tads`
+
+Do not call TADs. Default: false
+
+```bash
+--skip_tads
 ```
 
 ### `--skip_multiQC`

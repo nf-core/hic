@@ -3,6 +3,32 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.3.0 - 2021-22-05
+
+* Change the `/tmp/` folder to `./tmp/` folder so that all tmp files are now in the work directory (#24)
+* Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
+* Add chromosome compartments calling with cooltools (#53)
+* Add HiCExplorer distance decay quality control (#54)
+* Add HiCExplorer TADs calling (#55)
+* Add insulation score TADs calling (#55)
+* Generate cooler/txt contact maps
+* Normalize Hi-C data with cooler instead of iced
+* New `--digestion` parameter to automatically set the restriction_site and ligation_site motifs
+* New `--keep_multi` and `keep_dup` options. Default: false
+* Template update for nf-core/tools
+* Minor fix to summary log messages in pipeline header
+
+### `Fixed`
+
+* Fix bug in stats report which were not all correcly exported in the results folder
+* Fix recurrent bug in input file extension (#86)
+* Fix bug in `--bin_size` parameter (#85)
+* `--min_mapq` is ignored if `--keep_multi` is used
+
+### `Deprecated`
+
+* `--rm_dup` and `--rm_multi` are replaced by `--keep_dups` and `--keep_multi`
+
 ## v1.2.2 - 2020-09-02
 
 ### `Added`
