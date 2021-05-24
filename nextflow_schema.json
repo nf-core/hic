@@ -227,6 +227,7 @@
             "properties": {
                 "bin_size": {
                     "type": "string",
+                    "pattern": "^(\d+)(,\d+)*$",
                     "default": "'1000000,500000'",
                     "description": "Resolution to build the maps (comma separated)"
                 },
@@ -268,6 +269,7 @@
             "properties": {
                 "res_dist_decay": {
                     "type": "string",
+                    "pattern": "^(\d+)(,\d+)*$",
                     "default": "1000000",
                     "description": "Resolution to build count/distance plot"
                 },
@@ -278,11 +280,13 @@
                 },
                 "res_tads": {
                     "type": "string",
+                    "pattern": "^(\d+)(,\d+)*$",
                     "default": "40000,20000",
                     "description": "Resolution to run TADs callers (comma separated)"
                 },
                 "res_compartments": {
                     "type": "string",
+                    "pattern": "^(\d+)(,\d+)*$",
                     "default": "250000",
                     "description": "Resolution for compartments calling"
                 }
