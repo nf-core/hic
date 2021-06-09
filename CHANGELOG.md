@@ -5,7 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.3.0 - 2021-22-05
 
-* Change the /tmp/ folder by ./tmp/ folder so that all tmp files are now in the work (#24)
+* Change the `/tmp/` folder to `./tmp/` folder so that all tmp files are now in the work directory (#24)
 * Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
 * Add chromosome compartments calling with cooltools (#53)
 * Add HiCExplorer distance decay quality control (#54)

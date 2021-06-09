@@ -145,7 +145,7 @@ process {
 }
 ```
 
-To find the exact name of a process you wish to modify the compute resources, check the live-status of a nextflow run displayed on your terminal or check the nextflow error for a line like so: `Error executing process > 'bwa'`. In this case the name to specify in the custom config file is `bwa`.
+To find the exact name of a process you wish to modify the compute resources, check the live-status of a nextflow run displayed on your terminal or check the nextflow error for a line like so: `Error executing process > 'bowtie2_end_to_end'`. In this case the name to specify in the custom config file is `bowtie2_end_to_end`.
 
 See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information.
 
@@ -485,7 +485,7 @@ framework to build the raw and balanced contact maps in txt and (m)cool formats.
 ### `--bin_size`
 
 Resolution of contact maps to generate (comma separated).
-Default:'1000000'
+Default:'1000000,500000'
 
 ```bash
 --bins_size '[string]'
@@ -592,7 +592,7 @@ Default: 'insulation'
 #### `--res_tads`
 
 Resolution to run the TADs calling analysis (comma separated).
-Default: '40000'
+Default: '40000,20000'
 
 ```bash
 --res_tads '[string]'

@@ -121,9 +121,6 @@ if (params.split_fastq ){
 
 // Reference genome
 if ( params.bwt2_index ){
-   //lastPath = params.bwt2_index.lastIndexOf(File.separator)
-   //bwt2_dir =  params.bwt2_index.substring(0,lastPath+1)
-   //bwt2_base = params.bwt2_index.substring(lastPath+1)
 
    Channel.fromPath( params.bwt2_index , checkIfExists: true)
       .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
@@ -131,10 +128,6 @@ if ( params.bwt2_index ){
 
 }
 else if ( params.fasta ) {
-   //lastPath = params.fasta.lastIndexOf(File.separator)
-   //fasta_base = params.fasta.substring(lastPath+1)
-   //fasta_base = fasta_base.toString() - ~/(\.fa)?(\.fasta)?(\.fas)?(\.fsa)?$/
-
    Channel.fromPath( params.fasta )
 	.ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
         .into { fasta_for_index }
@@ -551,9 +544,7 @@ if (!params.dnase){
       set val(oname), file("${prefix}.mapstat") into all_mapstat
 
       script:
-      //sample = prefix.toString() - ~/(_R1|_R2|_val_1|_val_2|_1|_2)/
       sample = prefix.toString() - ~/(_R1|_R2)/
-      //tag = prefix.toString() =~/_R1|_val_1|_1/ ? "R1" : "R2"
       tag = prefix.toString() =~/_R1/ ? "R1" : "R2"
       oname = prefix.toString() - ~/(\.[0-9]+)$/
       """
@@ -699,7 +690,7 @@ process remove_duplicates {
    mkdir -p stats/${sample}
 
    ## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
-   sort -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
+   sort -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \\
    awk -F"\\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=\$2 || c2!=\$5 || s1!=\$3 || s2!=\$6){print;c1=\$2;c2=\$5;s1=\$3;s2=\$6}' > ${sample}.allValidPairs
 
    echo -n "valid_interaction\t" > ${sample}_allValidPairs.mergestat
