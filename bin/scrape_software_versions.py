@@ -7,9 +7,9 @@ import re
 regexes = {
     'nf-core/hic': ['v_pipeline.txt', r"(\S+)"],
     'Nextflow': ['v_nextflow.txt', r"(\S+)"],
-    'Bowtie2': ['v_bowtie2.txt', r"Bowtie2 v(\S+)"],
-    'Python': ['v_python.txt', r"Python v(\S+)"],
-    'Samtools': ['v_samtools.txt', r"Samtools v(\S+)"],
+    'Bowtie2': ['v_bowtie2.txt', r"bowtie2-align-s version (\S+)"],
+    'Python': ['v_python.txt', r"Python (\S+)"],
+    'Samtools': ['v_samtools.txt', r"samtools (\S+)"],
     'MultiQC': ['v_multiqc.txt', r"multiqc, version (\S+)"],
 }
 results = OrderedDict()
@@ -36,11 +36,6 @@ for k in list(results):
     if not results[k]:
         del results[k]
 
-# Remove software set to false in results
-for k in results:
-    if not results[k]:
-        del(results[k])
-
 # Dump to YAML
 print(
     """
@@ -61,4 +56,3 @@ print("    </dl>")
 with open("software_versions.csv", "w") as f:
     for k, v in results.items():
         f.write("{}\t{}\n".format(k, v))
-

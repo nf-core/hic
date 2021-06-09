@@ -1,33 +1,38 @@
 # nf-core/hic: Output
 
-This document describes the output produced by the pipeline.
-Most of the plots are taken from the MultiQC report, which
-summarises results at the end of the pipeline.
+## Introduction
 
-The directories listed below will be created in the results directory
-after the pipeline has finished. All paths are relative to the top-level
-results directory.
+This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline.
+The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/)
 and processes data using the following steps:
 
-* [Reads alignment](#reads-alignment)
-* [Valid pairs detection](#valid-pairs-detection)
-* [Duplicates removal](#duplicates-removal)
-* [Contact maps](#contact-maps)
+* [HiC-Pro](#hicpro)
+  * [Reads alignment](#reads-alignment)
+  * [Valid pairs detection](#valid-pairs-detection)
+  * [Duplicates removal](#duplicates-removal)
+  * [Contact maps](#hicpro-contact-maps)
+* [Hi-C contact maps](#hic-contact-maps)
+* [Downstream analysis](#downstream-analysis)
+  * [Distance decay](#distance-decay)
+  * [Compartments calling](#compartments-calling)
+  * [TADs calling](#tads-calling)
 * [MultiQC](#multiqc) - aggregate report and quality controls, describing
 results of the whole pipeline
 * [Export](#exprot) - additionnal export for compatibility with downstream
 analysis tool and visualization
+
+## HiC-Pro
 
 The current version is mainly based on the
 [HiC-Pro](https://github.com/nservant/HiC-Pro) pipeline.
 For details about the workflow, see
 [Servant et al. 2015](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0831-x)
 
-## Reads alignment
+### Reads alignment
 
 Using Hi-C data, each reads mate has to be independantly aligned on the
 reference genome.
@@ -42,7 +47,7 @@ configuration parameters (`--rm-multi`).
 Note that if the `--dnase` mode is activated, HiC-Pro will skip the second
 mapping step.
 
-**Output directory: `results/mapping`**
+**Output directory: `results/hicpro/mapping`**
 
 * `*bwt2pairs.bam` - final BAM file with aligned paired data
 * `*.pairstat` - mapping statistics
@@ -67,7 +72,7 @@ the fraction of unmapped reads. The fraction of singleton is usually close to
 the sum of unmapped R1 and R2 reads, as it is unlikely that both mates from the
 same pair were unmapped.
 
-## Valid pairs detection
+### Valid pairs detection with HiC-Pro
 
 Each aligned reads can be assigned to one restriction fragment according to the
 reference genome and the digestion protocol.
@@ -95,6 +100,8 @@ DNase Hi-C or micro Hi-C, the assignment to a restriction is not possible
 Short range interactions that are likely to be spurious ligation products
 can thus be discarded using the `--min_cis_dist` parameter.
 
+**Output directory: `results/hicpro/valid_pairs`**
+
 * `*.validPairs` - List of valid ligation products
 * `*.DEpairs` - List of dangling-end products
 * `*.SCPairs` - List of self-circle products
@@ -121,11 +128,13 @@ is skipped. The aligned pairs are therefore directly used to generate the
 contact maps. A filter of the short range contact (typically <1kb) is
 recommanded as this pairs are likely to be self ligation products.
 
-## Duplicates removal
+### Duplicates removal
 
 Note that validPairs file are generated per reads chunck.
 These files are then merged in the allValidPairs file, and duplicates are
 removed if the `--rm_dup` parameter is used.
+
+**Output directory: `results/hicpro/valid_pairs`**
 
 * `*allValidPairs` - combined valid pairs from all read chunks
 * `*mergestat` - statistics about duplicates removal and valid pairs information
@@ -140,24 +149,29 @@ Finaly, an important metric is to look at the fraction of intra and
 inter-chromosomal interactions, as well as long range (>20kb) versus short
 range (<20kb) intra-chromosomal interactions.
 
-## Contact maps
+### Contact maps
 
 Intra et inter-chromosomal contact maps are build for all specified resolutions.
 The genome is splitted into bins of equal size. Each valid interaction is
 associated with the genomic bins to generate the raw maps.
 In addition, Hi-C data can contain several sources of biases which has to be
 corrected.
-The current workflow uses the [ìced](https://github.com/hiclib/iced) and
+The HiC-Pro workflow uses the [ìced](https://github.com/hiclib/iced) and
 [Varoquaux and Servant, 2018](http://joss.theoj.org/papers/10.21105/joss.01286)
 python package which proposes a fast implementation of the original ICE
 normalization algorithm (Imakaev et al. 2012), making the assumption of equal
 visibility of each fragment.
 
+Importantly, the HiC-Pro maps are generated only if the `--hicpro_maps` option
+is specified on the command line.
+
+**Output directory: `results/hicpro/matrix`**
+
 * `*.matrix` - genome-wide contact maps
 * `*_iced.matrix` - genome-wide iced contact maps
 
-The contact maps are generated for all specified resolution
-(see `--bin_size` argument)
+The contact maps are generated for all specified resolutions
+(see `--bin_size` argument).  
 A contact map is defined by :
 
 * A list of genomic intervals related to the specified resolution (BED format).
@@ -179,6 +193,58 @@ files.
 This format is memory efficient, and is compatible with several software for
 downstream analysis.
 
+## Hi-C contact maps
+
+Contact maps are usually stored as simple txt (`HiC-Pro`), .hic (`Juicer/Juicebox`) and .(m)cool (`cooler/Higlass`) formats.
+Note that .cool and .hic format are compressed and usually much more efficient that the txt format.  
+In the current workflow, we propose to use the `cooler` format as a standard to build the raw and normalized maps
+after valid pairs detection as it is used by several downstream analysis and visualization tools.
+
+Raw contact maps are therefore in **`results/contact_maps/raw`** which contains the different maps in `txt` and `cool` formats, at various resolutions.
+Normalized contact maps are stored in **`results/contact_maps/norm`** which contains the different maps in `txt`, `cool`, and `mcool` format.
+
+Note that `txt` contact maps generated with `cooler` are identical to those generated by `HiC-Pro`.
+However, differences can be observed on the normalized contact maps as the balancing algorithm is not the same.
+
+## Downstream analysis
+
+Downstream analysis are performed from `cool` files at specified resolution.
+
+### Distance decay
+
+The distance decay plot shows the relationship between contact frequencies and genomic distance. It gives a good indication of the compaction of the genome.
+According to the organism, the slope of the curve should fit the expectation of polymer physics models.
+
+The results generated with the `HiCExplorer hicPlotDistVsCounts` tool (plot and table) are available in the **`results/dist_decay/`** folder.
+
+### Compartments calling
+
+Compartments calling is one of the most common analysis which aims at detecting A (open, active) / B (close, inactive) compartments.
+In the first studies on the subject, the compartments were called at high/medium resolution (1000000 to 250000) which is enough to call A/B comparments.
+Analysis at higher resolution has shown that these two main types of compartments can be further divided into compartments subtypes.
+
+Although different methods have been proposed for compartment calling, the standard remains the eigen vector decomposition from the normalized correlation maps.
+Here, we use the implementation available in the [`cooltools`](https://cooltools.readthedocs.io/en/lates) package.
+
+Results are available in **`results/compartments/`** folder and includes :
+
+* `*cis.vecs.tsv`: eigenvectors decomposition along the genome
+* `*cis.lam.txt`: eigenvalues associated with the eigenvectors
+
+### TADs calling
+
+TADs has been described as functional units of the genome.
+While contacts between genes and regulatority elements can occur within a single TADs, contacts between TADs are much less frequent, mainly due to the presence of insulation protein (such as CTCF) at their boundaries. Looking at Hi-C maps, TADs look like triangles around the diagonal. According to the contact map resolutions, TADs appear as hierarchical structures with a median size around 1Mb (in mammals), as well as smaller structures usually called sub-TADs of smaller size.
+
+TADs calling remains a challenging task, and even if many methods have been proposed in the last decade, little overlap have been found between their results.
+
+Currently, the pipeline proposes two approaches :
+
+* Insulation score using the [`cooltools`](https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-diamond-insulation) package. Results are availabe in **`results/tads/insulation`**.
+* [`HiCExplorer TADs calling`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicFindTADs.html). Results are available at **`results/tads/hicexplorer`**.
+
+Usually, TADs results are presented as simple BED files, or bigWig files, with the position of boundaries along the genome.
+
 ## MultiQC
 
 [MultiQC](http://multiqc.info) is a visualisation tool that generates a single
@@ -191,12 +257,16 @@ reported in the MultiQC output for future traceability.
 
 **Output files:**
 
-* `Project_multiqc_report.html`
-  * MultiQC report - a standalone HTML file that can be viewed in your
-web browser
-* `Project_multiqc_data/`
-  * Directory containing parsed statistics from the different tools used
-in the pipeline
+* `multiqc/`
+  * `multiqc_report.html`: a standalone HTML file that can be viewed in your web browser.
+  * `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline.
+  * `multiqc_plots/`: directory containing static images from the report in various formats.
+
+## Pipeline information
+
+[Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
+
+**Output files:**
 
 * `pipeline_info/`
   * Reports generated by Nextflow: `execution_report.html`, `execution_timeline.html`,
