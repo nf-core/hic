@@ -16,6 +16,7 @@ dependencies:
   - bioconda::pysam=0.15.4
   - conda-forge::pymdown-extensions=7.1
   - bioconda::cooler=0.8.6
+  - bioconda::cooltools=0.4.0
   - bioconda::bowtie2=2.3.5
   - bioconda::samtools=1.9
   - bioconda::multiqc=1.8
@@ -27,5 +28,4 @@ dependencies:
   - bioconda::ucsc-bedgraphtobigwig=357
   - conda-forge::cython=0.29.19
   - pip:
-    - cooltools==0.4.0
     - fanc==0.8.30

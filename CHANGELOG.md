@@ -3,7 +3,13 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.3.0 - 2021-22-05
+## v1.3.1 - 2021-09-25
+
+### `Fixed`
+
+* Fix bug in conda environment for cooltools (#109)
+
+## v1.3.0 - 2021-05-22
 
 * Change the `/tmp/` folder to `./tmp/` folder so that all tmp files are now in the work directory (#24)
 * Add `--hicpro_maps` options to generate the raw and normalized HiC-Pro maps. The default is now to use cooler
