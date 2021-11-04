@@ -223,11 +223,11 @@ notation to specify read pairs.
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
-Note that the Hi-C data analysis requires paired-end data.
+Note that the Hi-C data analysis workflow requires paired-end data.
 
 ## Reference genomes
 
-The pipeline config files come bundled with paths to the illumina iGenomes reference
+The pipeline config files come bundled with paths to the Illumina iGenomes reference
 index files. If running with docker or AWS, the configuration is set up to use the
 [AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
 
@@ -237,7 +237,7 @@ There are many different species supported in the iGenomes references. To run
 the pipeline, you must specify which to use with the `--genome` flag.
 
 You can find the keys to specify the genomes in the
-[iGenomes config file](../conf/igenomes.config).
+[iGenomes config file](https://github.com/nf-core/hic/blob/master/conf/igenomes.config).
 
 ### `--fasta`
 
@@ -251,7 +251,7 @@ run the pipeline:
 ### `--bwt2_index`
 
 The bowtie2 indexes are required to align the data with the HiC-Pro workflow. If the
-`--bwt2_index` is not specified, the pipeline will either use the igenome
+`--bwt2_index` is not specified, the pipeline will either use the iGenomes
 bowtie2 indexes (see `--genome` option) or build the indexes on-the-fly
 (see `--fasta` option)
 
@@ -261,8 +261,8 @@ bowtie2 indexes (see `--genome` option) or build the indexes on-the-fly
 
 ### `--chromosome_size`
 
-The Hi-C pipeline will also requires a two-columns text file with the
-chromosome name and its size (tab separated).
+The Hi-C pipeline also requires a two-column text file with
+chromosome name and chromosome size (tab-separated).
 If not specified, this file will be automatically created by the pipeline.
 In the latter case, the `--fasta` reference genome has to be specified.
 
@@ -286,7 +286,7 @@ In the latter case, the `--fasta` reference genome has to be specified.
 
 ### `--restriction_fragments`
 
-Finally, Hi-C experiments based on restriction enzyme digestion requires a BED
+Finally, Hi-C experiments based on restriction enzyme digestion require a BED
 file with coordinates of restriction fragments.
 
 ```bash
@@ -303,23 +303,23 @@ file with coordinates of restriction fragments.
    (...)
 ```
 
-If not specified, this file will be automatically created by the pipline.
+If not specified, this file will be automatically created by the pipeline.
 In this case, the `--fasta` reference genome will be used.
-Note that the `digestion` or `--restriction_site` parameter is mandatory to create this file.
+Note that the `--digestion` or `--restriction_site` parameter is mandatory to create this file.
 
 ## Hi-C specific options
 
 The following options are defined in the `nextflow.config` file, and can be
 updated either using a custom configuration file (see `-c` option) or using
-command line parameter.
+command line parameters.
 
 ### HiC-pro mapping
 
 The reads mapping is currently based on the two-steps strategy implemented in
 the HiC-pro pipeline. The idea is to first align reads from end-to-end.
-Reads that do not aligned are then trimmed at the ligation site, and their 5'
+Reads that do not align are then trimmed at the ligation site, and their 5'
 end is re-aligned to the reference genome.
-Note that the default option are quite stringent, and can be updated according
+Note that the default options are quite stringent, and can be updated according
 to the reads quality or the reference genome.
 
 #### `--bwt2_opts_end2end`
@@ -365,7 +365,7 @@ Available keywords are  'hindiii', 'dpnii', 'mboi', 'arima'.
 #### `--restriction_site`
 
 If the restriction enzyme is not available through the `--digestion`
-parameter, you can also defined manually the restriction motif(s) for
+parameter, you can also define manually the restriction motif(s) for
 Hi-C digestion protocol.
 The restriction motif(s) is(are) used to generate the list of restriction fragments.
 The precise cutting site of the restriction enzyme has to be specified using
@@ -388,7 +388,7 @@ that 'N' base are supported.
 
 Ligation motif after reads ligation. This motif is used for reads trimming and
 depends on the fill in strategy.
-Note that multiple ligation sites can be specified (comma separated) and that
+Note that multiple ligation sites can be specified (comma-separated) and that
 'N' base is interpreted and replaced by 'A','C','G','T'.
 Default: 'AAGCTAGCTT'
 
@@ -404,11 +404,11 @@ Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 
 In DNAse Hi-C mode, all options related to digestion Hi-C
 (see previous section) are ignored.
-In this case, it is highly recommanded to use the `--min_cis_dist` parameter
+In this case, it is highly recommended to use the `--min_cis_dist` parameter
 to remove spurious ligation products.
 
 ```bash
---dnase'
+--dnase
 ```
 
 ### HiC-pro processing
@@ -460,7 +460,7 @@ Mainly useful for DNase Hi-C. Default: '0'
 
 #### `--keep_dups`
 
-If specified, duplicates reads are not discarded before building contact maps.
+If specified, duplicate reads are not discarded before building contact maps.
 
 ```bash
 --keep_dups
@@ -484,7 +484,7 @@ framework to build the raw and balanced contact maps in txt and (m)cool formats.
 
 ### `--bin_size`
 
-Resolution of contact maps to generate (comma separated).
+Resolution of contact maps to generate (comma-separated).
 Default:'1000000,500000'
 
 ```bash
@@ -525,7 +525,7 @@ Default: 100
 
 #### `--ice_filer_low_count_perc`
 
-Define which pourcentage of bins with low counts should be force to zero.
+Define which percentage of bins with low counts should be forced to zero.
 Default: 0.02
 
 ```bash
@@ -534,7 +534,7 @@ Default: 0.02
 
 #### `--ice_filer_high_count_perc`
 
-Define which pourcentage of bins with low counts should be discarded before
+Define which percentage of bins with low counts should be discarded before
 normalization. Default: 0
 
 ```bash
@@ -556,8 +556,8 @@ normalization. Default: 0.1
 
 #### `--res_dist_decay`
 
-Generates distance vs Hi-C counts plots at a given resolution using `HiCExplorer`.
-Several resolution can be specified (comma separeted). Default: '250000'
+Generates distance vs. Hi-C counts plots at a given resolution using `HiCExplorer`.
+Several resolutions can be specified (comma-separated). Default: '250000'
 
 ```bash
 --res_dist_decay '[string]'
@@ -569,7 +569,7 @@ Call open/close compartments for each chromosome, using the `cooltools` command.
 
 #### `--res_compartments`
 
-Resolution to call the chromosome compartments (comma separated).
+Resolution to call the chromosome compartments (comma-separated).
 Default: '250000'
 
 ```bash
@@ -582,7 +582,7 @@ Default: '250000'
 
 TADs calling can be performed using different approaches.
 Currently available options are `insulation` and `hicexplorer`.
-Note that all options can be specified (comma separated).
+Note that all options can be specified (comma-separated).
 Default: 'insulation'
 
 ```bash
@@ -591,7 +591,7 @@ Default: 'insulation'
 
 #### `--res_tads`
 
-Resolution to run the TADs calling analysis (comma separated).
+Resolution to run the TADs calling analysis (comma-separated).
 Default: '40000,20000'
 
 ```bash
@@ -634,7 +634,7 @@ results folder. Default: false
 
 ### `--save_interaction_bam`
 
-If specified, write a BAM file with all classified reads (valid paires,
+If specified, write a BAM file with all classified reads (valid pairs,
 dangling end, self-circle, etc.) and its tags.
 
 ```bash
@@ -646,7 +646,7 @@ dangling end, self-circle, etc.) and its tags.
 ### `--skip_maps`
 
 If defined, the workflow stops with the list of valid interactions, and the
-genome-wide maps are not built. Usefult for capture-C analysis. Default: false
+genome-wide maps are not built. Useful for capture-C analysis. Default: false
 
 ```bash
 --skip_maps
@@ -669,7 +669,7 @@ If defined, cooler files are not generated. Default: false
 --skip_cool
 ```
 
-### `skip_dist_decay`
+### `--skip_dist_decay`
 
 Do not run distance decay plots. Default: false
 
@@ -677,7 +677,7 @@ Do not run distance decay plots. Default: false
 --skip_dist_decay
 ```
 
-### `skip_compartments`
+### `--skip_compartments`
 
 Do not call compartments. Default: false
 
@@ -685,7 +685,7 @@ Do not call compartments. Default: false
 --skip_compartments
 ```
 
-### `skip_tads`
+### `--skip_tads`
 
 Do not call TADs. Default: false
 
