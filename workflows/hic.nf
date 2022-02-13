@@ -49,6 +49,7 @@ include { HIC_PRO } from '../subworkflows/local/hicpro' addParams( options: [:] 
 include { COOLER } from '../subworkflows/local/cooler' addParams( options: [:] )
 include { COMPARTMENTS } from '../subworkflows/local/compartments' addParams( options: [:] )
 include { TADS } from '../subworkflows/local/tads' addParams( options: [:] )
+
 /*
 ========================================================================================
     IMPORT NF-CORE MODULES/SUBWORKFLOWS

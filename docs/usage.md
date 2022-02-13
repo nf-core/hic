@@ -6,20 +6,65 @@
 
 ## Introduction
 
+<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+
+## Samplesheet input
+
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+
+```console
+--input '[path to samplesheet file]'
+```
+
+### Multiple runs of the same sample
+
+The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+
+```console
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
+CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+```
+
+### Full samplesheet
+
+The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+
+A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+
+```console
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
+CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
+TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
+TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
+TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
+TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+```
+
+| Column         | Description                                                                                                                                                                            |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sample`       | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1`      | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_2`      | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+
+An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
-```bash
-nextflow run nf-core/hic --input '*_R{1,2}.fastq.gz' -profile docker
+```console
+nextflow run nf-core/hic --input samplesheet.csv --genome GRCh37 -profile docker
 ```
 
-This will launch the pipeline with the `docker` configuration profile.
-See below for more information about profiles.
+This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
 
 Note that the pipeline will create the following files in your working directory:
 
-```bash
+```console
 work            # Directory containing the nextflow working files
 results         # Finished results (configurable, see below)
 .nextflow_log   # Log file from Nextflow
@@ -30,673 +75,210 @@ results         # Finished results (configurable, see below)
 
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
-```bash
+```console
 nextflow pull nf-core/hic
 ```
 
 ### Reproducibility
 
-It's a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
+It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the
-[nf-core/hic releases page](https://github.com/nf-core/hic/releases) and find
-the latest version number - numeric only (eg. `1.3.1`).
-Then specify this when running the pipeline with `-r` (one hyphen)
-eg. `-r 1.3.1`.
+First, go to the [nf-core/hic releases page](https://github.com/nf-core/hic/releases) and find the latest version number - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`.
 
-This version number will be logged in reports when you run the pipeline, so
-that you'll know what you used when you look back in the future.
-
-### Automatic resubmission
-
-Each step in the pipeline has a default set of requirements for number of CPUs,
-memory and time. For most of the steps in the pipeline, if the job exits with
-an error code of `143` (exceeded requested resources) it will automatically
-resubmit with higher requests (2 x original, then 3 x original). If it still
-fails after three times then the pipeline is stopped.
+This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future.
 
 ## Core Nextflow arguments
 
-> **NB:** These options are part of Nextflow and use a _single_ hyphen
-(pipeline parameters use a double-hyphen).
+> **NB:** These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen).
 
 ### `-profile`
 
-Use this parameter to choose a configuration profile. Profiles can give
-configuration presets for different compute environments.
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
 
-Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Conda) - see below.
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Conda) - see below. When using Biocontainers, most of these software packaging methods pull Docker containers from quay.io e.g [FastQC](https://quay.io/repository/biocontainers/fastqc) except for Singularity which directly downloads Singularity images via https hosted by the [Galaxy project](https://depot.galaxyproject.org/singularity/) and Conda which downloads and installs software locally from [Bioconda](https://bioconda.github.io/).
 
-> We highly recommend the use of Docker or Singularity containers for full
-pipeline reproducibility, however when this is not possible, Conda is also supported.
+> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
 
-The pipeline also dynamically loads configurations from
-[https://github.com/nf-core/configs](https://github.com/nf-core/configs)
-when it runs, making multiple config profiles for various institutional
-clusters available at run time.
-For more information and to see if your system is available in these
-configs please see
-the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
+The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to see if your system is available in these configs please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
 
-Note that multiple profiles can be loaded, for example: `-profile test,docker` -
-the order of arguments is important!
-They are loaded in sequence, so later profiles can overwrite
-earlier profiles.
+Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
+They are loaded in sequence, so later profiles can overwrite earlier profiles.
 
-If `-profile` is not specified, the pipeline will run locally and
-expect all software to be
-installed and available on the `PATH`. This is _not_ recommended.
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended.
 
 * `docker`
-  * A generic configuration profile to be used with [Docker](https://docker.com/)
-  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+    * A generic configuration profile to be used with [Docker](https://docker.com/)
 * `singularity`
-  * A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
-  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+    * A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
 * `podman`
-  * A generic configuration profile to be used with [Podman](https://podman.io/)
-  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+    * A generic configuration profile to be used with [Podman](https://podman.io/)
 * `shifter`
-  * A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
-  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+    * A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
 * `charliecloud`
-  * A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
-  * Pulls software from Docker Hub: [`nfcore/hic`](https://hub.docker.com/r/nfcore/hic/)
+    * A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
 * `conda`
-  * Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
-  * A generic configuration profile to be used with [Conda](https://conda.io/docs/)
-  * Pulls most software from [Bioconda](https://bioconda.github.io/)
+    * A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
 * `test`
-  * A profile with a complete configuration for automated testing
-  * Includes links to test data so needs no other parameters
+    * A profile with a complete configuration for automated testing
+    * Includes links to test data so needs no other parameters
 
 ### `-resume`
 
-Specify this when restarting a pipeline. Nextflow will used cached results from
-any pipeline steps where the inputs are the same, continuing from where it got
-to previously.
-You can also supply a run name to resume a specific run: `-resume [run-name]`.
-Use the `nextflow log` command to show previous run names.
+Specify this when restarting a pipeline. Nextflow will used cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously.
+
+You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
 
 ### `-c`
 
-Specify the path to a specific config file (this is a core Nextflow command).
-See the [nf-core website documentation](https://nf-co.re/usage/configuration)
-for more information.
+Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
 
-#### Custom resource requests
+## Custom configuration
 
-Each step in the pipeline has a default set of requirements for number of CPUs,
-memory and time. For most of the steps in the pipeline, if the job exits with
-an error code of `143` (exceeded requested resources) it will automatically resubmit
-with higher requests (2 x original, then 3 x original). If it still fails after three
-times then the pipeline is stopped.
+### Resource requests
 
-Whilst these default requirements will hopefully work for most people with most data,
-you may find that you want to customise the compute resources that the pipeline requests.
-You can do this by creating a custom config file. For example, to give the workflow
-process `star` 32GB of memory, you could use the following config:
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the steps in the pipeline, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher requests (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
+
+For example, if the nf-core/rnaseq pipeline is failing after multiple re-submissions of the `STAR_ALIGN` process due to an exit code of `137` this would indicate that there is an out of memory issue:
+
+```console
+[62/149eb0] NOTE: Process `RNASEQ:ALIGN_STAR:STAR_ALIGN (WT_REP1)` terminated with an error exit status (137) -- Execution is retried (1)
+Error executing process > 'RNASEQ:ALIGN_STAR:STAR_ALIGN (WT_REP1)'
+
+Caused by:
+    Process `RNASEQ:ALIGN_STAR:STAR_ALIGN (WT_REP1)` terminated with an error exit status (137)
+
+Command executed:
+    STAR \
+        --genomeDir star \
+        --readFilesIn WT_REP1_trimmed.fq.gz  \
+        --runThreadN 2 \
+        --outFileNamePrefix WT_REP1. \
+        <TRUNCATED>
+
+Command exit status:
+    137
+
+Command output:
+    (empty)
+
+Command error:
+    .command.sh: line 9:  30 Killed    STAR --genomeDir star --readFilesIn WT_REP1_trimmed.fq.gz --runThreadN 2 --outFileNamePrefix WT_REP1. <TRUNCATED>
+Work dir:
+    /home/pipelinetest/work/9d/172ca5881234073e8d76f2a19c88fb
+
+Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+```
+
+To bypass this error you would need to find exactly which resources are set by the `STAR_ALIGN` process. The quickest way is to search for `process STAR_ALIGN` in the [nf-core/rnaseq Github repo](https://github.com/nf-core/rnaseq/search?q=process+STAR_ALIGN). We have standardised the structure of Nextflow DSL2 pipelines such that all module files will be present in the `modules/` directory and so based on the search results the file we want is `modules/nf-core/software/star/align/main.nf`. If you click on the link to that file you will notice that there is a `label` directive at the top of the module that is set to [`label process_high`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/modules/nf-core/software/star/align/main.nf#L9). The [Nextflow `label`](https://www.nextflow.io/docs/latest/process.html#label) directive allows us to organise workflow processes in separate groups which can be referenced in a configuration file to select and configure subset of processes having similar computing requirements. The default values for the `process_high` label are set in the pipeline's [`base.config`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L33-L37) which in this case is defined as 72GB. Providing you haven't set any other standard nf-core parameters to __cap__ the [maximum resources](https://nf-co.re/usage/configuration#max-resources) used by the pipeline then we can try and bypass the `STAR_ALIGN` process failure by creating a custom config file that sets at least 72GB of memory, in this case increased to 100GB. The custom config below can then be provided to the pipeline via the [`-c`](#-c) parameter as highlighted in previous sections.
 
 ```nextflow
 process {
-  withName: star {
-    memory = 32.GB
-  }
+    withName: STAR_ALIGN {
+        memory = 100.GB
+    }
 }
 ```
 
-To find the exact name of a process you wish to modify the compute resources, check the live-status of a nextflow run displayed on your terminal or check the nextflow error for a line like so: `Error executing process > 'bowtie2_end_to_end'`. In this case the name to specify in the custom config file is `bowtie2_end_to_end`.
+> **NB:** We specify just the process name i.e. `STAR_ALIGN` in the config file and not the full task name string that is printed to screen in the error message or on the terminal whilst the pipeline is running i.e. `RNASEQ:ALIGN_STAR:STAR_ALIGN`. You may get a warning suggesting that the process selector isn't recognised but you can ignore that if the process name has been specified correctly. This is something that needs to be fixed upstream in core Nextflow.
 
-See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information.
+### Tool-specific options
 
-If you are likely to be running `nf-core` pipelines regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter (see definition above). You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
+For the ultimate flexibility, we have implemented and are using Nextflow DSL2 modules in a way where it is possible for both developers and users to change tool-specific command-line arguments (e.g. providing an additional command-line argument to the `STAR_ALIGN` process) as well as publishing options (e.g. saving files produced by the `STAR_ALIGN` process that aren't saved by default by the pipeline). In the majority of instances, as a user you won't have to change the default options set by the pipeline developer(s), however, there may be edge cases where creating a simple custom config file can improve the behaviour of the pipeline if for example it is failing due to a weird error that requires setting a tool-specific parameter to deal with smaller / larger genomes.
 
-If you have any questions or issues please send us a message on
-[Slack](https://nf-co.re/join/slack) on the
-[`#configs` channel](https://nfcore.slack.com/channels/configs).
+The command-line arguments passed to STAR in the `STAR_ALIGN` module are a combination of:
 
-### Running in the background
+* Mandatory arguments or those that need to be evaluated within the scope of the module, as supplied in the [`script`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/modules/nf-core/software/star/align/main.nf#L49-L55) section of the module file.
 
-Nextflow handles job submissions and supervises the running jobs.
-The Nextflow process must run until the pipeline is finished.
+* An [`options.args`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/modules/nf-core/software/star/align/main.nf#L56) string of non-mandatory parameters that is set to be empty by default in the module but can be overwritten when including the module in the sub-workflow / workflow context via the `addParams` Nextflow option.
 
-The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal
-so that the workflow does not stop if you log out of your session. The logs are
-saved to a file.
+The nf-core/rnaseq pipeline has a sub-workflow (see [terminology](https://github.com/nf-core/modules#terminology)) specifically to align reads with STAR and to sort, index and generate some basic stats on the resulting BAM files using SAMtools. At the top of this file we import the `STAR_ALIGN` module via the Nextflow [`include`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/subworkflows/nf-core/align_star.nf#L10) keyword and by default the options passed to the module via the `addParams` option are set as an empty Groovy map [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/subworkflows/nf-core/align_star.nf#L5); this in turn means `options.args` will be set to empty by default in the module file too. This is an intentional design choice and allows us to implement well-written sub-workflows composed of a chain of tools that by default run with the bare minimum parameter set for any given tool in order to make it much easier to share across pipelines and to provide the flexibility for users and developers to customise any non-mandatory arguments.
 
-Alternatively, you can use `screen` / `tmux` or similar tool to create a detached
-session which you can log back into at a later time.
-Some HPC setups also allow you to run nextflow within a cluster job submitted
-your job scheduler (from where it submits more jobs).
+When including the sub-workflow above in the main pipeline workflow we use the same `include` statement, however, we now have the ability to overwrite options for each of the tools in the sub-workflow including the [`align_options`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/workflows/rnaseq.nf#L225) variable that will be used specifically to overwrite the optional arguments passed to the `STAR_ALIGN` module. In this case, the options to be provided to `STAR_ALIGN` have been assigned sensible defaults by the developer(s) in the pipeline's [`modules.config`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/modules.config#L70-L74) and can be accessed and customised in the [workflow context](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/workflows/rnaseq.nf#L201-L204) too before eventually passing them to the sub-workflow as a Groovy map called `star_align_options`. These options will then be propagated from `workflow -> sub-workflow -> module`.
 
-#### Nextflow memory requirements
+As mentioned at the beginning of this section it may also be necessary for users to overwrite the options passed to modules to be able to customise specific aspects of the way in which a particular tool is executed by the pipeline. Given that all of the default module options are stored in the pipeline's `modules.config` as a [`params` variable](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/modules.config#L24-L25) it is also possible to overwrite any of these options via a custom config file.
 
-In some cases, the Nextflow Java virtual machines can start to request a
-large amount of memory.
-We recommend adding the following line to your environment to limit this
-(typically in `~/.bashrc` or `~./bash_profile`):
+Say for example we want to append an additional, non-mandatory parameter (i.e. `--outFilterMismatchNmax 16`) to the arguments passed to the `STAR_ALIGN` module. Firstly, we need to copy across the default `args` specified in the [`modules.config`](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/modules.config#L71) and create a custom config file that is a composite of the default `args` as well as the additional options you would like to provide. This is very important because Nextflow will overwrite the default value of `args` that you provide via the custom config.
 
-```bash
+As you will see in the example below, we have:
+
+* appended `--outFilterMismatchNmax 16` to the default `args` used by the module.
+* changed the default `publish_dir` value to where the files will eventually be published in the main results directory.
+* appended `'bam':''` to the default value of `publish_files` so that the BAM files generated by the process will also be saved in the top-level results directory for the module. Note: `'out':'log'` means any file/directory ending in `out` will now be saved in a separate directory called `my_star_directory/log/`.
+
+```nextflow
+params {
+    modules {
+        'star_align' {
+            args          = "--quantMode TranscriptomeSAM --twopassMode Basic --outSAMtype BAM Unsorted --readFilesCommand zcat --runRNGseed 0 --outFilterMultimapNmax 20 --alignSJDBoverhangMin 1 --outSAMattributes NH HI AS NM MD --quantTranscriptomeBan Singleend --outFilterMismatchNmax 16"
+            publish_dir   = "my_star_directory"
+            publish_files = ['out':'log', 'tab':'log', 'bam':'']
+        }
+    }
+}
+```
+
+### Updating containers
+
+The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. If for some reason you need to use a different version of a particular tool with the pipeline then you just need to identify the `process` name and override the Nextflow `container` definition for that process using the `withName` declaration. For example, in the [nf-core/viralrecon](https://nf-co.re/viralrecon) pipeline a tool called [Pangolin](https://github.com/cov-lineages/pangolin) has been used during the COVID-19 pandemic to assign lineages to SARS-CoV-2 genome sequenced samples. Given that the lineage assignments change quite frequently it doesn't make sense to re-release the nf-core/viralrecon everytime a new version of Pangolin has been released. However, you can override the default container used by the pipeline by creating a custom config file and passing it as a command-line argument via `-c custom.config`.
+
+1. Check the default version used by the pipeline in the module file for [Pangolin](https://github.com/nf-core/viralrecon/blob/a85d5969f9025409e3618d6c280ef15ce417df65/modules/nf-core/software/pangolin/main.nf#L14-L19)
+2. Find the latest version of the Biocontainer available on [Quay.io](https://quay.io/repository/biocontainers/pangolin?tag=latest&tab=tags)
+3. Create the custom config accordingly:
+
+    * For Docker:
+
+        ```nextflow
+        process {
+            withName: PANGOLIN {
+                container = 'quay.io/biocontainers/pangolin:3.0.5--pyhdfd78af_0'
+            }
+        }
+        ```
+
+    * For Singularity:
+
+        ```nextflow
+        process {
+            withName: PANGOLIN {
+                container = 'https://depot.galaxyproject.org/singularity/pangolin:3.0.5--pyhdfd78af_0'
+            }
+        }
+        ```
+
+    * For Conda:
+
+        ```nextflow
+        process {
+            withName: PANGOLIN {
+                conda = 'bioconda::pangolin=3.0.5'
+            }
+        }
+        ```
+
+> **NB:** If you wish to periodically update individual tool-specific results (e.g. Pangolin) generated by the pipeline then you must ensure to keep the `work/` directory otherwise the `-resume` ability of the pipeline will be compromised and it will restart from scratch.
+
+### nf-core/configs
+
+In most cases, you will only need to create a custom config as a one-off but if you and others within your organisation are likely to be running nf-core pipelines regularly and need to use the same settings regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter. You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
+
+See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
+
+If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
+
+## Running in the background
+
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
+
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
+
+Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
+
+## Nextflow memory requirements
+
+In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
+We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
+
+```console
 NXF_OPTS='-Xms1g -Xmx4g'
-```
-
-## Use case
-
-### Hi-C digestion protocol
-
-Here is an command line example for standard DpnII digestion protocols.
-Alignment will be performed on the `mm10` genome with default parameters.
-Multi-hits will not be considered and duplicates will be removed.
-Note that by default, no filters are applied on DNA and restriction fragment sizes.
-
-```bash
-nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
-```
-
-### DNase Hi-C protocol
-
-Here is an command line example for DNase protocol.
-Alignment will be performed on the `mm10` genome with default paramters.
-Multi-hits will not be considered and duplicates will be removed.
-Contacts involving fragments separated by less than 1000bp will be discarded.
-
-```bash
-nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
-```
-
-## Inputs
-
-### `--input`
-
-Use this to specify the location of your input FastQ files. For example:
-
-```bash
---input 'path/to/data/sample_*_{1,2}.fastq'
-```
-
-Please note the following requirements:
-
-1. The path must be enclosed in quotes
-2. The path must have at least one `*` wildcard character
-3. When using the pipeline with paired end data, the path must use `{1,2}`
-notation to specify read pairs.
-
-If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
-
-Note that the Hi-C data analysis requires paired-end data.
-
-## Reference genomes
-
-The pipeline config files come bundled with paths to the illumina iGenomes reference
-index files. If running with docker or AWS, the configuration is set up to use the
-[AWS-iGenomes](https://ewels.github.io/AWS-iGenomes/) resource.
-
-### `--genome` (using iGenomes)
-
-There are many different species supported in the iGenomes references. To run
-the pipeline, you must specify which to use with the `--genome` flag.
-
-You can find the keys to specify the genomes in the
-[iGenomes config file](../conf/igenomes.config).
-
-### `--fasta`
-
-If you prefer, you can specify the full path to your reference genome when you
-run the pipeline:
-
-```bash
---fasta '[path to Fasta reference]'
-```
-
-### `--bwt2_index`
-
-The bowtie2 indexes are required to align the data with the HiC-Pro workflow. If the
-`--bwt2_index` is not specified, the pipeline will either use the igenome
-bowtie2 indexes (see `--genome` option) or build the indexes on-the-fly
-(see `--fasta` option)
-
-```bash
---bwt2_index '[path to bowtie2 index]'
-```
-
-### `--chromosome_size`
-
-The Hi-C pipeline will also requires a two-columns text file with the
-chromosome name and its size (tab separated).
-If not specified, this file will be automatically created by the pipeline.
-In the latter case, the `--fasta` reference genome has to be specified.
-
-```bash
-   chr1    249250621
-   chr2    243199373
-   chr3    198022430
-   chr4    191154276
-   chr5    180915260
-   chr6    171115067
-   chr7    159138663
-   chr8    146364022
-   chr9    141213431
-   chr10   135534747
-   (...)
-```
-
-```bash
---chromosome_size '[path to chromosome size file]'
-```
-
-### `--restriction_fragments`
-
-Finally, Hi-C experiments based on restriction enzyme digestion requires a BED
-file with coordinates of restriction fragments.
-
-```bash
-   chr1   0       16007   HIC_chr1_1    0   +
-   chr1   16007   24571   HIC_chr1_2    0   +
-   chr1   24571   27981   HIC_chr1_3    0   +
-   chr1   27981   30429   HIC_chr1_4    0   +
-   chr1   30429   32153   HIC_chr1_5    0   +
-   chr1   32153   32774   HIC_chr1_6    0   +
-   chr1   32774   37752   HIC_chr1_7    0   +
-   chr1   37752   38369   HIC_chr1_8    0   +
-   chr1   38369   38791   HIC_chr1_9    0   +
-   chr1   38791   39255   HIC_chr1_10   0   +
-   (...)
-```
-
-If not specified, this file will be automatically created by the pipline.
-In this case, the `--fasta` reference genome will be used.
-Note that the `digestion` or `--restriction_site` parameter is mandatory to create this file.
-
-## Hi-C specific options
-
-The following options are defined in the `nextflow.config` file, and can be
-updated either using a custom configuration file (see `-c` option) or using
-command line parameter.
-
-### HiC-pro mapping
-
-The reads mapping is currently based on the two-steps strategy implemented in
-the HiC-pro pipeline. The idea is to first align reads from end-to-end.
-Reads that do not aligned are then trimmed at the ligation site, and their 5'
-end is re-aligned to the reference genome.
-Note that the default option are quite stringent, and can be updated according
-to the reads quality or the reference genome.
-
-#### `--bwt2_opts_end2end`
-
-Bowtie2 alignment option for end-to-end mapping.
-Default: '--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end
---reorder'
-
-```bash
---bwt2_opts_end2end '[Options for bowtie2 step1 mapping on full reads]'
-```
-
-#### `--bwt2_opts_trimmed`
-
-Bowtie2 alignment option for trimmed reads mapping (step 2).
-Default: '--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end
---reorder'
-
-```bash
---bwt2_opts_trimmed '[Options for bowtie2 step2 mapping on trimmed reads]'
-```
-
-#### `--min_mapq`
-
-Minimum mapping quality. Reads with lower quality are discarded. Default: 10
-
-```bash
---min_mapq '[Minimum quality value]'
-```
-
-### Digestion Hi-C
-
-#### `--digestion`
-
-This parameter allows to automatically set the `--restriction_site` and
-`--ligation_site` parameter according to the restriction enzyme you used.
-Available keywords are  'hindiii', 'dpnii', 'mboi', 'arima'.
-
-```bash
---digestion 'hindiii'
-```
-
-#### `--restriction_site`
-
-If the restriction enzyme is not available through the `--digestion`
-parameter, you can also defined manually the restriction motif(s) for
-Hi-C digestion protocol.
-The restriction motif(s) is(are) used to generate the list of restriction fragments.
-The precise cutting site of the restriction enzyme has to be specified using
-the '^' character. Default: 'A^AGCTT'
-Here are a few examples:
-
-* MboI: ^GATC
-* DpnII: ^GATC
-* HindIII: A^AGCTT
-* ARIMA kit: ^GATC,G^ANTC
-
-Note that multiples restriction motifs can be provided (comma-separated) and
-that 'N' base are supported.
-
-```bash
---restriction_size '[Cutting motif]'
-```
-
-#### `--ligation_site`
-
-Ligation motif after reads ligation. This motif is used for reads trimming and
-depends on the fill in strategy.
-Note that multiple ligation sites can be specified (comma separated) and that
-'N' base is interpreted and replaced by 'A','C','G','T'.
-Default: 'AAGCTAGCTT'
-
-```bash
---ligation_site '[Ligation motif]'
-```
-
-Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
-
-### DNAse Hi-C
-
-#### `--dnase`
-
-In DNAse Hi-C mode, all options related to digestion Hi-C
-(see previous section) are ignored.
-In this case, it is highly recommanded to use the `--min_cis_dist` parameter
-to remove spurious ligation products.
-
-```bash
---dnase'
-```
-
-### HiC-pro processing
-
-#### `--min_restriction_fragment_size`
-
-Minimum size of restriction fragments to consider for the Hi-C processing.
-Default: '0' - no filter
-
-```bash
---min_restriction_fragment_size '[numeric]'
-```
-
-#### `--max_restriction_fragment_size`
-
-Maximum size of restriction fragments to consider for the Hi-C processing.
-Default: '0' - no filter
-
-```bash
---max_restriction_fragment_size '[numeric]'
-```
-
-#### `--min_insert_size`
-
-Minimum reads insert size. Shorter 3C products are discarded.
-Default: '0' - no filter
-
-```bash
---min_insert_size '[numeric]'
-```
-
-#### `--max_insert_size`
-
-Maximum reads insert size. Longer 3C products are discarded.
-Default: '0' - no filter
-
-```bash
---max_insert_size '[numeric]'
-```
-
-#### `--min_cis_dist`
-
-Filter short range contact below the specified distance.
-Mainly useful for DNase Hi-C. Default: '0'
-
-```bash
---min_cis_dist '[numeric]'
-```
-
-#### `--keep_dups`
-
-If specified, duplicates reads are not discarded before building contact maps.
-
-```bash
---keep_dups
-```
-
-#### `--keep_multi`
-
-If specified, reads that aligned multiple times on the genome are not discarded.
-Note the default mapping options are based on random hit assignment, meaning
-that only one position is kept per read.
-Note that in this case the `--min_mapq` parameter is ignored.
-
-```bash
---keep_multi
-```
-
-## Genome-wide contact maps
-
-Once the list of valid pairs is available, the standard is now to move on the `cooler`
-framework to build the raw and balanced contact maps in txt and (m)cool formats.
-
-### `--bin_size`
-
-Resolution of contact maps to generate (comma separated).
-Default:'1000000,500000'
-
-```bash
---bins_size '[string]'
-```
-
-### `--res_zoomify`
-
-Define the maximum resolution to reach when zoomify the cool contact maps.
-Default:'5000'
-
-```bash
---res_zoomify '[string]'
-```
-
-### HiC-Pro contact maps
-
-By default, the contact maps are now generated with the `cooler` framework.
-However, for backward compatibility, the raw and normalized maps can still be generated
-by HiC-pro if the `--hicpro_maps` parameter is set.
-
-#### `--hicpro_maps`
-
-If specified, the raw and ICE normalized contact maps will be generated by HiC-Pro.
-
-```bash
---hicpro_maps
-```
-
-#### `--ice_max_iter`
-
-Maximum number of iteration for ICE normalization.
-Default: 100
-
-```bash
---ice_max_iter '[numeric]'
-```
-
-#### `--ice_filer_low_count_perc`
-
-Define which pourcentage of bins with low counts should be force to zero.
-Default: 0.02
-
-```bash
---ice_filter_low_count_perc '[numeric]'
-```
-
-#### `--ice_filer_high_count_perc`
-
-Define which pourcentage of bins with low counts should be discarded before
-normalization. Default: 0
-
-```bash
---ice_filter_high_count_perc '[numeric]'
-```
-
-#### `--ice_eps`
-
-The relative increment in the results before declaring convergence for ICE
-normalization. Default: 0.1
-
-```bash
---ice_eps '[numeric]'
-```
-
-## Downstream analysis
-
-### Additional quality controls
-
-#### `--res_dist_decay`
-
-Generates distance vs Hi-C counts plots at a given resolution using `HiCExplorer`.
-Several resolution can be specified (comma separeted). Default: '250000'
-
-```bash
---res_dist_decay '[string]'
-```
-
-### Compartment calling
-
-Call open/close compartments for each chromosome, using the `cooltools` command.
-
-#### `--res_compartments`
-
-Resolution to call the chromosome compartments (comma separated).
-Default: '250000'
-
-```bash
---res_compartments '[string]'
-```
-
-### TADs calling
-
-#### `--tads_caller`
-
-TADs calling can be performed using different approaches.
-Currently available options are `insulation` and `hicexplorer`.
-Note that all options can be specified (comma separated).
-Default: 'insulation'
-
-```bash
---tads_caller '[string]'
-```
-
-#### `--res_tads`
-
-Resolution to run the TADs calling analysis (comma separated).
-Default: '40000,20000'
-
-```bash
---res_tads '[string]'
-```
-
-## Inputs/Outputs
-
-### `--split_fastq`
-
-By default, the nf-core Hi-C pipeline expects one read pairs per sample.
-However, for large Hi-C data processing single fastq files can be very
-time consuming.
-The `--split_fastq` option allows to automatically split input read pairs
-into chunks of reads of size `--fastq_chunks_size` (Default : 20000000). In this case, all chunks will be processed in parallel
-and merged before generating the contact maps, thus leading to a significant
-increase of processing performance.
-
-```bash
---split_fastq --fastq_chunks_size '[numeric]'
-```
-
-### `--save_reference`
-
-If specified, annotation files automatically generated from the `--fasta` file
-are exported in the results folder. Default: false
-
-```bash
---save_reference
-```
-
-### `--save_aligned_intermediates`
-
-If specified, all intermediate mapping files are saved and exported in the
-results folder. Default: false
-
-```bash
---save_aligned_inermediates
-```
-
-### `--save_interaction_bam`
-
-If specified, write a BAM file with all classified reads (valid paires,
-dangling end, self-circle, etc.) and its tags.
-
-```bash
---save_interaction_bam
-```
-
-## Skip options
-
-### `--skip_maps`
-
-If defined, the workflow stops with the list of valid interactions, and the
-genome-wide maps are not built. Usefult for capture-C analysis. Default: false
-
-```bash
---skip_maps
-```
-
-### `--skip_balancing`
-
-If defined, the contact maps normalization is not run on the raw contact maps.
-Default: false
-
-```bash
---skip_balancing
-```
-
-### `--skip_cool`
-
-If defined, cooler files are not generated. Default: false
-
-```bash
---skip_cool
-```
-
-### `skip_dist_decay`
-
-Do not run distance decay plots. Default: false
-
-```bash
---skip_dist_decay
-```
-
-### `skip_compartments`
-
-Do not call compartments. Default: false
-
-```bash
---skip_compartments
-```
-
-### `skip_tads`
-
-Do not call TADs. Default: false
-
-```bash
---skip_tads
-```
-
-### `--skip_multiQC`
-
-If defined, the MultiQC report is not generated. Default: false
-
-```bash
---skip_multiQC
 ```
