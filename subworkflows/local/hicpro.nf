@@ -1,26 +1,71 @@
-params.options = [:]
+/*
+ * HICPRO MAIN WORKFLOW
+ * INPUT :  paired-end sequencing data
+ * OUTPUT : .pairs file with the list of valid interaction
+ */
+  
+include { HICPRO_MAPPING } from './hicpro_mapping'
+include { GET_VALID_INTERACTION } from '../../modules/local/hicpro/get_valid_interaction'
+include { MERGE_VALID_INTERACTION } from '../../modules/local/hicpro/merge_valid_interaction'
+include { HICPRO2PAIRS } from '../../modules/local/hicpro/hicpro2pairs'
+include { BUILD_CONTACT_MAPS } from '../../modules/local/hicpro/build_contact_maps'
+include { ICE_NORMALIZATION } from '../../modules/local/hicpro/run_ice'
 
-include { BOWTIE2_END_TO_END } from '../../modules/local/bowtie2_end_to_end' addParams( options: params.options )
-include { BOWTIE2_ON_TRIMED_READS } from '../../modules/local/bowtie2_on_trimmed_reads' addParams( options: params.options )
-include { BOWTIE2_MERGE_MAPPING_STEPS } from '../../modules/local/bowtie2_merge_mapping_steps' addParams( options: params.options )
-include { DNASE_MAPPING_STATS } from '../../modules/local/dnase_mapping_stats' addParams( options: params.options )
-include { COMBINE_MATES } from '../../modules/local/combine_mates' addParams( options: params.options )
-include { GET_VALID_INTERACTION } from '../../modules/local/get_valid_interaction' addParams( options: params.options )
-include { GET_VALID_INTERACTION_DNASE } from '../../modules/local/get_valid_interaction_dnase' addParams( options: params.options )
-include { REMOVE_DUPLICATES } from '../../modules/local/remove_duplicates' addParams( options: params.options )
-include { MERGE_STATS } from '../../modules/local/merge_stats' addParams( options: params.options )
-include { BUILD_CONTACT_MAPS } from '../../modules/local/build_contact_maps' addParams( options: params.options )
-include { RUN_ICE } from '../../modules/local/run_ice' addParams( options: params.options )
-include { CONVERTS_TO_PAIRS } from '../../modules/local/convert_to_pairs' addParams( options: params.options )
+workflow HICPRO {
 
-workflow HIC_PRO {
+  take:
+  reads // [meta, read1, read2]
+  index
+  fragments
+  chrsize
+  ligation_site
+  map_res
 
-    take:
+  main:
+  ch_versions = Channel.empty()
+
+  // fastq to paired-end bam
+  HICPRO_MAPPING(
+    reads,
+    index,
+    ligation_site
+  )
+
+  // get valid interaction
+  GET_VALID_INTERACTION (
+    HICPRO_MAPPING.out.bam,
+    fragments    
+  )
+
+  // merge valid interactions and remove duplicates
+  MERGE_VALID_INTERACTION (
+    GET_VALID_INTERACTION.out.valid_pairs
+  )
+
+  // convert to pairs
+  HICPRO2PAIRS (
+    MERGE_VALID_INTERACTION.out.valid_pairs,
+    chrsize
+  )
+
+  //merge stats
 
 
-    main:
+  if (!params.hicpro_maps){
+
+    //build_contact_maps
+    BUILD_CONTACT_MAPS(
+      MERGE_VALID_INTERACTION.out.valid_pairs.combine(map_res),
+      chrsize
+    )
     
+    // run_ice
+    ICE_NORMALIZATION(
+      BUILD_CONTACT_MAPS.out.maps
+    )
+  }
 
-    emit:
-    
+  emit:
+  versions = ch_versions
+  pairs = HICPRO2PAIRS.out.pairs
 }

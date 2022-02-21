@@ -7,15 +7,74 @@
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
-WorkflowHic.initialise(params, log)
+//WorkflowHic.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
+//def checkPathParamList = [ params.input ]
+//for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+
+// Digestion parameters
+if (params.digestion){
+  restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
+  ch_restriction_site = Channel.value(restriction_site)
+
+  ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
+  ch_ligation_site = Channel.value(ligation_site)
+}else{
+  ch_restriction_site = Channel.empty()
+  ch_ligation_site = Channel.empty()
+}
+
+// Resolutions for contact maps
+ch_map_res = Channel.from( params.bin_size ).splitCsv().flatten()
+if (params.res_tads && !params.skip_tads){
+  Channel.from( "${params.res_tads}" )
+    .splitCsv()
+    .flatten()
+    .set {ch_tads_res}
+  ch_map_res = ch_map_res.concat(ch_tads_res)
+}else{
+  ch_tads_res=Channel.empty()
+  if (!params.skip_tads){
+    log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads" 
+  }
+}
+
+if (params.res_dist_decay && !params.skip_dist_decay){
+  Channel.from( "${params.res_dist_decay}" )
+    .splitCsv()
+    .flatten()
+    .set {ch_ddecay_res}
+   ch_map_res = ch_map_res.concat(ch_ddecay_res)
+}else{
+  ch_ddecay_res = Channel.create()
+  if (!params.skip_dist_decay){
+    log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay" 
+  }
+}
+
+if (params.res_compartments && !params.skip_compartments){
+  //Channel.fromPath( params.fasta )
+  //  .ifEmpty { exit 1, "Compartments calling: Fasta file not found: ${params.fasta}" }
+  //  .set { fasta_for_compartments }
+  Channel.from( "${params.res_compartments}" )
+    .splitCsv()
+    .flatten()
+    .set {ch_comp_res}
+   ch_map_res = ch_map_res.concat(ch_comp_res)
+}else{
+  //fasta_for_compartments = Channel.empty()
+  ch_comp_res = Channel.create()
+  if (!params.skip_compartments){
+    log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
+  }
+}
+
+ch_map_res = ch_map_res.unique()
 
 /*
 ========================================================================================
@@ -33,22 +92,23 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 */
 
 // Don't overwrite global params.modules, create a copy instead and use that within the main script.
-def modules = params.modules.clone()
+//def modules = params.modules.clone()
 
 //
 // MODULE: Local to the pipeline
 //
-include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-include { OUTPUT_DOCUMENTATION } from '../modules/local/output_documentation' addParams( options: [publish_files : ['tsv':'']] )
+//include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
+//include { OUTPUT_DOCUMENTATION } from '../modules/local/output_documentation' addParams( options: [publish_files : ['tsv':'']] )
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( options: [:] )
-include { HIC_PRO } from '../subworkflows/local/hicpro' addParams( options: [:] )
-include { COOLER } from '../subworkflows/local/cooler' addParams( options: [:] )
-include { COMPARTMENTS } from '../subworkflows/local/compartments' addParams( options: [:] )
-include { TADS } from '../subworkflows/local/tads' addParams( options: [:] )
+include { INPUT_CHECK } from '../subworkflows/local/input_check'
+include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
+include { HICPRO } from '../subworkflows/local/hicpro'
+//include { COOLER } from '../subworkflows/local/cooler'
+//include { COMPARTMENTS } from '../subworkflows/local/compartments'
+//include { TADS } from '../subworkflows/local/tads'
 
 /*
 ========================================================================================
@@ -56,14 +116,24 @@ include { TADS } from '../subworkflows/local/tads' addParams( options: [:] )
 ========================================================================================
 */
 
-def multiqc_options   = modules['multiqc']
-multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
+//def multiqc_options   = modules['multiqc']
+//multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
 
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'  addParams( options: modules['fastqc'] )
-include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
+include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'
+//include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
+
+/*
+========================================================================================
+  CHANNELS
+========================================================================================
+*/
+
+Channel.fromPath( params.fasta )
+       .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
+       .set { ch_fasta }
 
 /*
 ========================================================================================
@@ -76,56 +146,62 @@ def multiqc_report = []
 
 workflow HIC {
 
-    ch_software_versions = Channel.empty()
+  ch_software_versions = Channel.empty()
 
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
-    INPUT_CHECK (
-        ch_input
-    )
+  //
+  // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+  //
+  INPUT_CHECK (
+    ch_input
+  )
 
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        INPUT_CHECK.out.reads
-    )
-    ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
+  //
+  // SUBWORKFLOW: Prepare genome annotation
+  //
+  PREPARE_GENOME(
+    ch_fasta,
+    ch_restriction_site
+  )
 
-    //
-    // MODULE: Pipeline reporting
-    //
-    ch_software_versions
-        .map { it -> if (it) [ it.baseName, it ] }
-        .groupTuple()
-        .map { it[1][0] }
-        .flatten()
-        .collect()
-        .set { ch_software_versions }
+  //
+  // MODULE: Run FastQC
+  //
+  FASTQC (
+    INPUT_CHECK.out.reads
+  )
 
-    GET_SOFTWARE_VERSIONS (
-        ch_software_versions.map { it }.collect()
-    )
+  //
+  // SUB-WORFLOW: HiC-Pro
+  //
+  HICPRO (
+    INPUT_CHECK.out.reads,
+    PREPARE_GENOME.out.index,
+    PREPARE_GENOME.out.res_frag,
+    PREPARE_GENOME.out.chromosome_size,
+    ch_ligation_site,
+    ch_map_res
+  )
 
-    //
-    // MODULE: MultiQC
-    //
-    workflow_summary    = WorkflowHic.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
 
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(GET_SOFTWARE_VERSIONS.out.yaml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+  //
+  // MODULE: MultiQC
+  //
+  workflow_summary    = WorkflowHic.paramsSummaryMultiqc(workflow, summary_params)
+  ch_workflow_summary = Channel.value(workflow_summary)
 
-    MULTIQC (
-        ch_multiqc_files.collect()
-    )
-    multiqc_report       = MULTIQC.out.report.toList()
-    ch_software_versions = ch_software_versions.mix(MULTIQC.out.version.ifEmpty(null))
+  ch_multiqc_files = Channel.empty()
+  ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
+  ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+  ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+  //ch_multiqc_files = ch_multiqc_files.mix(GET_SOFTWARE_VERSIONS.out.yaml.collect())
+  //ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+
+  //MULTIQC (
+  //  ch_multiqc_files.collect()
+  //)
+  //multiqc_report       = MULTIQC.out.report.toList()
+  multiqc_report = []
+  //ch_software_versions = ch_software_versions.mix(MULTIQC.out.version.ifEmpty(null))
 }
 
 /*
@@ -135,10 +211,10 @@ workflow HIC {
 */
 
 workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
+  if (params.email || params.email_on_fail) {
+      NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
+  }
+  NfcoreTemplate.summary(workflow, params, log)
 }
 
 /*
