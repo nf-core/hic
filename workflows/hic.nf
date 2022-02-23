@@ -75,7 +75,6 @@ if (params.res_compartments && !params.skip_compartments){
 }
 
 ch_map_res = ch_map_res.unique()
-
 /*
 ========================================================================================
     CONFIG FILES
@@ -106,7 +105,7 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
-//include { COOLER } from '../subworkflows/local/cooler'
+include { COOLER } from '../subworkflows/local/cooler'
 //include { COMPARTMENTS } from '../subworkflows/local/compartments'
 //include { TADS } from '../subworkflows/local/tads'
 
@@ -182,6 +181,14 @@ workflow HIC {
     ch_map_res
   )
 
+  //
+  // SUB-WORKFLOW: COOLER
+  //
+  COOLER (
+    HICPRO.out.pairs,
+    PREPARE_GENOME.out.chromosome_size,
+    ch_map_res
+  )
 
   //
   // MODULE: MultiQC

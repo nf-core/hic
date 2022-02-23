@@ -49,14 +49,14 @@ workflow HICPRO {
   )
 
   //merge stats
+  // TODO
 
-
-  if (!params.hicpro_maps){
-
+  if (params.hicpro_maps){
+    
     //build_contact_maps
     BUILD_CONTACT_MAPS(
       MERGE_VALID_INTERACTION.out.valid_pairs.combine(map_res),
-      chrsize
+      chrsize.collect()
     )
     
     // run_ice
