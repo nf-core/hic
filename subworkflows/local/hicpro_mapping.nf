@@ -84,6 +84,7 @@ workflow HICPRO_MAPPING {
   MERGE_BOWTIE2(
     ch_bowtie2_align
   )
+  //TODO ch_versions = ch_versions.mix(MERGE_BOWTIE2.out.versions)
 
   // Combine mates
   MERGE_BOWTIE2.out.bam
@@ -95,8 +96,11 @@ workflow HICPRO_MAPPING {
   COMBINE_MATES (
     ch_bams
   )
-  
+  //TODO ch_versions = ch_versions.mix(COMBINE_MATES.out.versions)
+
   emit:
   versions = ch_versions
   bam = COMBINE_MATES.out.bam
+  mapstats = MERGE_BOWTIE2.out.stats
+  pairstats = COMBINE_MATES.out.stats
 }

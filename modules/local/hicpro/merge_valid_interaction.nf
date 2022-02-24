@@ -8,7 +8,7 @@ process MERGE_VALID_INTERACTION {
    output:
    tuple val(meta), path("*.allValidPairs"), emit: valid_pairs
    path("stats/"), emit:mqc
-   path("*mergestat"), emit:stats
+   tuple val(meta), path("*mergestat"), emit:stats
 
    script:
    prefix = meta.id

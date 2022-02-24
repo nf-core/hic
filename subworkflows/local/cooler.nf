@@ -28,7 +28,8 @@ workflow COOLER {
   COOLER_MAKEBINS(
     chromsize.combine(cool_bins)
   )
-    
+  ch_versions = ch_versions.mix(COOLER_MAKEBINS.out.versions)
+
   //*****************************************
   // BUILD COOL FILE PER RESOLUTION
   // [meta, pairs, resolution]
@@ -37,14 +38,21 @@ workflow COOLER {
     pairs.combine(cool_bins),
     chromsize.collect()
   )
+  ch_versions = ch_versions.mix(COOLER_CLOAD.out.versions)
 
   COOLER_BALANCE(
     COOLER_CLOAD.out.cool
   )
+  ch_versions = ch_versions.mix(COOLER_BALANCE.out.versions)
 
   // Zoomify at minimum bin resolution
+  if (!params.res_zoomify){
+    ch_res_zoomify = cool_bins.min()
+  }else{
+    ch_res_zoomify = params.res_zoomify
+  }
   COOLER_CLOAD.out.cool
-    .combine(cool_bins.min())
+    .combine(ch_res_zoomify)
     .filter{ it [1] == it[3] }
     .map{it->[it[0], it[2]]}
     .set{ch_cool_zoomify}
@@ -52,6 +60,7 @@ workflow COOLER {
   COOLER_ZOOMIFY(
     ch_cool_zoomify
   )
+  ch_versions = ch_versions.mix(COOLER_ZOOMIFY.out.versions)
 
   //*****************************************
   // DUMP DATA
@@ -60,6 +69,7 @@ workflow COOLER {
   COOLER_DUMP(
     COOLER_BALANCE.out.cool.map{[it[0], "", it[2]]}
   )
+  ch_versions = ch_versions.mix(COOLER_DUMP.out.versions)
 
   //COOLER_DUMP(
   //  COOLER_ZOOMIFY.out.mcool.combine(cool_bins).map{it->[it[0], it[2], it[1]]}
@@ -68,6 +78,7 @@ workflow COOLER {
   SPLIT_COOLER_DUMP(
     COOLER_DUMP.out.bedpe
   )
+  ch_versions = ch_versions.mix(SPLIT_COOLER_DUMP.out.versions)
 
   emit:
   versions = ch_versions
