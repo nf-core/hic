@@ -8,9 +8,9 @@ include { COOLER_CLOAD } from '../../modules/nf-core/modules/cooler/cload/main'
 include { COOLER_DUMP } from '../../modules/nf-core/modules/cooler/dump/main'
 include { COOLER_ZOOMIFY } from '../../modules/nf-core/modules/cooler/zoomify/main'
 
-include { COOLER_BALANCE } from '../../modules/local/balance'
+include { COOLER_BALANCE } from '../../modules/local/cooler/balance'
 include { SPLIT_COOLER_DUMP } from '../../modules/local/split_cooler_dump'
-include { COOLER_MAKEBINS } from '../../modules/local/makebins'
+include { COOLER_MAKEBINS } from '../../modules/local/cooler/makebins'
 
 workflow COOLER {
 

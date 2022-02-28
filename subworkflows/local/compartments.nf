@@ -1,15 +1,23 @@
-params.options = [:]
-
-include { COMPARTMENT_CALLING } from '../../modules/local/compartment_calling' addParams( options: params.options )
+include { CALL_COMPARTMENTS } from '../../modules/local/cooltools/eigs-cis'
 
 workflow COMPARTMENTS {
 
-    take:
+  take:
+  cool
+  fasta
+  chrsize
 
+  main:
+  ch_versions = Channel.empty()
 
-    main:
-    
+  CALL_COMPARTMENTS (
+    cool,
+    fasta.collect(),
+    chrsize.collect()
+  )
+  ch_versions = ch_versions.mix(CALL_COMPARTMENTS.out.versions)
 
-    emit:
-    
+  emit:
+  versions = ch_versions
+  compartments = CALL_COMPARTMENTS.out.results
 }

@@ -96,9 +96,9 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 //
 // MODULE: Local to the pipeline
 //
-//include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-//include { OUTPUT_DOCUMENTATION } from '../modules/local/output_documentation' addParams( options: [publish_files : ['tsv':'']] )
-
+//include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions'
+//include { OUTPUT_DOCUMENTATION } from '../modules/local/output_documentation'
+include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts' 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
@@ -106,8 +106,8 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
 include { COOLER } from '../subworkflows/local/cooler'
-//include { COMPARTMENTS } from '../subworkflows/local/compartments'
-//include { TADS } from '../subworkflows/local/tads'
+include { COMPARTMENTS } from '../subworkflows/local/compartments'
+include { TADS } from '../subworkflows/local/tads'
 
 /*
 ========================================================================================
@@ -189,6 +189,53 @@ workflow HIC {
     PREPARE_GENOME.out.chromosome_size,
     ch_map_res
   )
+
+  //
+  // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS
+  //
+  if (!params.skip_dist_decay){
+    COOLER.out.cool
+      .combine(ch_ddecay_res)
+      .filter{ it[1] == it[3] }
+      .map { it -> [it[0], it[2]]}
+      .set{ ch_distdecay }
+
+    HIC_PLOT_DIST_VS_COUNTS(
+      ch_distdecay
+    )
+  }
+
+  //
+  // SUB-WORKFLOW: COMPARTMENT CALLING
+  //
+  if (!params.skip_compartments){
+    COOLER.out.cool
+      .combine(ch_comp_res)
+      .filter{ it[1] == it[3] }
+      .map { it -> [it[0], it[1], it[2]]}
+      .set{ ch_cool_compartments }
+
+    COMPARTMENTS(
+      ch_cool_compartments,
+      ch_fasta,
+      PREPARE_GENOME.out.chromosome_size
+    )
+  }
+
+  //
+  // SUB-WORKFLOW : TADS CALLING
+  //
+  if (!params.skip_tads){
+    COOLER.out.cool
+      .combine(ch_tads_res)
+      .filter{ it[1] == it[3] }
+      .map { it -> [it[0], it[2]]}
+      .set{ ch_cool_tads }
+                                                                                                                                                                                                            
+    TADS(
+      ch_cool_tads
+    )
+  }
 
   //
   // MODULE: MultiQC
