@@ -8,6 +8,7 @@ process ICE_NORMALIZATION{
   output:
   tuple val(meta), val(res), path("*iced.matrix"), path(bed), emit:maps
   path ("*.biases"), emit:bias
+  path("versions.yml"), emit: versions
 
   script:
   prefix = rmaps.toString() - ~/(\.matrix)?$/
@@ -16,5 +17,11 @@ process ICE_NORMALIZATION{
       --results_filename ${prefix}_iced.matrix \
       --filter_high_counts_perc ${params.ice_filter_high_count_perc} \
       --max_iter ${params.ice_max_iter} --eps ${params.ice_eps} --remove-all-zeros-loci --output-bias 1 --verbose 1 ${rmaps}
-   """
+
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+    python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
+    iced: \$(python -c "import iced; print(iced.__version__)")
+  END_VERSIONS
+  """
 }

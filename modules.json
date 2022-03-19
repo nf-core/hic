@@ -18,10 +18,13 @@
             "cooler/zoomify": {
                 "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
             },
-            "fastqc": {
+            "custom/dumpsoftwareversions": {
                 "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
             },
-            "multiqc": {
+            "custom/getchromsizes": {
+                "git_sha": "950700bcdc0e9a2b6883d40d2c51c6fc435cd714"
+            },
+            "fastqc": {
                 "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
             }
         }

@@ -1,33 +1,27 @@
-// Import generic module functions
-include { initOptions; saveFiles; getSoftwareName } from './functions'
+process GET_VALID_INTERACTION_DNASE {
+  tag "$meta.id"
+  label 'process_low'
+  
+  input:
+  tuple val(meta), path(bam) 
 
-params.options = [:]
-options    = initOptions(params.options)
+  output:
+  tuple val(meta), path("*.validPairs"), emit:valid_pairs
+  tuple val(meta), path("*RSstat"), optional: true, emit:stats
+  path("versions.yml"), emit: versions
 
-process get_valid_interaction_dnase{
-      tag "$sample"
-      label 'process_low'
-      publishDir "${params.outdir}/hicpro/valid_pairs", mode: params.publish_dir_mode,
-   	      saveAs: {filename -> if (filename.endsWith("RSstat")) "stats/$filename" 
-                                   else filename}
+  script:
+  def args = task.ext.args ?: ''
+  """
+  mapped_2hic_dnase.py \\
+    -r ${bam} \\
+    ${args}
 
-      input:
-      tuple val(sample), path(pe_bam) 
+  sort -k2,2V -k3,3n -k5,5V -k6,6n -o ${bam.baseName}.validPairs ${bam.baseName}.validPairs
 
-      output:
-      tuple val(sample), path("*.validPairs"), emit:valid_pairs
-      tuple val(sample), path("*.validPairs"), emit:valid_pairs_4cool
-      tuple val(sample), path("*RSstat"), emit:all_rsstat
-
-      script:
-      if (params.split_fastq){
-         sample = sample.toString() - ~/(\.[0-9]+)$/
-      }
-
-      opts = params.min_cis_dist > 0 ? " -d ${params.min_cis_dist}" : ''
-      prefix = pe_bam.toString() - ~/.bam/
-      """
-      mapped_2hic_dnase.py -r ${pe_bam} ${opts}
-      sort -k2,2V -k3,3n -k5,5V -k6,6n -o ${prefix}.validPairs ${prefix}.validPairs
-      """
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+    python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
+  END_VERSIONS
+  """
 }

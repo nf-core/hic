@@ -24,4 +24,5 @@ workflow TADS {
 
   emit:
   tads = ch_tads
+  versions = ch_versions
 }

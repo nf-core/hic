@@ -3,8 +3,8 @@
  */
 
 include { BOWTIE2_BUILD } from '../../modules/nf-core/modules/bowtie2/build/main'
-include { GET_CHROMSIZE } from '../../modules/local/get_chromsize'
-include { GET_RESTRICTION_FRAGMENTS } from '../../modules/local/get_restriction_fragments'
+include { CUSTOM_GETCHROMSIZES } from '../../modules/nf-core/modules/custom/getchromsizes/main'
+include { GET_RESTRICTION_FRAGMENTS } from '../../modules/local/hicpro/get_restriction_fragments'
 
 workflow PREPARE_GENOME {
 
@@ -22,6 +22,7 @@ workflow PREPARE_GENOME {
       fasta
     )
     ch_index = BOWTIE2_BUILD.out.index
+    ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
   }else{
     Channel.fromPath( params.bwt2_index , checkIfExists: true)
            .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
@@ -31,10 +32,11 @@ workflow PREPARE_GENOME {
   //***************************************
   // Chromosome size
   if(!params.chromosome_size){
-    GET_CHROMSIZE(
+    CUSTOM_GETCHROMSIZES(
       fasta
     )
-    ch_chromsize = GET_CHROMSIZE.out.results
+    ch_chromsize = CUSTOM_GETCHROMSIZES.out.sizes
+    ch_versions = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
   }else{
     Channel.fromPath( params.chromosome_size , checkIfExists: true)
            .into {ch_chromsize} 
@@ -48,13 +50,17 @@ workflow PREPARE_GENOME {
       restriction_site
     )
     ch_resfrag = GET_RESTRICTION_FRAGMENTS.out.results
-  }else{
+    ch_versions = ch_versions.mix(GET_RESTRICTION_FRAGMENTS.out.versions)
+  }else if (!params.dnase){
      Channel.fromPath( params.restriction_fragments, checkIfExists: true )
             .set {ch_resfrag}
+  }else{
+    ch_resfrag = Channel.empty()
   }
 
   emit:
   index = ch_index
   chromosome_size = ch_chromsize
   res_frag = ch_resfrag
+  versions = ch_versions
 }

@@ -8,20 +8,24 @@ process COOLER_BALANCE {
         'quay.io/biocontainers/cooler:0.8.11--pyh3252c3a_0' }"
 
     input:
-    tuple val(meta), val(resolution), path(cool)
+    tuple val(meta), path(cool), val(resolution)
 
     output:
-    tuple val(meta), val(resolution), path("*_norm.cool"), emit: cool
-    path "versions.yml"                             , emit: versions
+    tuple val(meta), path("${prefix}.${extension}"), emit: cool
+    path "versions.yml"                            , emit: versions
 
     script:
     def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "${cool.baseName}_balanced"
+    suffix = resolution ? "::$resolution" : ""
+    extension = cool.getExtension()
     """
-    cp ${cool} ${cool.baseName}_norm.cool
     cooler balance \\
         $args \\
         -p ${task.cpus} \\
-        ${cool.baseName}_norm.cool
+        ${cool}${suffix} 
+
+    cp ${cool} ${prefix}.${extension}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

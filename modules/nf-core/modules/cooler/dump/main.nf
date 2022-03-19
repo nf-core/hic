@@ -8,7 +8,7 @@ process COOLER_DUMP {
         'quay.io/biocontainers/cooler:0.8.11--pyh3252c3a_0' }"
 
     input:
-    tuple val(meta), val(resolution), path(cool)
+    tuple val(meta), path(cool), val(resolution)
 
     output:
     tuple val(meta), path("*.bedpe"), emit: bedpe
@@ -19,8 +19,8 @@ process COOLER_DUMP {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${cool.baseName}"
-    def suffix   = resolution     ? "::/resolutions/$resolution" : ""
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def suffix = resolution ? "::$resolution" : ""
     """
     cooler dump \\
         $args \\

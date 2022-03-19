@@ -1,6 +1,6 @@
 /*
  * COOLER MAIN WORKFLOW
- * INPUT : pair text file with the list of valid interaction
+ * INPUT : .pair text file with the list of valid interaction
  * OUTPUT : cooler files
  */
 
@@ -11,6 +11,14 @@ include { COOLER_ZOOMIFY } from '../../modules/nf-core/modules/cooler/zoomify/ma
 include { COOLER_BALANCE } from '../../modules/local/cooler/balance'
 include { SPLIT_COOLER_DUMP } from '../../modules/local/split_cooler_dump'
 include { COOLER_MAKEBINS } from '../../modules/local/cooler/makebins'
+
+// add resolution in meta
+def addResolution(row) {
+  def meta = [:]
+  meta.id = row[0].id
+  meta.resolution = row[2]
+  return [meta, row[1], row[2]]
+}
 
 workflow COOLER {
 
@@ -40,8 +48,13 @@ workflow COOLER {
   )
   ch_versions = ch_versions.mix(COOLER_CLOAD.out.versions)
 
+  //Add resolution in meta
+  COOLER_CLOAD.out.cool
+    .map{ it -> addResolution(it) }
+    .set{ ch_cool }
+
   COOLER_BALANCE(
-    COOLER_CLOAD.out.cool
+    ch_cool.map{[it[0], it[1], ""]}
   )
   ch_versions = ch_versions.mix(COOLER_BALANCE.out.versions)
 
@@ -51,11 +64,11 @@ workflow COOLER {
   }else{
     ch_res_zoomify = params.res_zoomify
   }
-  COOLER_CLOAD.out.cool
+  ch_cool
     .combine(ch_res_zoomify)
-    .filter{ it [1] == it[3] }
-    .map{it->[it[0], it[2]]}
-    .set{ch_cool_zoomify}
+    .filter{ it[2] == it[3] }
+    .map{ it->[it[0], it[1]] }
+    .set{ ch_cool_zoomify }
 
   COOLER_ZOOMIFY(
     ch_cool_zoomify
@@ -67,12 +80,12 @@ workflow COOLER {
   // [meta, cool] / resolution
 
   COOLER_DUMP(
-    COOLER_BALANCE.out.cool.map{[it[0], "", it[2]]}
+    COOLER_BALANCE.out.cool.map{[it[0], it[1], ""]}
   )
   ch_versions = ch_versions.mix(COOLER_DUMP.out.versions)
 
   //COOLER_DUMP(
-  //  COOLER_ZOOMIFY.out.mcool.combine(cool_bins).map{it->[it[0], it[2], it[1]]}
+  //  COOLER_ZOOMIFY.out.mcool.combine(cool_bins).map{it->[it[0], it[1], it[2]]}
   //)
 
   SPLIT_COOLER_DUMP(

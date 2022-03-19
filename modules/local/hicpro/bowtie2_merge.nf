@@ -8,9 +8,10 @@ process MERGE_BOWTIE2{
   output:
   tuple val(meta), path("${prefix}_bwt2merged.bam"), emit: bam
   tuple val(meta), path("${prefix}.mapstat"), emit: stats
+  path("versions.yml"), emit: versions
 
   script:
-  prefix = meta.id + "_" + meta.mates
+  prefix = task.ext.prefix ?: "${meta.id}"
   tag = meta.mates
   """
   samtools merge -@ ${task.cpus} \\
@@ -33,5 +34,10 @@ process MERGE_BOWTIE2{
   samtools view -c -F 4 ${bam1} >> ${prefix}.mapstat
   echo -n "local_${tag}\t"  >> ${prefix}.mapstat
   samtools view -c -F 4 ${bam2} >> ${prefix}.mapstat
+
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+    samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+  END_VERSIONS
   """
 }

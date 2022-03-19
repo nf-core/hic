@@ -6,7 +6,7 @@ process CALL_COMPARTMENTS {
   label 'process_medium'
 
   input:
-  tuple val(meta), val(res), path(cool)
+  tuple val(meta), path(cool), val(resolution)
   path(fasta) 
   path(chrsize) 
 
@@ -18,7 +18,7 @@ process CALL_COMPARTMENTS {
   def args = task.ext.args ?: ''
   def prefix = task.ext.prefix ?: "${meta.id}"
   """
-  cooltools genome binnify --all-names ${chrsize} ${res} > genome_bins.txt
+  cooltools genome binnify --all-names ${chrsize} ${resolution} > genome_bins.txt
   cooltools genome gc genome_bins.txt ${fasta} > genome_gc.txt 
   cooltools eigs-cis ${args} -o ${prefix}_compartments ${cool}
 

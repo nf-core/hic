@@ -5,16 +5,22 @@ process MERGE_STATS {
   tuple val(meta), path(fstat) 
 
   output:
-  path("stats/"), emit:mqc_mstats
-  path("*stat"), emit:all_mstats
+  path("${meta.id}/"), emit: mqc
+  path("*.{mmapstat,mpairstat,mRSstat}"), emit: stats
+  path("versions.yml"), emit:versions
 
   script:
-  if ( (fstat =~ /.mapstat/) ){ ext = "mmapstat" }
+  if ( (fstat =~ /.mapstat/) ){ ext = "${meta.mates}.mmapstat" }
   if ( (fstat =~ /.pairstat/) ){ ext = "mpairstat" }
   if ( (fstat =~ /.RSstat/) ){ ext = "mRSstat" }
   """
+  mkdir -p ${meta.id}
   merge_statfiles.py -f ${fstat} > ${meta.id}.${ext}
-  mkdir -p stats/${meta.id}
-  cp ${meta.id}.${ext} stats/${meta.id}/
+  cp *${ext} ${meta.id}/
+
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+    python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
+  END_VERSIONS
   """
 }

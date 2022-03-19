@@ -11,8 +11,8 @@ process COOLER_MAKEBINS {
   tuple path(chromsizes), val(cool_bin)
 
   output:
-  path ("*.bed")     , emit: bed
-  path "versions.yml", emit: versions
+  path ("*.bed")       , emit: bed
+  path ("versions.yml"), emit: versions
 
   script:
   def args = task.ext.args ?: ''
