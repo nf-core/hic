@@ -93,27 +93,29 @@
             "properties": {
                 "digestion": {
                     "type": "string",
-                    "default": "hindiii",
-                    "description": "Name of restriction enzyme to automatically set the restriction_site and ligation_site options"
+                    "default": null,
+                    "description": "Name of restriction enzyme to automatically set the restriction_site and ligation_site options (hindiii, mboi, dpnii, arima)"
                 },
                 "restriction_site": {
                     "type": "string",
-                    "default": "'A^AGCTT'",
+                    "default": null,
                     "description": "Restriction motifs used during digestion. Several motifs (comma separated) can be provided."
                 },
                 "ligation_site": {
                     "type": "string",
-                    "default": "'AAGCTAGCTT",
+                    "default": null,
                     "description": "Expected motif after DNA ligation.  Several motifs (comma separated) can be provided."
                 },
                 "chromosome_size": {
                     "type": "string",
+		    "format": "file-path",
                     "description": "Full path to file specifying chromosome sizes (tab separated with chromosome name and size)`.",
                     "fa_icon": "far fa-file-alt",
                     "help_text": "If not specified, the pipeline will build this file from the reference genome file"
                 },
                 "restriction_fragments": {
                     "type": "string",
+		    "format": "file-path",
                     "description": "Full path to restriction fragment (bed) file.",
                     "fa_icon": "far fa-file-alt",
                     "help_text": "This file depends on the Hi-C protocols and digestion strategy. If not provided, the pipeline will build it using the --restriction_site option"
@@ -214,9 +216,13 @@
                 "save_interaction_bam": {
                     "type": "boolean",
                     "description": "Save a BAM file where all reads are flagged by their interaction classes"
+                },
+		"save_pairs_intermediates": {
+                    "type": "boolean",
+                    "description": "Save all types of non valid read pairs in distinct output files"
                 }
             }
-        },
+	},
         "contact_maps": {
             "title": "Contact maps",
             "type": "object",
@@ -257,7 +263,11 @@
                     "type": "string",
                     "default": "5000",
                     "description": "Maximum resolution to build mcool file"
-                }
+                },
+		"save_raw_maps": {
+		    "type": "boolean",
+		    "description": "Save raw contact maps"
+		}
             }
         },
         "downstream_analysis": {
@@ -311,7 +321,7 @@
                     "description": "Do not run TADs calling"
                 },
                 "skip_compartments": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Do not run compartments calling"
                 },
                 "skip_balancing": {
@@ -527,6 +537,7 @@
         {
             "$ref": "#/definitions/generic_options"
 	},
+	{
             "$ref": "#/definitions/institutional_config_options"
         },
         {
@@ -536,4 +547,4 @@
             "$ref": "#/definitions/generic_options"
         }
     ]
-}
+ }
