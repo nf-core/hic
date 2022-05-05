@@ -13,6 +13,7 @@ workflow INPUT_CHECK {
     if (params.split_fastq){
 
       SAMPLESHEET_CHECK ( samplesheet )
+        .csv
         .splitCsv ( header:true, sep:',' )
 	.map { create_fastq_channels(it) }
 	.splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
@@ -25,6 +26,7 @@ workflow INPUT_CHECK {
 
     }else{
       SAMPLESHEET_CHECK ( samplesheet )
+      	.csv
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
 	.map { it -> [it[0], [it[1], it[2]]]}
