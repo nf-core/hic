@@ -2,6 +2,8 @@ process COMBINE_MATES {
   tag "$prefix"
   label 'process_low'
 
+  conda (params.enable_conda ? "conda-forge::python=3.7.6  bioconda::pysam=0.15.4" : null)
+
   input:
   tuple val(meta), path(bam)
 

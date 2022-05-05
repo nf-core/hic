@@ -2,6 +2,8 @@ process ICE_NORMALIZATION{
   tag "$rmaps"
   label 'process_highmem'
 
+  conda (params.enable_conda ? "conda-forge::python=3.7.6  bioconda::iced=0.5.6" : null)
+
   input:
   tuple val(meta), val(res), path(rmaps), path(bed) 
 

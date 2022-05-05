@@ -1,6 +1,8 @@
 process MERGE_STATS {
   label 'process_low'
 
+  conda (params.enable_conda ? "conda-forge::python=3.7.6" : null)
+
   input:
   tuple val(meta), path(fstat) 
 

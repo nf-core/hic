@@ -9,12 +9,6 @@
             "bowtie2/build": {
                 "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
             },
-            "cooler/cload": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "cooler/dump": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
             "cooler/zoomify": {
                 "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
             },

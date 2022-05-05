@@ -1,7 +1,9 @@
 process GET_VALID_INTERACTION {
   tag "$meta.id"
   label 'process_low'
-  
+
+  conda (params.enable_conda ? "conda-forge::python=3.7.6  bioconda::pysam=0.15.4" : null)
+
   input:
   tuple val(meta), path(bam) 
   path(resfrag)

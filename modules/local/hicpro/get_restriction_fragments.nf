@@ -1,7 +1,9 @@
 process GET_RESTRICTION_FRAGMENTS {
   tag "$res_site"
   label 'process_low'
-  
+
+  conda (params.enable_conda ? "conda-forge::python=3.7.6  conda-forge::numpy=1.18.1" : null)
+
   input:
   path fasta 
   val(res_site)

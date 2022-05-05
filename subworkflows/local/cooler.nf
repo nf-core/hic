@@ -4,13 +4,14 @@
  * OUTPUT : cooler files
  */
 
-include { COOLER_CLOAD } from '../../modules/nf-core/modules/cooler/cload/main'
-include { COOLER_DUMP } from '../../modules/nf-core/modules/cooler/dump/main'
 include { COOLER_ZOOMIFY } from '../../modules/nf-core/modules/cooler/zoomify/main'
 
+include { COOLER_DUMP } from '../../modules/local/cooler/dump' 
+include { COOLER_CLOAD } from '../../modules/local/cooler/cload' 
 include { COOLER_BALANCE } from '../../modules/local/cooler/balance'
-include { SPLIT_COOLER_DUMP } from '../../modules/local/split_cooler_dump'
 include { COOLER_MAKEBINS } from '../../modules/local/cooler/makebins'
+
+include { SPLIT_COOLER_DUMP } from '../../modules/local/split_cooler_dump'
 
 // add resolution in meta
 def addResolution(row) {
