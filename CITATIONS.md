@@ -1,5 +1,10 @@
 # nf-core/hic: Citations
 
+## [HiC-Pro](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0831-x)
+
+> Servant N, Varoquaux N, Lajoie BR, Viara E, Chen C, Vert JP, Dekker J, Heard E, Barillot E. Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
+
+
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.
