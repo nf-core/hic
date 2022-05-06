@@ -5,10 +5,10 @@
 process CALL_COMPARTMENTS {
   label 'process_medium'
 
-  conda (params.enable_conda ? "bioconda::cooltools=0.5.1" : null)
+  conda (params.enable_conda ? "bioconda::cooltools=0.5.1 bioconda::ucsc-bedgraphtobigwig=377" : null)
   container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-      'https://depot.galaxyproject.org/singularity/cooltools:0.5.1--py37h37892f8_0' :
-      'quay.io/biocontainers/cooltools:0.5.1--py37h37892f8_0' }"
+      'https://depot.galaxyproject.org/singularity/mulled-v2-c81d8d6b6acf4714ffaae1a274527a41958443f6:cc7ea58b8cefc76bed985dcfe261cb276ed9e0cf-0' :
+      'quay.io/biocontainers/mulled-v2-c81d8d6b6acf4714ffaae1a274527a41958443f6:cc7ea58b8cefc76bed985dcfe261cb276ed9e0cf-0' }"
 
   input:
   tuple val(meta), path(cool), val(resolution)
