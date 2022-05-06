@@ -22,8 +22,6 @@ process GET_VALID_INTERACTION_DNASE {
     -r ${bam} \\
     ${args}
 
-  sort -k2,2V -k3,3n -k5,5V -k6,6n -o ${bam.baseName}.validPairs ${bam.baseName}.validPairs
-
   cat <<-END_VERSIONS > versions.yml
   "${task.process}":
     python: \$(echo \$(python --version 2>&1) | sed 's/Python //')

@@ -26,7 +26,7 @@ process TRIM_READS {
 
   cat <<-END_VERSIONS > versions.yml
   "${task.process}":
-      python: \$(echo \$(python --version 2>&1) | sed 's/^Python//; s/ .*\$//')
+      gzip: \$(echo \$(gzip --version 2>&1) | head -1 | cut -d" " -f2)
   END_VERSIONS
   """
 }
