@@ -29,33 +29,33 @@ static int get_options(int argc, char* argv[], std::string& fastqFile,
         exit(usage());
     }
     for (int ac = 1; ac < argc; ++ac) {
-      const char* opt = argv[ac];
-      if (*opt == '-') {
-          if (!strcmp(opt, "--fastq")) {
-              fastqFile = std::string(argv[++ac]);
-          }
-	  else if (!strcmp(opt, "--cutsite")) {
-	      std::string cutSitesSequence;
-	      cutSitesSequence = std::string(argv[++ac]);
-	      size_t pos = cutSitesSequence.find(",");
-	      size_t begin = 0;
-	      while(pos != std::string::npos){
-		  cutSites.push_back(cutSitesSequence.substr(begin, pos - begin));
-		  begin = pos + 1;
-		  pos = cutSitesSequence.find(",", begin + 1);
-	      }
-	      cutSites.push_back(cutSitesSequence.substr(begin, pos));
-	  } 
-	  else if (!strcmp(opt, "--out")) {
-	      output = std::string(argv[++ac]);
-	  }
-	  else if (!strcmp(opt, "--rmuntrim")) {
-	      rmuntrim = true;
-	  }
-      }else {
-	  std::cerr << prog << ": unknown option " << opt << std::endl;
-	  return usage();
-      } 
+        const char* opt = argv[ac];
+        if (*opt == '-') {
+            if (!strcmp(opt, "--fastq")) {
+                fastqFile = std::string(argv[++ac]);
+            }
+	    else if (!strcmp(opt, "--cutsite")) {
+	        std::string cutSitesSequence;
+		cutSitesSequence = std::string(argv[++ac]);
+		size_t pos = cutSitesSequence.find(",");
+		size_t begin = 0;
+		while(pos != std::string::npos){
+		    cutSites.push_back(cutSitesSequence.substr(begin, pos - begin));
+		    begin = pos + 1;
+		    pos = cutSitesSequence.find(",", begin + 1);
+	        }
+		cutSites.push_back(cutSitesSequence.substr(begin, pos));
+	    } 
+	    else if (!strcmp(opt, "--out")) {
+	        output = std::string(argv[++ac]);
+	    }
+	    else if (!strcmp(opt, "--rmuntrim")) {
+	        rmuntrim = true;
+	    }
+        }else {
+	    std::cerr << prog << ": unknown option " << opt << std::endl;
+	    return usage();
+        } 
     }
     return 0;
 }
