@@ -2,8 +2,11 @@ process COMBINE_MATES {
   tag "$prefix"
   label 'process_low'
 
-  conda (params.enable_conda ? "conda-forge::python=3.7.6  bioconda::pysam=0.15.4" : null)
-
+  conda (params.enable_conda ? "conda-forge::python=3.9  bioconda::pysam=0.19.0" : null)
+  container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    'https://depot.galaxyproject.org/singularity/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0' : 
+    'quay.io/biocontainers/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0'}"
+ 
   input:
   tuple val(meta), path(bam)
 
