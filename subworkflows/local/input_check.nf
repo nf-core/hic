@@ -70,5 +70,4 @@ def setMetaChunk(row){
     map += [meta, file]
   }
   return map
-}                                                                                                                                                                                                            
-                                                                                                                                                                                                             
+}

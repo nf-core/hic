@@ -25,7 +25,7 @@ if [[ ${rmDup} == 1 ]]; then
 else
     cat ${vpairs} > ${prefix}.allValidPairs
 fi
-    
+      
 echo -e -n "valid_interaction\t" > ${prefix}_allValidPairs.mergestat
 cat ${vpairs} | wc -l >> ${prefix}_allValidPairs.mergestat
 echo -e -n "valid_interaction_rmdup\t" >> ${prefix}_allValidPairs.mergestat
