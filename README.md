@@ -25,7 +25,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)) 
 2. Hi-C data processing
-   1. with [`HiC-Pro`](https://github.com/nservant/HiC-Pro)
+   1. [`HiC-Pro`](https://github.com/nservant/HiC-Pro)
       1. Mapping using a two steps strategy to rescue reads spanning the ligation
       sites ([`bowtie2`](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml))
       2. Detection of valid interaction products
