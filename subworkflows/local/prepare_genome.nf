@@ -26,7 +26,7 @@ workflow PREPARE_GENOME {
   }else{
     Channel.fromPath( params.bwt2_index , checkIfExists: true)
            .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
-           .into { ch_index }
+           .set { ch_index }
   }
 
   //***************************************
@@ -39,7 +39,7 @@ workflow PREPARE_GENOME {
     ch_versions = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
   }else{
     Channel.fromPath( params.chromosome_size , checkIfExists: true)
-           .into {ch_chromsize} 
+           .set {ch_chromsize} 
   }
 
   //***************************************
