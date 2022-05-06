@@ -143,6 +143,16 @@ Channel.fromPath( params.fasta )
 // Info required for completion email and summary
 def multiqc_report = []
 
+def setMetaChunk(row){
+  def map = []
+  row[1].eachWithIndex() { file,i ->
+    meta = row[0].clone()
+    meta.chunks = i
+    map += [meta, file]
+  }
+  return map
+}
+
 workflow HIC {
 
   ch_versions = Channel.empty()
@@ -153,8 +163,19 @@ workflow HIC {
   INPUT_CHECK (
     ch_input
   )
+  .reads
+  .map {
+      meta, fastq ->
+          meta.id = meta.id.split('_')[0..-2].join('_')
+          [ meta, fastq ] }
+  .groupTuple(by: [0])
+  .flatMap { it -> setMetaChunk(it) }
+  .collate(2)
+  .set { ch_fastq }
 
-  INPUT_CHECK.out.reads.view()
+  ch_fastq.view()
+
+  //INPUT_CHECK.out.reads.view()
 
   //
   // SUBWORKFLOW: Prepare genome annotation
@@ -169,7 +190,7 @@ workflow HIC {
   // MODULE: Run FastQC
   //
   FASTQC (
-    INPUT_CHECK.out.reads
+    ch_fastq
   )
   ch_versions = ch_versions.mix(FASTQC.out.versions)
 
@@ -177,7 +198,7 @@ workflow HIC {
   // SUB-WORFLOW: HiC-Pro
   //
   HICPRO (
-    INPUT_CHECK.out.reads,
+    ch_fastq,
     PREPARE_GENOME.out.index,
     PREPARE_GENOME.out.res_frag,
     PREPARE_GENOME.out.chromosome_size,
