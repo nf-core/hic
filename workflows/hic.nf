@@ -164,10 +164,10 @@ workflow HIC {
     ch_input
   )
   .reads
-  .map {
-      meta, fastq ->
-          meta.id = meta.id.split('_')[0..-2].join('_')
-          [ meta, fastq ] }
+  //.map {
+  //    meta, fastq ->
+  //        meta.id = meta.id.split('_')[0..-2].join('_')
+  //        [ meta, fastq ] }
   .groupTuple(by: [0])
   .flatMap { it -> setMetaChunk(it) }
   .collate(2)

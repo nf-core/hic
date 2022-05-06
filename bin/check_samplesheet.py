@@ -124,8 +124,8 @@ class RowChecker:
             for row in self.modified:
                 sample = row[self._sample_col]
                 seen[sample] += 1
-                if counts[sample] > 1:
-                    row[self._sample_col] = f"{sample}_T{seen[sample]}"
+                #if counts[sample] > 1:
+                #    row[self._sample_col] = f"{sample}_T{seen[sample]}"
 
 
 def sniff_format(handle):
