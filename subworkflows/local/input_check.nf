@@ -17,11 +17,15 @@ workflow INPUT_CHECK {
         .splitCsv ( header:true, sep:',' )
 	.map { create_fastq_channels(it) }
 	.splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
-        .map { it ->
-	  def meta = it[0].clone()
-	  meta.chunk = it[1].baseName - ~/.fastq(.gz)?/
-	  return [meta, [it[1], it[2]]]
-	}
+	.map { it -> [it[0], [it[1], it[2]]]}
+	.groupTuple(by: [0])
+        .flatMap { it -> setMetaChunk(it) }
+        .collate(2)
+	//.map { it ->
+	//  def meta = it[0].clone()
+	//  meta.chunk = it[1].baseName - ~/.fastq(.gz)?/
+	//  return [meta, [it[1], it[2]]]
+	//}
         .set { reads }
 
     }else{
