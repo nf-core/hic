@@ -30,6 +30,9 @@ workflow INPUT_CHECK {
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
 	.map { it -> [it[0], [it[1], it[2]]]}
+	.groupTuple(by: [0])
+        .flatMap { it -> setMetaChunk(it) }
+        .collate(2)
         .set { reads }
    }
 
@@ -53,3 +56,15 @@ def create_fastq_channels(LinkedHashMap row) {
   array = [ meta, file(row.fastq_1), file(row.fastq_2) ]
   return array
 }
+
+// Set the meta.chunk value in case of technical replicates
+def setMetaChunk(row){
+  def map = []
+  row[1].eachWithIndex() { file,i ->
+    meta = row[0].clone()
+    meta.chunks = i
+    map += [meta, file]
+  }
+  return map
+}                                                                                                                                                                                                            
+                                                                                                                                                                                                             

@@ -70,16 +70,16 @@ workflow HICPRO {
   //**************************************
   // MERGE AND REMOVE DUPLICATES
   
-  if (params.split_fastq){
-    ch_valid_pairs = ch_valid_pairs.map{ it -> removeChunks(it)}.groupTuple()
-    ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.map{it->removeChunks(it)}.groupTuple()
-                        .concat(HICPRO_MAPPING.out.pairstats.map{it->removeChunks(it)}.groupTuple(),
-			        ch_valid_stats.map{it->removeChunks(it)}.groupTuple())
-  }else{
-    ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.groupTuple()
-                        .concat(HICPRO_MAPPING.out.pairstats.groupTuple(),
-                                ch_valid_stats.groupTuple())
-  }
+  //if (params.split_fastq){
+  ch_valid_pairs = ch_valid_pairs.map{ it -> removeChunks(it)}.groupTuple()
+  ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.map{it->removeChunks(it)}.groupTuple()
+                      .concat(HICPRO_MAPPING.out.pairstats.map{it->removeChunks(it)}.groupTuple(),
+		        ch_valid_stats.map{it->removeChunks(it)}.groupTuple())
+  //}else{
+  //  ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.groupTuple()
+  //                      .concat(HICPRO_MAPPING.out.pairstats.groupTuple(),
+  //                              ch_valid_stats.groupTuple())
+  //}
 
   MERGE_VALID_INTERACTION (
     ch_valid_pairs
