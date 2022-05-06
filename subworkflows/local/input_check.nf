@@ -66,7 +66,7 @@ def setMetaChunk(row){
   def map = []
   row[1].eachWithIndex() { file,i ->
     meta = row[0].clone()
-    meta.chunks = i
+    meta.chunk = i
     map += [meta, file]
   }
   return map
