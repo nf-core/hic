@@ -23,8 +23,8 @@ process HIC_FIND_TADS {
     """
     hicFindTADs --matrix ${cool} \
         --outPrefix ${prefix}_hicfindtads \
-	${args} \
-	--numberOfProcessors ${task.cpus}
+        ${args} \
+        --numberOfProcessors ${task.cpus}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

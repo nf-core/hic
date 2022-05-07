@@ -13,7 +13,7 @@ class WorkflowHic {
         // digestion parameters
         if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
             log.error "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
-	    System.exit(1)
+            System.exit(1)
         }
 
         // Check Digestion or DNase Hi-C mode

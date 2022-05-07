@@ -138,6 +138,6 @@ int main(int argc, char* argv[])
     int trim_count=trim_fastq(fastqFile, cutSites, outFile, rmuntrim);
     printf("\n##Trimmed reads: %d\n", trim_count);
     return(0);
- }
+}
 
 
