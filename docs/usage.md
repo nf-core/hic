@@ -131,21 +131,21 @@ If `-profile` is not specified, the pipeline will run locally and
 expect all software to be
 installed and available on the `PATH`. This is _not_ recommended.
 
-* `docker`
-  * A generic configuration profile to be used with [Docker](https://docker.com/)
-* `singularity`
-  * A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
-* `podman`
-  * A generic configuration profile to be used with [Podman](https://podman.io/)
-* `shifter`
-  * A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
-* `charliecloud`
-  * A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
-* `conda`
-  * A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
-* `test`
-  * A profile with a complete configuration for automated testing
-  * Includes links to test data so needs no other parameters
+- `docker`
+  - A generic configuration profile to be used with [Docker](https://docker.com/)
+- `singularity`
+  - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
+- `podman`
+  - A generic configuration profile to be used with [Podman](https://podman.io/)
+- `shifter`
+  - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+- `charliecloud`
+  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+- `conda`
+  - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
+- `test`
+  - A profile with a complete configuration for automated testing
+  - Includes links to test data so needs no other parameters
 
 ### `-resume`
 
@@ -224,7 +224,7 @@ The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementatio
 2. Find the latest version of the Biocontainer available on [Quay.io](https://quay.io/repository/biocontainers/pangolin?tag=latest&tab=tags)
 3. Create the custom config accordingly:
 
-   * For Docker:
+   - For Docker:
 
      ```nextflow
      process {
@@ -234,7 +234,7 @@ The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementatio
      }
      ```
 
-   * For Singularity:
+   - For Singularity:
 
      ```nextflow
      process {
@@ -244,7 +244,7 @@ The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementatio
      }
      ```
 
-   * For Conda:
+   - For Conda:
 
      ```nextflow
      process {
@@ -483,10 +483,10 @@ The precise cutting site of the restriction enzyme has to be specified using
 the '^' character. Default: 'A^AGCTT'
 Here are a few examples:
 
-* MboI: ^GATC
-* DpnII: ^GATC
-* HindIII: A^AGCTT
-* ARIMA kit: ^GATC,G^ANTC
+- MboI: ^GATC
+- DpnII: ^GATC
+- HindIII: A^AGCTT
+- ARIMA kit: ^GATC,G^ANTC
 
 Note that multiples restriction motifs can be provided (comma-separated) and
 that 'N' base are supported.

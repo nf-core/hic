@@ -9,19 +9,19 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-* [HiC-Pro](#hicpro)
-  * [Reads alignment](#reads-alignment)
-  * [Valid pairs detection](#valid-pairs-detection)
-  * [Duplicates removal](#duplicates-removal)
-  * [Contact maps](#hicpro-contact-maps)
-* [Hi-C contact maps](#hic-contact-maps)
-* [Downstream analysis](#downstream-analysis)
-  * [Distance decay](#distance-decay)
-  * [Compartments calling](#compartments-calling)
-  * [TADs calling](#tads-calling)
-* [MultiQC](#multiqc) - aggregate report and quality controls, describing
+- [HiC-Pro](#hicpro)
+  - [Reads alignment](#reads-alignment)
+  - [Valid pairs detection](#valid-pairs-detection)
+  - [Duplicates removal](#duplicates-removal)
+  - [Contact maps](#hicpro-contact-maps)
+- [Hi-C contact maps](#hic-contact-maps)
+- [Downstream analysis](#downstream-analysis)
+  - [Distance decay](#distance-decay)
+  - [Compartments calling](#compartments-calling)
+  - [TADs calling](#tads-calling)
+- [MultiQC](#multiqc) - aggregate report and quality controls, describing
   results of the whole pipeline
-* [Export](#exprot) - additionnal export for compatibility with downstream
+- [Export](#exprot) - additionnal export for compatibility with downstream
   analysis tool and visualization
 
 ## HiC-Pro
@@ -48,18 +48,18 @@ mapping step.
 
 **Output directory: `results/hicpro/mapping`**
 
-* `*bwt2pairs.bam` - final BAM file with aligned paired data
-* `*.pairstat` - mapping statistics
+- `*bwt2pairs.bam` - final BAM file with aligned paired data
+- `*.pairstat` - mapping statistics
 
 if `--saveAlignedIntermediates` is specified, additional mapping file results
 are available ;
 
-* `*.bam` - Aligned reads (R1 and R2) from end-to-end alignment
-* `*_unmap.fastq` - Unmapped reads after end-to-end alignment
-* `*_trimmed.fastq` - Trimmed reads after end-to-end alignment
-* `*_trimmed.bam` - Alignment of trimmed reads
-* `*bwt2merged.bam` - merged BAM file after the two-steps alignment
-* `*.mapstat` - mapping statistics per read mate
+- `*.bam` - Aligned reads (R1 and R2) from end-to-end alignment
+- `*_unmap.fastq` - Unmapped reads after end-to-end alignment
+- `*_trimmed.fastq` - Trimmed reads after end-to-end alignment
+- `*_trimmed.bam` - Alignment of trimmed reads
+- `*bwt2merged.bam` - merged BAM file after the two-steps alignment
+- `*.mapstat` - mapping statistics per read mate
 
 Usually, a high fraction of reads is expected to be aligned on the genome
 (80-90%). Among them, we usually observed a few percent (around 10%) of step 2
@@ -78,14 +78,14 @@ reference genome and the digestion protocol.
 
 Invalid pairs are classified as follow:
 
-* Dangling end, i.e. unligated fragments (both reads mapped on the same
+- Dangling end, i.e. unligated fragments (both reads mapped on the same
   restriction fragment)
-* Self circles, i.e. fragments ligated on themselves (both reads mapped on the
+- Self circles, i.e. fragments ligated on themselves (both reads mapped on the
   same restriction fragment in inverted orientation)
-* Religation, i.e. ligation of juxtaposed fragments
-* Filtered pairs, i.e. any pairs that do not match the filtering criteria on
+- Religation, i.e. ligation of juxtaposed fragments
+- Filtered pairs, i.e. any pairs that do not match the filtering criteria on
   inserts size, restriction fragments size
-* Dumped pairs, i.e. any pairs for which we were not able to reconstruct the
+- Dumped pairs, i.e. any pairs for which we were not able to reconstruct the
   ligation product.
 
 Only valid pairs involving two different restriction fragments are used to
@@ -101,12 +101,12 @@ can thus be discarded using the `--min_cis_dist` parameter.
 
 **Output directory: `results/hicpro/valid_pairs`**
 
-* `*.validPairs` - List of valid ligation products
-* `*.DEpairs` - List of dangling-end products
-* `*.SCPairs` - List of self-circle products
-* `*.REPairs` - List of religation products
-* `*.FiltPairs` - List of filtered pairs
-* `*RSstat` - Statitics of number of read pairs falling in each category
+- `*.validPairs` - List of valid ligation products
+- `*.DEpairs` - List of dangling-end products
+- `*.SCPairs` - List of self-circle products
+- `*.REPairs` - List of religation products
+- `*.FiltPairs` - List of filtered pairs
+- `*RSstat` - Statitics of number of read pairs falling in each category
 
 The validPairs are stored using a simple tab-delimited text format ;
 
@@ -135,8 +135,8 @@ removed if the `--rm_dup` parameter is used.
 
 **Output directory: `results/hicpro/valid_pairs`**
 
-* `*allValidPairs` - combined valid pairs from all read chunks
-* `*mergestat` - statistics about duplicates removal and valid pairs information
+- `*allValidPairs` - combined valid pairs from all read chunks
+- `*mergestat` - statistics about duplicates removal and valid pairs information
 
 Additional quality controls such as fragment size distribution can be extracted
 from the list of valid interaction products.
@@ -166,15 +166,15 @@ is specified on the command line.
 
 **Output directory: `results/hicpro/matrix`**
 
-* `*.matrix` - genome-wide contact maps
-* `*_iced.matrix` - genome-wide iced contact maps
+- `*.matrix` - genome-wide contact maps
+- `*_iced.matrix` - genome-wide iced contact maps
 
 The contact maps are generated for all specified resolutions
 (see `--bin_size` argument).  
 A contact map is defined by :
 
-* A list of genomic intervals related to the specified resolution (BED format).
-* A matrix, stored as standard triplet sparse format (i.e. list format).
+- A list of genomic intervals related to the specified resolution (BED format).
+- A matrix, stored as standard triplet sparse format (i.e. list format).
 
 Based on the observation that a contact map is symmetric and usually sparse,
 only non-zero values are stored for half of the matrix. The user can specified
@@ -227,8 +227,8 @@ Here, we use the implementation available in the [`cooltools`](https://cooltools
 
 Results are available in **`results/compartments/`** folder and includes :
 
-* `*cis.vecs.tsv`: eigenvectors decomposition along the genome
-* `*cis.lam.txt`: eigenvalues associated with the eigenvectors
+- `*cis.vecs.tsv`: eigenvectors decomposition along the genome
+- `*cis.lam.txt`: eigenvalues associated with the eigenvectors
 
 ### TADs calling
 
@@ -239,8 +239,8 @@ TADs calling remains a challenging task, and even if many methods have been prop
 
 Currently, the pipeline proposes two approaches :
 
-* Insulation score using the [`cooltools`](https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-diamond-insulation) package. Results are availabe in **`results/tads/insulation`**.
-* [`HiCExplorer TADs calling`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicFindTADs.html). Results are available at **`results/tads/hicexplorer`**.
+- Insulation score using the [`cooltools`](https://cooltools.readthedocs.io/en/latest/cli.html#cooltools-diamond-insulation) package. Results are availabe in **`results/tads/insulation`**.
+- [`HiCExplorer TADs calling`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicFindTADs.html). Results are available at **`results/tads/hicexplorer`**.
 
 Usually, TADs results are presented as simple BED files, or bigWig files, with the position of boundaries along the genome.
 
@@ -249,10 +249,10 @@ Usually, TADs results are presented as simple BED files, or bigWig files, with t
 <details markdown="1">
 <summary>Output files</summary>
 
-* `multiqc/`
-  * `multiqc_report.html`: a standalone HTML file that can be viewed in your web browser.
-  * `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline.
-  * `multiqc_plots/`: directory containing static images from the report in various formats.
+- `multiqc/`
+  - `multiqc_report.html`: a standalone HTML file that can be viewed in your web browser.
+  - `multiqc_data/`: directory containing parsed statistics from the different tools used in the pipeline.
+  - `multiqc_plots/`: directory containing static images from the report in various formats.
 
 </details>
 
@@ -265,10 +265,10 @@ Results generated by MultiQC collate pipeline QC from supported tools e.g. FastQ
 <details markdown="1">
 <summary>Output files</summary>
 
-* `pipeline_info/`
-  * Reports generated by Nextflow: `execution_report.html`, `execution_timeline.html`, `execution_trace.txt` and `pipeline_dag.dot`/`pipeline_dag.svg`.
-  * Reports generated by the pipeline: `pipeline_report.html`, `pipeline_report.txt` and `software_versions.yml`. The `pipeline_report*` files will only be present if the `--email` / `--email_on_fail` parameter's are used when running the pipeline.
-  * Reformatted samplesheet files used as input to the pipeline: `samplesheet.valid.csv`.
+- `pipeline_info/`
+  - Reports generated by Nextflow: `execution_report.html`, `execution_timeline.html`, `execution_trace.txt` and `pipeline_dag.dot`/`pipeline_dag.svg`.
+  - Reports generated by the pipeline: `pipeline_report.html`, `pipeline_report.txt` and `software_versions.yml`. The `pipeline_report*` files will only be present if the `--email` / `--email_on_fail` parameter's are used when running the pipeline.
+  - Reformatted samplesheet files used as input to the pipeline: `samplesheet.valid.csv`.
 
 </details>
 
