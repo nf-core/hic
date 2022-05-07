@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v1.4.0
 
 ### `Added`
+
 * DSL2 version of nf-core-hic pipeline
 
 ## v1.3.1 - 2021-09-25
@@ -75,21 +76,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * cooler `0.8.5` > `0.8.6`
   * multiqc `1.7` > `1.8`
   * iced `0.5.1` > `0.5.6`
-  * *_New_* pymdown-extensions `7.1`
-  * *_New_* hicexplorer `3.4.3`
-  * *_New_* bioconductor-hitc `1.32.0`
-  * *_New_* r-optparse `1.6.6`
-  * *_New_* ucsc-bedgraphtobigwig `377`
-  * *_New_* cython `0.29.19`
-  * *_New_* cooltools `0.3.2`
-  * *_New_* fanc `0.8.30`
-  * *_Removed_* r-markdown
+  * _*New*_ pymdown-extensions `7.1`
+  * _*New*_ hicexplorer `3.4.3`
+  * _*New*_ bioconductor-hitc `1.32.0`
+  * _*New*_ r-optparse `1.6.6`
+  * _*New*_ ucsc-bedgraphtobigwig `377`
+  * _*New*_ cython `0.29.19`
+  * _*New*_ cooltools `0.3.2`
+  * _*New*_ fanc `0.8.30`
+  * _*Removed*_ r-markdown
 
 ### `Fixed`
 
 * Fix error in doc for Arima kit usage
 * Sort output of `get_valid_interaction` process as the input files of `remove_duplicates`
-are expected to be sorted (sort -m)
+  are expected to be sorted (sort -m)
 
 ### `Deprecated`
 
@@ -138,7 +139,7 @@ DNase Hi-C, Micro-C, capture-C or HiChip data.
 In summary, this version allows :
 
 * Automatic detection and generation of annotation files based on igenomes
-if not provided.
+  if not provided.
 * Two-steps alignment of raw sequencing reads
 * Reads filtering and detection of valid interaction products
 * Generation of raw contact matrices for a set of resolutions

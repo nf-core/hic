@@ -102,7 +102,7 @@ fails after three times then the pipeline is stopped.
 ## Core Nextflow arguments
 
 > **NB:** These options are part of Nextflow and use a _single_ hyphen
-(pipeline parameters use a double-hyphen).
+> (pipeline parameters use a double-hyphen).
 
 ### `-profile`
 
@@ -112,7 +112,7 @@ configuration presets for different compute environments.
 Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Conda) - see below. When using Biocontainers, most of these software packaging methods pull Docker containers from quay.io e.g [FastQC](https://quay.io/repository/biocontainers/fastqc) except for Singularity which directly downloads Singularity images via https hosted by the [Galaxy project](https://depot.galaxyproject.org/singularity/) and Conda which downloads and installs software locally from [Bioconda](https://bioconda.github.io/).
 
 > We highly recommend the use of Docker or Singularity containers for full
-pipeline reproducibility, however when this is not possible, Conda is also supported.
+> pipeline reproducibility, however when this is not possible, Conda is also supported.
 
 The pipeline also dynamically loads configurations from
 [https://github.com/nf-core/configs](https://github.com/nf-core/configs)
@@ -131,21 +131,21 @@ If `-profile` is not specified, the pipeline will run locally and
 expect all software to be
 installed and available on the `PATH`. This is _not_ recommended.
 
-- `docker`
-  - A generic configuration profile to be used with [Docker](https://docker.com/)
-- `singularity`
-  - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
-- `podman`
-  - A generic configuration profile to be used with [Podman](https://podman.io/)
-- `shifter`
-  - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
-- `charliecloud`
-  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
-- `conda`
-  - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
-- `test`
-  - A profile with a complete configuration for automated testing
-  - Includes links to test data so needs no other parameters
+* `docker`
+  * A generic configuration profile to be used with [Docker](https://docker.com/)
+* `singularity`
+  * A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
+* `podman`
+  * A generic configuration profile to be used with [Podman](https://podman.io/)
+* `shifter`
+  * A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+* `charliecloud`
+  * A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+* `conda`
+  * A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter or Charliecloud.
+* `test`
+  * A profile with a complete configuration for automated testing
+  * Includes links to test data so needs no other parameters
 
 ### `-resume`
 
@@ -224,7 +224,7 @@ The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementatio
 2. Find the latest version of the Biocontainer available on [Quay.io](https://quay.io/repository/biocontainers/pangolin?tag=latest&tab=tags)
 3. Create the custom config accordingly:
 
-   - For Docker:
+   * For Docker:
 
      ```nextflow
      process {
@@ -234,7 +234,7 @@ The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementatio
      }
      ```
 
-   - For Singularity:
+   * For Singularity:
 
      ```nextflow
      process {
@@ -244,7 +244,7 @@ The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementatio
      }
      ```
 
-   - For Conda:
+   * For Conda:
 
      ```nextflow
      process {
@@ -330,7 +330,7 @@ Please note the following requirements:
 1. The path must be enclosed in quotes
 2. The path must have at least one `*` wildcard character
 3. When using the pipeline with paired end data, the path must use `{1,2}`
-notation to specify read pairs.
+   notation to specify read pairs.
 
 If left unspecified, a default pattern is used: `data/*{1,2}.fastq.gz`
 
@@ -467,7 +467,7 @@ Minimum mapping quality. Reads with lower quality are discarded. Default: 10
 
 This parameter allows to automatically set the `--restriction_site` and
 `--ligation_site` parameter according to the restriction enzyme you used.
-Available keywords are  'hindiii', 'dpnii', 'mboi', 'arima'.
+Available keywords are 'hindiii', 'dpnii', 'mboi', 'arima'.
 
 ```bash
 --digestion 'hindiii'
