@@ -10,8 +10,8 @@ rmDup=0
 prefix=""
 while getopts ":dp:" opt; do
     case "$opt" in
-	d) rmDup=1 ;;
-	p) prefix=$OPTARG ;;
+        d) rmDup=1 ;;
+        p) prefix=$OPTARG ;;
     esac
 done
 shift $(( OPTIND - 1 ))
@@ -21,11 +21,11 @@ vpairs="$@"
 if [[ ${rmDup} == 1 ]]; then
     ## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
     sort -S 50% -k2,2V -k3,3n -k5,5V -k6,6n -m ${vpairs} | \
-	awk -F"\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=$2 || c2!=$5 || s1!=$3 || s2!=$6){print;c1=$2;c2=$5;s1=$3;s2=$6}' > ${prefix}.allValidPairs
+        awk -F"\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=$2 || c2!=$5 || s1!=$3 || s2!=$6){print;c1=$2;c2=$5;s1=$3;s2=$6}' > ${prefix}.allValidPairs
 else
     cat ${vpairs} > ${prefix}.allValidPairs
 fi
-      
+
 echo -e -n "valid_interaction\t" > ${prefix}_allValidPairs.mergestat
 cat ${vpairs} | wc -l >> ${prefix}_allValidPairs.mergestat
 echo -e -n "valid_interaction_rmdup\t" >> ${prefix}_allValidPairs.mergestat

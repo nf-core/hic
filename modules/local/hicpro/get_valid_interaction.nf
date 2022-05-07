@@ -4,11 +4,11 @@ process GET_VALID_INTERACTION {
 
     conda (params.enable_conda ? "conda-forge::python=3.9  bioconda::pysam=0.19.0 bioconda::bx-python=0.8.13" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-      'https://depot.galaxyproject.org/singularity/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0' :
-      'quay.io/biocontainers/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0'}"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0' :
+        'quay.io/biocontainers/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0'}"
 
     input:
-    tuple val(meta), path(bam) 
+    tuple val(meta), path(bam)
     path(resfrag)
 
     output:
@@ -24,14 +24,14 @@ process GET_VALID_INTERACTION {
     def args = task.ext.args ?: ''
     """
     mapped_2hic_fragments.py \\
-      -f ${resfrag} \\
-      -r ${bam} \\
-      --all \\
-      ${args}
+        -f ${resfrag} \\
+        -r ${bam} \\
+        --all \\
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-      python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
+        python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
     END_VERSIONS
     """
 }

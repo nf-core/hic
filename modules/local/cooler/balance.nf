@@ -23,7 +23,7 @@ process COOLER_BALANCE {
     cooler balance \\
         $args \\
         -p ${task.cpus} \\
-        ${cool}${suffix} 
+        ${cool}${suffix}
 
     cp ${cool} ${prefix}.${extension}
 

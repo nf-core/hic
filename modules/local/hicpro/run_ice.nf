@@ -4,11 +4,11 @@ process ICE_NORMALIZATION{
 
     conda (params.enable_conda ? "conda-forge::python=3.9  bioconda::iced=0.5.10 conda-forge::numpy=1.22.3" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-      'https://depot.galaxyproject.org/singularity/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0' :
-      'quay.io/biocontainers/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0'}"
- 
+        'https://depot.galaxyproject.org/singularity/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0' :
+        'quay.io/biocontainers/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0'}"
+
     input:
-    tuple val(meta), val(res), path(rmaps), path(bed) 
+    tuple val(meta), val(res), path(rmaps), path(bed)
 
     output:
     tuple val(meta), val(res), path("*iced.matrix"), path(bed), emit:maps
@@ -25,8 +25,8 @@ process ICE_NORMALIZATION{
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-      python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
-      iced: \$(python -c "import iced; print(iced.__version__)")
+        python: \$(echo \$(python --version 2>&1) | sed 's/Python //')
+        iced: \$(python -c "import iced; print(iced.__version__)")
     END_VERSIONS
     """
 }

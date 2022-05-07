@@ -9,7 +9,7 @@ process MAPPING_STATS_DNASE {
 
 
     input:
-    tuple val(meta), path(bam) 
+    tuple val(meta), path(bam)
 
     output:
     tuple val(meta), path(bam), emit:bam

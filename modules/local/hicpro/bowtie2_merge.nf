@@ -1,14 +1,14 @@
 process MERGE_BOWTIE2{
     tag "$prefix"
     label 'process_medium'
-  
+
     conda (params.enable_conda ? "bioconda::samtools=1.15.1" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/samtools:1.15.1--h1170115_0' :
         'quay.io/biocontainers/samtools:1.15.1--h1170115_0' }"
-	
+
     input:
-    tuple val(meta), path(bam1), path(bam2) 
+    tuple val(meta), path(bam1), path(bam2)
 
     output:
     tuple val(meta), path("${prefix}_bwt2merged.bam"), emit: bam
@@ -20,13 +20,13 @@ process MERGE_BOWTIE2{
     tag = meta.mates
     """
     samtools merge -@ ${task.cpus} \\
-                   -f ${prefix}_bwt2merged.bam \\
-                    ${bam1} ${bam2}
+        -f ${prefix}_bwt2merged.bam \\
+        ${bam1} ${bam2}
 
     samtools sort -@ ${task.cpus} -m 800M \\
-                  -n  \\
-                  -o ${prefix}_bwt2merged.sorted.bam \\
-                  ${prefix}_bwt2merged.bam
+        -n  \\
+        -o ${prefix}_bwt2merged.sorted.bam \\
+        ${prefix}_bwt2merged.bam
 
     mv ${prefix}_bwt2merged.sorted.bam ${prefix}_bwt2merged.bam
 
@@ -44,5 +44,5 @@ process MERGE_BOWTIE2{
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
     END_VERSIONS
-  """
+    """
 }

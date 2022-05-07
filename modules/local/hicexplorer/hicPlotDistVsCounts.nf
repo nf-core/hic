@@ -1,7 +1,7 @@
 /*
  * hicexplorer - hicPlotDistVsCounts
  */
- 
+
 process HIC_PLOT_DIST_VS_COUNTS {
     label 'process_medium'
 

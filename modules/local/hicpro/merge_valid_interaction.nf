@@ -4,11 +4,11 @@ process MERGE_VALID_INTERACTION {
 
     conda (params.enable_conda ? "conda-forge::gawk=5.1.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-      'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
-      'ubuntu:20.04' }"   
+        'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
+        'ubuntu:20.04' }"
 
     input:
-    tuple val(meta), path(vpairs) 
+    tuple val(meta), path(vpairs)
 
     output:
     tuple val(meta), path("*.allValidPairs"), emit: valid_pairs
@@ -28,7 +28,7 @@ process MERGE_VALID_INTERACTION {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-      sort: \$(echo \$(sort --version 2>&1 | head -1 | awk '{print \$NF}' 2>&1))
+        sort: \$(echo \$(sort --version 2>&1 | head -1 | awk '{print \$NF}' 2>&1))
     END_VERSIONS
     """
-}  	
+}

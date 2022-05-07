@@ -6,9 +6,9 @@ process TRIM_READS {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
         'ubuntu:20.04' }"
-  
+
     input:
-    tuple val(meta), path(reads) 
+    tuple val(meta), path(reads)
     val(motif)
 
     output:
@@ -19,8 +19,8 @@ process TRIM_READS {
     """
     zcat ${reads} > tmp.fastq
     cutsite_trimming --fastq tmp.fastq \\
-                     --cutsite ${motif[0]} \\
-                     --out ${reads.simpleName}_trimmed.fastq
+        --cutsite ${motif[0]} \\
+        --out ${reads.simpleName}_trimmed.fastq
     gzip ${reads.simpleName}_trimmed.fastq
     /bin/rm -f tmp.fastq
 
