@@ -223,7 +223,7 @@ workflow HIC {
       .map { it -> [it[0], it[1], it[2]]}
       .set{ ch_cool_compartments }
 
-    COMPARTMENTS(
+    COMPARTMENTS (
       ch_cool_compartments,
       ch_fasta,
       PREPARE_GENOME.out.chromosome_size
