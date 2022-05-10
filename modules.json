@@ -1,0 +1,26 @@
+{
+    "name": "nf-core/hic",
+    "homePage": "https://github.com/nf-core/hic",
+    "repos": {
+        "nf-core/modules": {
+            "bowtie2/align": {
+                "git_sha": "61f68913fefc20241ceccb671b104230b2d775d7"
+            },
+            "bowtie2/build": {
+                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+            },
+            "cooler/zoomify": {
+                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+            },
+            "custom/dumpsoftwareversions": {
+                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+            },
+            "custom/getchromsizes": {
+                "git_sha": "213403187932dbbdd936a04474cc8cd8abae7a08"
+            },
+            "fastqc": {
+                "git_sha": "49b18b1639f4f7104187058866a8fab33332bdfe"
+            }
+        }
+    }
+}
