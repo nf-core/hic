@@ -1,6 +1,6 @@
 process ICE_NORMALIZATION{
     tag "$rmaps"
-    label 'process_highmem'
+    label 'process_high_memory'
 
     conda (params.enable_conda ? "conda-forge::python=3.9  bioconda::iced=0.5.10 conda-forge::numpy=1.22.3" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

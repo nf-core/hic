@@ -36,13 +36,20 @@ if (params.digestion){
 }
 
 //****************************************
-// Maps resolution for downstream analysis
+// Combine all maps resolution for downstream analysis
 
-ch_map_res = Channel.from( params.bin_size ).splitCsv().flatten()
+ch_map_res = Channel.from( params.bin_size ).splitCsv().flatten().toInteger()
+
+if (params.res_zoomify){
+  ch_zoom_res = Channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+  ch_map_res = ch_map_res.concat(ch_zoom_res)
+}
+
 if (params.res_tads && !params.skip_tads){
   Channel.from( "${params.res_tads}" )
     .splitCsv()
     .flatten()
+    .toInteger()
     .set {ch_tads_res}
   ch_map_res = ch_map_res.concat(ch_tads_res)
 }else{
@@ -56,6 +63,7 @@ if (params.res_dist_decay && !params.skip_dist_decay){
   Channel.from( "${params.res_dist_decay}" )
     .splitCsv()
     .flatten()
+    .toInteger()
     .set {ch_ddecay_res}
    ch_map_res = ch_map_res.concat(ch_ddecay_res)
 }else{
@@ -69,6 +77,7 @@ if (params.res_compartments && !params.skip_compartments){
   Channel.from( "${params.res_compartments}" )
     .splitCsv()
     .flatten()
+    .toInteger()
     .set {ch_comp_res}
    ch_map_res = ch_map_res.concat(ch_comp_res)
 }else{
@@ -154,8 +163,6 @@ workflow HIC {
     ch_input
   )
 
-  INPUT_CHECK.out.reads.view()
-
   //
   // SUBWORKFLOW: Prepare genome annotation
   //
@@ -202,7 +209,6 @@ workflow HIC {
   if (!params.skip_dist_decay){
     COOLER.out.cool
       .combine(ch_ddecay_res)
-      .view()
       .filter{ it[0].resolution == it[2] }
       .map { it -> [it[0], it[1]]}
       .set{ ch_distdecay }

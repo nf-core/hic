@@ -63,8 +63,9 @@ workflow COOLER {
   if (!params.res_zoomify){
     ch_res_zoomify = cool_bins.min()
   }else{
-    ch_res_zoomify = params.res_zoomify
+    ch_res_zoomify = Channel.from(params.res_zoomify).splitCsv().flatten().unique().toInteger()
   }
+
   ch_cool
     .combine(ch_res_zoomify)
     .filter{ it[2] == it[3] }
