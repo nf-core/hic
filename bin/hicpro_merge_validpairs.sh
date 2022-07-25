@@ -27,23 +27,23 @@ if [[ ${rmDup} == 1 ]]; then
     fcounts=0
     for vfile in ${vpairs}
     do
-	echo "Sorting ${vfile} ..."
-	fcounts=$((fcounts+1))
-	ofile=$(echo ${vfile} | sed -e 's/validPairs/sorted.validPairs/')
-	#sort -k2,2V -k3,3n -k5,5V -k6,6n -T ./tmp/ -o ${ofile} ${vfile}
-	sort -k2,2 -k5,5 -k3,3n -k6,6n -T ./tmp/ -o ${ofile} ${vfile}
+        echo "Sorting ${vfile} ..."
+        fcounts=$((fcounts+1))
+        ofile=$(echo ${vfile} | sed -e 's/validPairs/sorted.validPairs/')
+        #sort -k2,2V -k3,3n -k5,5V -k6,6n -T ./tmp/ -o ${ofile} ${vfile}
+        sort -k2,2 -k5,5 -k3,3n -k6,6n -T ./tmp/ -o ${ofile} ${vfile}
     done
 
     if [[ $fcounts -gt 1 ]]
     then
-	echo "Merging and removing the duplicates ..."
-	## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
-	#sort -k2,2V -k3,3n -k5,5V -k6,6n -T ./tmp/ -m ${vpairs_sorted} | \
-	 sort -k2,2 -k5,5 -k3,3n -k6,6n -T ./tmp/ -m ${vpairs_sorted} | \
+        echo "Merging and removing the duplicates ..."
+        ## Sort valid pairs and remove read pairs with same starts (i.e duplicated read pairs)
+        #sort -k2,2V -k3,3n -k5,5V -k6,6n -T ./tmp/ -m ${vpairs_sorted} | \
+        sort -k2,2 -k5,5 -k3,3n -k6,6n -T ./tmp/ -m ${vpairs_sorted} | \
             awk -F"\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=$2 || c2!=$5 || s1!=$3 || s2!=$6){print;c1=$2;c2=$5;s1=$3;s2=$6}' > ${prefix}.allValidPairs
     else
-	echo "Removing the duplicates ..."
-	cat ${vpairs_sorted} | awk -F"\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=$2 || c2!=$5 || s1!=$3 || s2!=$6){print;c1=$2;c2=$5;s1=$3;s2=$6}' > ${prefix}.allValidPairs
+        echo "Removing the duplicates ..."
+        cat ${vpairs_sorted} | awk -F"\t" 'BEGIN{c1=0;c2=0;s1=0;s2=0}(c1!=$2 || c2!=$5 || s1!=$3 || s2!=$6){print;c1=$2;c2=$5;s1=$3;s2=$6}' > ${prefix}.allValidPairs
     fi
 
     ## clean
