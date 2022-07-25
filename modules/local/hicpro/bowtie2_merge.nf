@@ -24,7 +24,7 @@ process MERGE_BOWTIE2{
         ${bam1} ${bam2}
 
     samtools sort -@ ${task.cpus} -m 800M \\
-        -n  \\
+        -n \\
         -o ${prefix}_bwt2merged.sorted.bam \\
         ${prefix}_bwt2merged.bam
 

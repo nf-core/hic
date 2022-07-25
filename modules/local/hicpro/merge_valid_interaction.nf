@@ -1,6 +1,6 @@
 process MERGE_VALID_INTERACTION {
     tag "$prefix"
-    label 'process_highmem'
+    label 'process_high_memory'
 
     conda (params.enable_conda ? "conda-forge::gawk=5.1.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
