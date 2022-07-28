@@ -16,7 +16,7 @@ process MAPPING_STATS_DNASE {
     tuple val(meta), path("${prefix}.mapstat"), emit:stats
 
     script:
-    prefix = meta.id + "_" + meta.mates
+    prefix = meta.id + "_" + meta.chunk + "_" + meta.mates
     tag = meta.mates
     """
     echo "## ${prefix}" > ${prefix}.mapstat
