@@ -4,10 +4,18 @@
 """Provide functions to merge multiple versions.yml files."""
 
 
+<<<<<<< HEAD
 import yaml
 import platform
 from textwrap import dedent
 
+=======
+import platform
+from textwrap import dedent
+
+import yaml
+
+>>>>>>> c5796cd967b920b736acba2ee60128d6ac0338db
 
 def _make_versions_html(versions):
     """Generate a tabular HTML output of all versions for MultiQC."""
