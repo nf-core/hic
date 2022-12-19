@@ -86,8 +86,6 @@ workflow HICPRO {
   )
   ch_versions = ch_versions.mix(MERGE_VALID_INTERACTION.out.versions)
 
-
-  ch_hicpro_stats.view()
   MERGE_STATS(
     ch_hicpro_stats
   )

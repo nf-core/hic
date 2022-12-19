@@ -102,8 +102,6 @@ workflow HICPRO_MAPPING {
       .set {ch_bams}
   }
 
-  ch_bams.view()
-
   COMBINE_MATES (
     ch_bams
   )

@@ -33,8 +33,6 @@ workflow COOLER {
   //*****************************************
   // EXPORT BINS
 
-  chromsize.combine(cool_bins).view()
-
   COOLER_MAKEBINS(
     chromsize.combine(cool_bins)
   )
