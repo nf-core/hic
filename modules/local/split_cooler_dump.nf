@@ -14,6 +14,9 @@ process SPLIT_COOLER_DUMP {
     tuple val(meta), path("*.txt"), emit: matrix
     path ("versions.yml"), emit: versions
 
+    when:
+    task.ext.when == null || task.ext.when
+
     script:
     def args = task.ext.args ?: ''
     prefix = bedpe.toString() - ~/(\_balanced)?.bedpe$/
