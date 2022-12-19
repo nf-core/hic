@@ -72,6 +72,7 @@ workflow HICPRO {
   
   //if (params.split_fastq){
   ch_valid_pairs = ch_valid_pairs.map{ it -> removeChunks(it)}.groupTuple()
+  ch_valid_pairs.view()
   ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.map{it->removeChunks(it)}.groupTuple()
                       .concat(HICPRO_MAPPING.out.pairstats.map{it->removeChunks(it)}.groupTuple(),
 		        ch_valid_stats.map{it->removeChunks(it)}.groupTuple())

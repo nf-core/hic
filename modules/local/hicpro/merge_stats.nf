@@ -1,4 +1,5 @@
 process MERGE_STATS {
+    tag "${meta.id}"
     label 'process_low'
 
     conda (params.enable_conda ? "conda-forge::python=3.9" : null)

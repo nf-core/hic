@@ -1,5 +1,5 @@
 process ICE_NORMALIZATION{
-    tag "$rmaps"
+    tag "${meta.id}"
     label 'process_high_memory'
 
     conda (params.enable_conda ? "conda-forge::python=3.9  bioconda::iced=0.5.10 conda-forge::numpy=1.22.3" : null)

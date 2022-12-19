@@ -1,5 +1,5 @@
 process COMBINE_MATES {
-    tag "$prefix"
+    tag "${meta.id}"
     label 'process_low'
 
     conda (params.enable_conda ? "conda-forge::python=3.9  bioconda::pysam=0.19.0" : null)

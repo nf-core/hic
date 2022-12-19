@@ -1,5 +1,5 @@
 process MERGE_BOWTIE2{
-    tag "$prefix"
+    tag "${meta.id}"
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::samtools=1.15.1" : null)

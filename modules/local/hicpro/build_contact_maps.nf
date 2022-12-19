@@ -1,5 +1,5 @@
 process BUILD_CONTACT_MAPS{
-  tag "$meta.id - $res"
+  tag "${meta.id}"
   label 'process_high_memory'
 
   conda (params.enable_conda ? "conda-forge::sed=4.7" : null)
@@ -8,19 +8,20 @@ process BUILD_CONTACT_MAPS{
       'ubuntu:20.04' }"
 
   input:
-  tuple val(meta), path(vpairs), val(res) 
-  path chrsize 
+  tuple val(meta), path(vpairs), val(resolution) 
+  tuple val(meta2), path(chrsize) 
 
   output:
-  tuple val(meta), val(res), path("*.matrix"), path("*.bed"), emit: maps
+  tuple val(meta), val(resolution), path("*.matrix"), path("*.bed"), emit: maps
    
   script:
+  def prefix = task.ext.prefix ?: "${meta.id}"
   """
   build_matrix \\
     --matrix-format upper  \\
-    --binsize ${res} \\
+    --binsize ${resolution} \\
     --chrsizes ${chrsize} \\
     --ifile ${vpairs} \\
-    --oprefix ${meta.id}_${res}
+    --oprefix ${prefix}
   """
 }
