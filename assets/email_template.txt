@@ -6,7 +6,6 @@
                                         `._,._,'
   nf-core/hic v${version}
 ----------------------------------------------------
-
 Run Name: $runName
 
 <% if (success){
