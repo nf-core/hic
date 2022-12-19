@@ -67,7 +67,7 @@ if (params.res_dist_decay && !params.skip_dist_decay){
     .set {ch_ddecay_res}
    ch_map_res = ch_map_res.concat(ch_ddecay_res)
 }else{
-  ch_ddecay_res = Channel.create()
+  ch_ddecay_res = Channel.empty()
   if (!params.skip_dist_decay){
     log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay" 
   }
@@ -81,7 +81,7 @@ if (params.res_compartments && !params.skip_compartments){
     .set {ch_comp_res}
    ch_map_res = ch_map_res.concat(ch_comp_res)
 }else{
-  ch_comp_res = Channel.create()
+  ch_comp_res = Channel.empty()
   if (!params.skip_compartments){
     log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
   }
