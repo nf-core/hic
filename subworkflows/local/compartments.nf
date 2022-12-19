@@ -1,4 +1,4 @@
-include { CALL_COMPARTMENTS } from '../../modules/local/cooltools/eigs-cis'
+include { COOLTOOLS_EIGSCIS } from '../../modules/local/cooltools/eigscis'
 
 workflow COMPARTMENTS {
 
@@ -10,14 +10,14 @@ workflow COMPARTMENTS {
   main:
   ch_versions = Channel.empty()
 
-  CALL_COMPARTMENTS (
+  COOLTOOLS_EIGSCIS(
     cool,
-    fasta.collect(),
-    chrsize.collect()
+    fasta.map{it -> it[1]}.collect(),
+    chrsize.map{it -> it[1]}.collect()
   )
-  ch_versions = ch_versions.mix(CALL_COMPARTMENTS.out.versions)
+  ch_versions = ch_versions.mix(COOLTOOLS_EIGSCIS.out.versions)
 
   emit:
   versions = ch_versions
-  compartments = CALL_COMPARTMENTS.out.results
+  compartments = COOLTOOLS_EIGSCIS.out.results
 }

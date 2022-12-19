@@ -9,7 +9,7 @@ process GET_VALID_INTERACTION {
 
     input:
     tuple val(meta), path(bam)
-    path(resfrag)
+    tuple val(meta2), path(resfrag)
 
     output:
     tuple val(meta), path("*.validPairs"), emit:valid_pairs

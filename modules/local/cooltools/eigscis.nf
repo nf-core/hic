@@ -3,6 +3,7 @@
  */
 
 process COOLTOOLS_EIGSCIS {
+    tag "${meta.id}"
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::cooltools=0.5.1 bioconda::ucsc-bedgraphtobigwig=377" : null)

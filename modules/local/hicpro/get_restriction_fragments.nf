@@ -8,11 +8,11 @@ process GET_RESTRICTION_FRAGMENTS {
         'quay.io/biocontainers/mulled-v2-c6ff206325681cbb9c9ef890bb8de554172c0483:713df51cd897ceb893b9a6e6420f527d83c2ed95-0'}"
 
     input:
-    path fasta
+    tuple val(meta), path(fasta)
     val(res_site)
 
     output:
-    path "*.bed", emit: results
+    tuple val(meta), path("*.bed"), emit: results
     path("versions.yml"), emit: versions
 
     script:

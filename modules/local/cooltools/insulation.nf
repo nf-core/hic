@@ -2,7 +2,8 @@
  * Cooltools - diamond-insulation
  */
 
-process COOLER_INSULATION {
+process COOLTOOLS_INSULATION {
+    tag "${meta.id}"
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::cooltools=0.5.1" : null)

@@ -9,7 +9,7 @@ process HICPRO2PAIRS {
 
     input:
     tuple val(meta), path(vpairs)
-    path chrsize
+    tuple val(meta2), path(chrsize)
 
     output:
     tuple val(meta), path("*.pairs.gz"), path("*.pairs.gz.px2"), emit: pairs

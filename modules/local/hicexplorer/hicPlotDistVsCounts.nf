@@ -1,8 +1,9 @@
 /*
- * hicexplorer - hicPlotDistVsCounts
+ * hicexplorer - Genomic distance/counts plots
  */
 
 process HIC_PLOT_DIST_VS_COUNTS {
+    tag "${meta.id}"
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::hicexplorer=3.7.2" : null)

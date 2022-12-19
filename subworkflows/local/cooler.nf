@@ -4,12 +4,11 @@
  * OUTPUT : cooler files
  */
 
-include { COOLER_ZOOMIFY } from '../../modules/nf-core/modules/cooler/zoomify/main'
-
-include { COOLER_DUMP } from '../../modules/local/cooler/dump' 
-include { COOLER_CLOAD } from '../../modules/local/cooler/cload' 
-include { COOLER_BALANCE } from '../../modules/local/cooler/balance'
-include { COOLER_MAKEBINS } from '../../modules/local/cooler/makebins'
+include { COOLER_ZOOMIFY } from '../../modules/nf-core/cooler/zoomify/main'
+include { COOLER_DUMP } from '../../modules/nf-core/cooler/dump/main' 
+include { COOLER_CLOAD } from '../../modules/nf-core/cooler/cload/main' 
+include { COOLER_BALANCE } from '../../modules/nf-core/cooler/balance/main'
+include { COOLER_MAKEBINS } from '../../modules/nf-core/cooler/makebins/main'
 
 include { SPLIT_COOLER_DUMP } from '../../modules/local/split_cooler_dump'
 
@@ -25,7 +24,7 @@ workflow COOLER {
 
   take:
   pairs // [meta, pairs, index]
-  chromsize
+  chromsize // [meta, chromsize]
   cool_bins
 
   main:
@@ -33,6 +32,8 @@ workflow COOLER {
 
   //*****************************************
   // EXPORT BINS
+
+  chromsize.combine(cool_bins).view()
 
   COOLER_MAKEBINS(
     chromsize.combine(cool_bins)
@@ -45,7 +46,7 @@ workflow COOLER {
 
   COOLER_CLOAD(
     pairs.combine(cool_bins),
-    chromsize.collect()
+    chromsize.map{it -> it[1]}.collect()
   )
   ch_versions = ch_versions.mix(COOLER_CLOAD.out.versions)
 
@@ -85,10 +86,6 @@ workflow COOLER {
     COOLER_BALANCE.out.cool.map{[it[0], it[1], ""]}
   )
   ch_versions = ch_versions.mix(COOLER_DUMP.out.versions)
-
-  //COOLER_DUMP(
-  //  COOLER_ZOOMIFY.out.mcool.combine(cool_bins).map{it->[it[0], it[1], it[2]]}
-  //)
 
   SPLIT_COOLER_DUMP(
     COOLER_DUMP.out.bedpe

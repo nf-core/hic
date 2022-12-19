@@ -2,8 +2,8 @@
  * Prepare Annotation Genome for Hi-C data analysis
  */
 
-include { BOWTIE2_BUILD } from '../../modules/nf-core/modules/bowtie2/build/main'
-include { CUSTOM_GETCHROMSIZES } from '../../modules/nf-core/modules/custom/getchromsizes/main'
+include { BOWTIE2_BUILD } from '../../modules/nf-core/bowtie2/build/main'
+include { CUSTOM_GETCHROMSIZES } from '../../modules/nf-core/custom/getchromsizes/main'
 include { GET_RESTRICTION_FRAGMENTS } from '../../modules/local/hicpro/get_restriction_fragments'
 
 workflow PREPARE_GENOME {
@@ -25,6 +25,7 @@ workflow PREPARE_GENOME {
     ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
   }else{
     Channel.fromPath( params.bwt2_index , checkIfExists: true)
+           .map { it -> [[:], it]}
            .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
            .set { ch_index }
   }
@@ -39,6 +40,7 @@ workflow PREPARE_GENOME {
     ch_versions = ch_versions.mix(CUSTOM_GETCHROMSIZES.out.versions)
   }else{
     Channel.fromPath( params.chromosome_size , checkIfExists: true)
+           .map { it -> [[:], it]}
            .set {ch_chromsize} 
   }
 
@@ -53,6 +55,7 @@ workflow PREPARE_GENOME {
     ch_versions = ch_versions.mix(GET_RESTRICTION_FRAGMENTS.out.versions)
   }else if (!params.dnase){
      Channel.fromPath( params.restriction_fragments, checkIfExists: true )
+            .map{ it -> [[:], it] }
             .set {ch_resfrag}
   }else{
     ch_resfrag = Channel.empty()
