@@ -2,7 +2,7 @@
  * Cooltools - diamond-insulation
  */
 
-process INSULATION {
+process COOLER_INSULATION {
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::cooltools=0.5.1" : null)
@@ -14,7 +14,7 @@ process INSULATION {
     tuple val(meta), path(cool)
 
     output:
-    path("*tsv"), emit:results
+    path("*tsv"), emit:tsv
     path("versions.yml"), emit:versions
 
     script:

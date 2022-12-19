@@ -2,7 +2,7 @@
  * cooltools - call_compartments
  */
 
-process CALL_COMPARTMENTS {
+process COOLTOOLS_EIGSCIS {
     label 'process_medium'
 
     conda (params.enable_conda ? "bioconda::cooltools=0.5.1 bioconda::ucsc-bedgraphtobigwig=377" : null)
