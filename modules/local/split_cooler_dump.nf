@@ -2,12 +2,20 @@ process SPLIT_COOLER_DUMP {
     tag "$meta.id"
     label 'process_low'
 
+    conda "conda-forge::gawk=5.1.0"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
+        'ubuntu:20.04' }"
+
     input:
     tuple val(meta), path(bedpe)
 
     output:
-    path "*.txt", emit: matrix
-    path "versions.yml", emit: versions
+    tuple val(meta), path("*.txt"), emit: matrix
+    path ("versions.yml"), emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''

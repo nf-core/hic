@@ -67,7 +67,7 @@ if (params.res_dist_decay && !params.skip_dist_decay){
     .set {ch_ddecay_res}
    ch_map_res = ch_map_res.concat(ch_ddecay_res)
 }else{
-  ch_ddecay_res = Channel.create()
+  ch_ddecay_res = Channel.empty()
   if (!params.skip_dist_decay){
     log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay" 
   }
@@ -81,7 +81,7 @@ if (params.res_compartments && !params.skip_compartments){
     .set {ch_comp_res}
    ch_map_res = ch_map_res.concat(ch_comp_res)
 }else{
-  ch_comp_res = Channel.create()
+  ch_comp_res = Channel.empty()
   if (!params.skip_compartments){
     log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
   }
@@ -94,8 +94,10 @@ ch_map_res = ch_map_res.unique()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-ch_multiqc_config        = file("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
+ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -128,10 +130,8 @@ include { TADS } from '../subworkflows/local/tads'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
-include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'
-//include { MULTIQC } from '../modules/nf-core/modules/multiqc/main'
+include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -141,6 +141,7 @@ include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'
 
 Channel.fromPath( params.fasta )
        .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
+       .map{it->[[:],it]}
        .set { ch_fasta }
 
 /*
@@ -183,6 +184,7 @@ workflow HIC {
   //
   // SUB-WORFLOW: HiC-Pro
   //
+  INPUT_CHECK.out.reads.view()
   HICPRO (
     INPUT_CHECK.out.reads,
     PREPARE_GENOME.out.index,
@@ -290,10 +292,13 @@ workflow HIC {
 */
 
 workflow.onComplete {
-  if (params.email || params.email_on_fail) {
-      NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-  }
-  NfcoreTemplate.summary(workflow, params, log)
+    if (params.email || params.email_on_fail) {
+        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
+    }
+    NfcoreTemplate.summary(workflow, params, log)
+    if (params.hook_url) {
+        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
+    }
 }
 
 /*

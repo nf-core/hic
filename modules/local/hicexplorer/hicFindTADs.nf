@@ -5,7 +5,7 @@
 process HIC_FIND_TADS {
     label 'process_medium'
 
-    conda (params.enable_conda ? "bioconda::hicexplorer=3.7.2" : null)
+    conda "bioconda::hicexplorer=3.7.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/hicexplorer:3.7.2--pyhdfd78af_1' :
         'quay.io/biocontainers/hicexplorer:3.7.2--pyhdfd78af_1' }"

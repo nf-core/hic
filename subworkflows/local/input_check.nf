@@ -9,7 +9,6 @@ workflow INPUT_CHECK {
     samplesheet // file: /path/to/samplesheet.csv
 
     main:
-
     if (params.split_fastq){
 
       SAMPLESHEET_CHECK ( samplesheet )

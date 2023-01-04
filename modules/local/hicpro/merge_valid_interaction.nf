@@ -2,7 +2,7 @@ process MERGE_VALID_INTERACTION {
     tag "$prefix"
     label 'process_high_memory'
 
-    conda (params.enable_conda ? "conda-forge::gawk=5.1.0" : null)
+    conda "conda-forge::gawk=5.1.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
         'ubuntu:20.04' }"

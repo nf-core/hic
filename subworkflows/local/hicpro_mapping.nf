@@ -3,9 +3,9 @@
  * From the raw sequencing reads to a paired-end bam file
  */
 
-include { BOWTIE2_ALIGN } from '../../modules/nf-core/modules/bowtie2/align/main'
+include { BOWTIE2_ALIGN } from '../../modules/nf-core/bowtie2/align/main'
 include { TRIM_READS } from '../../modules/local/hicpro/trim_reads'
-include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_TRIMMED } from '../../modules/nf-core/modules/bowtie2/align/main'
+include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_TRIMMED } from '../../modules/nf-core/bowtie2/align/main'
 include { MERGE_BOWTIE2 } from '../../modules/local/hicpro/bowtie2_merge'
 include { COMBINE_MATES} from '../../modules/local/hicpro/combine_mates'
 include { MAPPING_STATS_DNASE } from '../../modules/local/hicpro/dnase_mapping_stats'
@@ -35,7 +35,7 @@ workflow HICPRO_MAPPING {
 
   take:
   reads // [meta, read1, read2]
-  index // path
+  index // [meta, path]
   ligation_site // value
 
   main:
@@ -46,11 +46,12 @@ workflow HICPRO_MAPPING {
   ch_reads_r2 = reads.map{ it -> pairToSingle(it,"R2") }
   ch_reads = ch_reads_r1.concat(ch_reads_r2)
 
-  // bowtie2
+  // bowtie2 - save_unaligned=true - sort_bam=false
   BOWTIE2_ALIGN(
     ch_reads,
     index.collect(),
-    Channel.value(true).collect()
+    true,
+    false
   )
   ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
 
@@ -62,11 +63,12 @@ workflow HICPRO_MAPPING {
     )
     ch_versions = ch_versions.mix(TRIM_READS.out.versions)
 
-    // bowtie2 on trimmed reads
+    // bowtie2 on trimmed reads - save_unaligned=false - sort_bam=false
     BOWTIE2_ALIGN_TRIMMED(
       TRIM_READS.out.fastq,
       index.collect(),
-      Channel.value(false).collect()
+      false,
+      false
     )
     ch_versions = ch_versions.mix(BOWTIE2_ALIGN_TRIMMED.out.versions)
 
@@ -99,8 +101,6 @@ workflow HICPRO_MAPPING {
       .groupTuple()
       .set {ch_bams}
   }
-
-  ch_bams.view()
 
   COMBINE_MATES (
     ch_bams
