@@ -6,7 +6,7 @@ process COOLTOOLS_INSULATION {
     tag "${meta.id}"
     label 'process_medium'
 
-    conda (params.enable_conda ? "bioconda::cooltools=0.5.1" : null)
+    conda "bioconda::cooltools=0.5.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cooltools:0.5.1--py37h37892f8_0' :
         'quay.io/biocontainers/cooltools:0.5.1--py37h37892f8_0' }"

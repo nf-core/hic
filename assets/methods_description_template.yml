@@ -3,7 +3,7 @@ description: "Suggested text and references to use when describing pipeline usag
 section_name: "nf-core/hic Methods Description"
 section_href: "https://github.com/nf-core/hic"
 plot_type: "html"
-## TODO nf-core: Update the HTML below to your prefered methods description, e.g. add publication citation for this pipeline
+## nf-core: Update the HTML below to your prefered methods description, e.g. add publication citation for this pipeline
 ## You inject any metadata in the Nextflow '${workflow}' object
 data: |
   <h4>Methods</h4>
@@ -12,6 +12,7 @@ data: |
   <pre><code>${workflow.commandLine}</code></pre>
   <h4>References</h4>
   <ul>
+    <li>Servant, N., Ewels, P. A., Peltzer, A., Garcia, M. U. (2021) nf-core/hic. Zenodo. https://doi.org/10.5281/zenodo.2669512</li>
     <li>Di Tommaso, P., Chatzou, M., Floden, E. W., Barja, P. P., Palumbo, E., & Notredame, C. (2017). Nextflow enables reproducible computational workflows. Nature Biotechnology, 35(4), 316-319. <a href="https://doi.org/10.1038/nbt.3820">https://doi.org/10.1038/nbt.3820</a></li>
     <li>Ewels, P. A., Peltzer, A., Fillinger, S., Patel, H., Alneberg, J., Wilm, A., Garcia, M. U., Di Tommaso, P., & Nahnsen, S. (2020). The nf-core framework for community-curated bioinformatics pipelines. Nature Biotechnology, 38(3), 276-278. <a href="https://doi.org/10.1038/s41587-020-0439-x">https://doi.org/10.1038/s41587-020-0439-x</a></li>
   </ul>
