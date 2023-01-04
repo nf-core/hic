@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 - DSL2 version of nf-core-hic pipeline
+- Add full test dataset (#80)
+- Replace local modules by the cooler nf-core module
 
 ### `Fixed`
 
