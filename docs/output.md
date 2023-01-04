@@ -9,7 +9,7 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [From raw data to valid pairs]
+- [From raw data to valid pairs](#from-raw-data-to-valid-pairs)
   - [HiC-Pro](#hicpro)
     - [Reads alignment](#reads-alignment)
     - [Valid pairs detection](#valid-pairs-detection)

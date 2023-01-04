@@ -25,11 +25,9 @@ CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
 CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
 ```
 
-In this case, each sample will be processed as independant chunk and then merge as a single sample to generate the Hi-C contact maps.
-
 ### Full samplesheet
 
-The pipeline is designed to work only with paired-end data. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+The `nf-core-hic` pipeline is designed to work only with paired-end data. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
 
 ```console
 sample,fastq_1,fastq_2
