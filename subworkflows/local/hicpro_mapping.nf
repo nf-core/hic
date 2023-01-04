@@ -46,7 +46,7 @@ workflow HICPRO_MAPPING {
   ch_reads_r2 = reads.map{ it -> pairToSingle(it,"R2") }
   ch_reads = ch_reads_r1.concat(ch_reads_r2)
 
-  // bowtie2
+  // bowtie2 - save_unaligned=true - sort_bam=false
   BOWTIE2_ALIGN(
     ch_reads,
     index.collect(),
@@ -63,7 +63,7 @@ workflow HICPRO_MAPPING {
     )
     ch_versions = ch_versions.mix(TRIM_READS.out.versions)
 
-    // bowtie2 on trimmed reads
+    // bowtie2 on trimmed reads - save_unaligned=false - sort_bam=false
     BOWTIE2_ALIGN_TRIMMED(
       TRIM_READS.out.fastq,
       index.collect(),
