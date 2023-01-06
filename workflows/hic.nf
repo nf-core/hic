@@ -46,11 +46,7 @@ if (params.res_zoomify){
 }
 
 if (params.res_tads && !params.skip_tads){
-  Channel.from( "${params.res_tads}" )
-    .splitCsv()
-    .flatten()
-    .toInteger()
-    .set {ch_tads_res}
+  ch_tads_res = Channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
   ch_map_res = ch_map_res.concat(ch_tads_res)
 }else{
   ch_tads_res=Channel.empty()
