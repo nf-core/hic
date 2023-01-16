@@ -257,8 +257,8 @@ workflow HIC {
   ch_workflow_summary = Channel.value(workflow_summary)
 
   ch_multiqc_files = Channel.empty()
-  ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
-  ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_custom_config.collect().ifEmpty([])))
+  ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_config)
+  ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
   ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
   ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{it->it[1]})
   ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
