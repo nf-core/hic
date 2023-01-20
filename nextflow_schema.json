@@ -94,7 +94,9 @@
                 "digestion": {
                     "type": "string",
                     "default": null,
-                    "description": "Name of restriction enzyme to automatically set the restriction_site and ligation_site options (hindiii, mboi, dpnii, arima)"
+                    "description": "Name of restriction enzyme to automatically set the restriction_site and ligation_site options (hindiii, mboi, dpnii, arima)",
+                    "enum": ["hindiii", "mboi", "dpnii", "arima"],
+
                 },
                 "restriction_site": {
                     "type": "string",
