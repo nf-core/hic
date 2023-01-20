@@ -48,7 +48,7 @@ workflow COOLER {
   )
   ch_versions = ch_versions.mix(COOLER_CLOAD.out.versions)
 
-  //Add resolution in meta
+  // Add resolution in meta
   COOLER_CLOAD.out.cool
     .map{ it -> addResolution(it) }
     .set{ ch_cool }
