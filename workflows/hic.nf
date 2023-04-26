@@ -28,6 +28,9 @@ if (params.digestion){
   ch_restriction_site = Channel.value(restriction_site)
   ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
   ch_ligation_site = Channel.value(ligation_site)
+}else if (params.restriction_site && params.ligation_site){
+  ch_restriction_site = Channel.value(params.restriction_site)
+  ch_ligation_site = Channel.value(params.ligation_site)
 }else if (params.dnase){
   ch_restriction_site = Channel.empty()
   ch_ligation_site = Channel.empty()
