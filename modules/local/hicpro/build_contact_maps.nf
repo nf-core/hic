@@ -5,7 +5,7 @@ process BUILD_CONTACT_MAPS{
   conda "conda-forge::sed=4.7"
   container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
       'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
-      'nfcore/ubuntu:20.04' }"
+      'quay.io/nf-core/ubuntu:20.04' }"
 
   input:
   tuple val(meta), path(vpairs), val(resolution)
