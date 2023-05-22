@@ -5,15 +5,15 @@ process BUILD_CONTACT_MAPS{
   conda "conda-forge::sed=4.7"
   container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
       'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
-      'ubuntu:20.04' }"
+      'quay.io/nf-core/ubuntu:20.04' }"
 
   input:
-  tuple val(meta), path(vpairs), val(resolution) 
-  tuple val(meta2), path(chrsize) 
+  tuple val(meta), path(vpairs), val(resolution)
+  tuple val(meta2), path(chrsize)
 
   output:
   tuple val(meta), val(resolution), path("*.matrix"), path("*.bed"), emit: maps
-   
+
   script:
   def prefix = task.ext.prefix ?: "${meta.id}"
   """
