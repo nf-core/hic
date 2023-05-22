@@ -362,7 +362,6 @@ if __name__ == "__main__":
 
             if cur_handler is not None:
                 if not r1.is_unmapped and not r2.is_unmapped:
-
                     ##reorient reads to ease duplicates removal
                     or1, or2 = get_ordered_reads(r1, r2)
                     or1_chrom = samfile.get_reference_name(or1.reference_id)
