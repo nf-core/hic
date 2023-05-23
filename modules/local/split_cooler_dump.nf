@@ -5,7 +5,7 @@ process SPLIT_COOLER_DUMP {
     conda "conda-forge::gawk=5.1.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
-        'ubuntu:20.04' }"
+        'quay.io/nf-core/ubuntu:20.04' }"
 
     input:
     tuple val(meta), path(bedpe)
