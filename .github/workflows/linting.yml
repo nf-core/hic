@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
+        uses: nf-core/setup-nextflow@v1.3.0
 
       - uses: actions/setup-python@v4
         with:
