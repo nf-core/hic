@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.1.0dev
 
+### `Added`
+
+- Added public_aws_ecr profile for using containers stored on ECR.
+
+### `Fixed`
+
 ## v2.0.0 - 2023-01-12
 
 ### `Added`
