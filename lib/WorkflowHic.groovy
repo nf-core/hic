@@ -13,10 +13,16 @@ class WorkflowHic {
     public static void initialise(params, log) {
         genomeExistsError(params, log)
 
-
-        if (!params.fasta) {
-            Nextflow.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
+        // digestion parameters
+        if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
+            Nextflow.error "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
         }
+
+        // Check Digestion or DNase Hi-C mode
+        //if (!params.dnase && !params.ligation_site) {
+        //  Nextflow.error "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
+        //}
+
     }
 
     //

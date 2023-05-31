@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 """Provide a command line tool to validate and transform tabular samplesheets."""
 
 
@@ -127,7 +126,7 @@ class RowChecker:
         for row in self.modified:
             sample = row[self._sample_col]
             seen[sample] += 1
-            row[self._sample_col] = f"{sample}_T{seen[sample]}"
+            ##row[self._sample_col] = f"{sample}_T{seen[sample]}"
 
 
 def read_head(handle, num_lines=10):
