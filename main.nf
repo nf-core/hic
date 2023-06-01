@@ -4,7 +4,6 @@
     nf-core/hic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/nf-core/hic
-
     Website: https://nf-co.re/hic
     Slack  : https://nfcore.slack.com/channels/hic
 ----------------------------------------------------------------------------------------

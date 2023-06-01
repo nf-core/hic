@@ -71,7 +71,6 @@ def get_read_name(read):
 
 
 def sam_flag(read1, read2, hr1, hr2):
-
     f1 = read1.flag
     f2 = read2.flag
 

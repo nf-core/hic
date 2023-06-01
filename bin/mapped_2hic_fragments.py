@@ -619,7 +619,6 @@ if __name__ == "__main__":
                 r2_chrom = None
 
             if r1_resfrag is not None or r2_resfrag is not None:
-
                 interactionType = get_interaction_type(r1, r1_chrom, r1_resfrag, r2, r2_chrom, r2_resfrag, verbose)
                 dist = get_PE_fragment_size(r1, r2, r1_resfrag, r2_resfrag, interactionType)
                 cdist = get_cis_dist(r1, r2)
