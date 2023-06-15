@@ -108,6 +108,7 @@ include { MULTIQC } from '../modules/local/multiqc'
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
+include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
@@ -130,9 +131,10 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+def genomeName = params.genome ?: params.fasta.substring(params.fasta.lastIndexOf(File.separator)+1)
 Channel.fromPath( params.fasta )
        .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-       .map{it->[[:],it]}
+       .map{it->[[id:genomeName],it]}
        .set { ch_fasta }
 
 /*
@@ -175,22 +177,34 @@ workflow HIC {
   //
   // SUB-WORFLOW: HiC-Pro
   //
-  INPUT_CHECK.out.reads.view()
-  HICPRO (
-    INPUT_CHECK.out.reads,
-    PREPARE_GENOME.out.index,
-    PREPARE_GENOME.out.res_frag,
-    PREPARE_GENOME.out.chromosome_size,
-    ch_ligation_site,
-    ch_map_res
-  )
-  ch_versions = ch_versions.mix(HICPRO.out.versions)
+  if (params.processing == 'hicpro'){
+    HICPRO (
+      INPUT_CHECK.out.reads,
+      PREPARE_GENOME.out.index,
+      PREPARE_GENOME.out.res_frag,
+      PREPARE_GENOME.out.chromosome_size,
+      ch_ligation_site,
+      ch_map_res
+    )
+    ch_versions = ch_versions.mix(HICPRO.out.versions)
+    ch_pairs = HICPRO.out.pairs
+    ch_process_mqc = HICPRO.out.mqc
+  }else if (params.processing == 'pairtools'){
+    PAIRTOOLS(
+      INPUT_CHECK.out.reads,
+      PREPARE_GENOME.out.index,
+      PREPARE_GENOME.out.chromosome_size
+    )
+    ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)
+    ch_pairs = PAIRTOOLS.out.pairs
+    ch_process_mqc = PAIRTOOLS.out.stats
+  }
 
   //
   // SUB-WORKFLOW: COOLER
   //
   COOLER (
-    HICPRO.out.pairs,
+    ch_pairs,
     PREPARE_GENOME.out.chromosome_size,
     ch_map_res
   )
@@ -239,7 +253,7 @@ workflow HIC {
       .filter{ it[0].resolution == it[2] }
       .map { it -> [it[0], it[1]]}
       .set{ ch_cool_tads }
-                                                                                                                                                                                                            
+
     TADS(
       ch_cool_tads
     )
@@ -264,14 +278,14 @@ workflow HIC {
   ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
   ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
   ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{it->it[1]})
-  ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
+  ch_multiqc_files = ch_multiqc_files.mix(ch_process_mqc)
 
   MULTIQC (
     ch_multiqc_config,
     ch_multiqc_custom_config.collect().ifEmpty([]),
     ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'),
     FASTQC.out.zip.map{it->it[1]},
-    HICPRO.out.mqc.collect()
+    ch_process_mqc.collect()
   )
   multiqc_report = MULTIQC.out.report.toList()
 }
