@@ -31,6 +31,7 @@ workflow PAIRTOOLS {
   take:
   reads // [meta, read1, read2]
   index // [meta2, path]
+  frag
   chrsize // path
 
   main:
@@ -39,7 +40,7 @@ workflow PAIRTOOLS {
   BWA_MEM(
     reads,
     index,
-    Channel.value("view")
+    Channel.value("false")
   )
 
   PAIRTOOLS_PARSE(
@@ -47,8 +48,13 @@ workflow PAIRTOOLS {
     chrsize
   )
 
+  PAIRTOOLS_RESTRICT(
+    PAIRTOOLS_PARSE.out.pairsam,
+    frag.map{it->it[1]}
+  )
+
   PAIRTOOLS_SORT(
-    PAIRTOOLS_PARSE.out.pairsam
+    PAIRTOOLS_RESTRICT.out.restrict
   )
 
   ch_valid_pairs = PAIRTOOLS_SORT.out.sorted.map{ it -> removeChunks(it)}.groupTuple()

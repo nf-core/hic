@@ -193,6 +193,7 @@ workflow HIC {
     PAIRTOOLS(
       INPUT_CHECK.out.reads,
       PREPARE_GENOME.out.index,
+      PREPARE_GENOME.out.res_frag,
       PREPARE_GENOME.out.chromosome_size
     )
     ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)

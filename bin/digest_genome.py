@@ -113,6 +113,7 @@ if __name__ == "__main__":
             "specified."
         ),
     )
+    parser.add_argument("--extra", default=False, action='store_false', help="Add extra BED columns")
     parser.add_argument("-o", "--out", default=None)
     args = parser.parse_args()
 
@@ -193,8 +194,10 @@ if __name__ == "__main__":
                 # allow to remove cases where the enzyme cut at
                 # the first position of the chromosome
                 if end > begin:
-                    frag_id += 1
-                    frag_name = "HIC_{}_{}".format(str(chrom_name), int(frag_id))
-                    outfile.write(
-                        "{}\t{}\t{}\t{}\t0\t+\n".format(str(chrom_name), int(begin), int(end), str(frag_name))
-                    )
+                    if args.extra:
+                        frag_id += 1
+                        frag_name = "HIC_{}_{}".format(str(chrom_name), int(frag_id))
+                        outfile.write("{}\t{}\t{}\t{}\t0\t+\n".format(str(chrom_name), int(begin), int(end), str(frag_name)))
+                    else:
+                        outfile.write("{}\t{}\t{}\n".format(str(chrom_name), int(begin), int(end)))
+
