@@ -40,7 +40,7 @@ workflow PAIRTOOLS {
   BWA_MEM(
     reads,
     index,
-    Channel.value("false")
+    Channel.value([])
   )
 
   PAIRTOOLS_PARSE(

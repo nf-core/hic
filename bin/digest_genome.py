@@ -113,7 +113,7 @@ if __name__ == "__main__":
             "specified."
         ),
     )
-    parser.add_argument("--extra", default=False, action='store_false', help="Add extra BED columns")
+    parser.add_argument("--extra", default=False, action='store_true', help="Add extra BED columns")
     parser.add_argument("-o", "--out", default=None)
     args = parser.parse_args()
 
