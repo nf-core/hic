@@ -195,6 +195,11 @@
                     "default": "'--very-sensitive --end-to-end --reorder'",
                     "description": "Option for HiC-Pro trimmed reads mapping"
                 },
+                "bwa_opts": {
+                    "type": "string",
+                    "default": "'-5SP -T0'",
+                    "description": "Option for Bwa-mem mapping"
+                },
                 "save_aligned_intermediates": {
                     "type": "boolean",
                     "description": "Save all BAM files during two-steps mapping"

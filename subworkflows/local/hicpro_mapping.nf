@@ -73,8 +73,8 @@ workflow HICPRO_MAPPING {
     ch_versions = ch_versions.mix(BOWTIE2_ALIGN_TRIMMED.out.versions)
 
     // Merge the two mapping steps
-    BOWTIE2_ALIGN.out.bam
-      .combine(BOWTIE2_ALIGN_TRIMMED.out.bam, by:[0])
+    BOWTIE2_ALIGN.out.aligned
+      .combine(BOWTIE2_ALIGN_TRIMMED.out.aligned, by:[0])
       .set { ch_bowtie2_align}
 
     MERGE_BOWTIE2(
@@ -92,11 +92,11 @@ workflow HICPRO_MAPPING {
   }else{
 
     MAPPING_STATS_DNASE(
-      BOWTIE2_ALIGN.out.bam
+      BOWTIE2_ALIGN.out.aligned
     )
     ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
 
-    BOWTIE2_ALIGN.out.bam
+    BOWTIE2_ALIGN.out.aligned
       .map { singleToPair(it) }
       .groupTuple()
       .set {ch_bams}

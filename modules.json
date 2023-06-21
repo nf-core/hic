@@ -7,14 +7,14 @@
                 "nf-core": {
                     "bowtie2/align": {
                         "branch": "master",
-                        "git_sha": "603ecbd9f45300c9788f197d2a15a005685b4220",
+                        "git_sha": "fe54581f8bed20e4c4a51c616c93fd3379d89820",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "bowtie2/build": {
                         "branch": "master",
-                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "git_sha": "6a24fbe314bb2e6fe6306c29a63076ea87e8eb3c",
                         "installed_by": [
                             "modules"
                         ]
