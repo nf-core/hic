@@ -60,7 +60,7 @@
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?s?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have an index available this will be generated for you automatically. Combine with `--save_reference` to save the mapping index for future runs.",
                     "fa_icon": "far fa-file-code"
                 },
                 "igenomes_base": {
@@ -80,8 +80,27 @@
                 },
                 "bwt2_index": {
                     "type": "string",
-                    "description": "Full path to directory containing Bowtie index including base name. i.e. `/path/to/index/base`.",
+                    "description": "Full path to directory containing Bowtie index",
                     "fa_icon": "far fa-file-alt"
+                },
+                "bwa_index": {
+                    "type": "string",
+                    "description": "Full path to directory containing Bwa-mem index",
+                    "fa_icon": "far fa-file-alt"
+               }
+            }
+        },
+        "hic_processing":{
+            "title": "Hi-C processing",
+            "type": "object",
+            "description": "Define the Hi-C processing subworkflow to use to extract the valid pairs from raw data",
+            "default": "",
+            "properties": {
+                "processing": {
+                    "type": "string",
+                    "description": "Hi-C processing method",
+                    "default": "hicpro",
+                    "enum": ["hicpro", "pairtools"]                                                                                                                                 
                 }
             }
         },
@@ -128,7 +147,7 @@
                 }
             }
         },
-        "dnase_hi_c": {
+        "no_digestion_hi_c": {
             "title": "DNAse Hi-C",
             "type": "object",
             "description": "Parameters for protocols based on DNAse digestion",
@@ -168,12 +187,12 @@
                 },
                 "bwt2_opts_end2end": {
                     "type": "string",
-                    "default": "'--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
+                    "default": "'--very-sensitive --end-to-end --reorder'",
                     "description": "Option for HiC-Pro end-to-end bowtie mapping"
                 },
                 "bwt2_opts_trimmed": {
                     "type": "string",
-                    "default": "'--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
+                    "default": "'--very-sensitive --end-to-end --reorder'",
                     "description": "Option for HiC-Pro trimmed reads mapping"
                 },
                 "save_aligned_intermediates": {
@@ -212,6 +231,11 @@
                 "min_restriction_fragment_size": {
                     "type": "integer",
                     "description": "Minimum restriction fragment size to consider. Only values > 0 are considered"
+                },
+                "pairtools_parse_opts": {
+                    "type": "string",
+                    "description": "Update 'pairtools parse' options",
+                    "default": "--walks-policy 5unique" 
                 },
                 "save_interaction_bam": {
                     "type": "boolean",
@@ -532,10 +556,13 @@
             "$ref": "#/definitions/reference_genome_options"
         },
         {
+            "$ref": "#/definitions/hic_processing"
+        },
+        {
             "$ref": "#/definitions/digestion_hi_c"
         },
         {
-            "$ref": "#/definitions/dnase_hi_c"
+            "$ref": "#/definitions/no_digestion_hi_c"
         },
         {
             "$ref": "#/definitions/alignments"
