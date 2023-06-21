@@ -284,7 +284,7 @@
                 },
                 "tads_caller": {
                     "type": "string",
-                    "default": "hicexplorer,insulation",
+                    "default": "insulation",
                     "description": "Define methods for TADs calling"
                 },
                 "res_tads": {
