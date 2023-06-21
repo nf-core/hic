@@ -31,7 +31,7 @@ workflow PAIRTOOLS {
   take:
   reads // [meta, read1, read2]
   index // [meta2, path]
-  frag
+  frag // path
   chrsize // path
 
   main:
@@ -53,8 +53,9 @@ workflow PAIRTOOLS {
     frag.map{it->it[1]}
   )
 
+  ch_pairsam = params.dnase ? PAIRTOOLS_PARSE.out.pairsam : PAIRTOOLS_RESTRICT.out.restrict
   PAIRTOOLS_SORT(
-    PAIRTOOLS_RESTRICT.out.restrict
+    ch_pairsam
   )
 
   ch_valid_pairs = PAIRTOOLS_SORT.out.sorted.map{ it -> removeChunks(it)}.groupTuple()
@@ -66,8 +67,9 @@ workflow PAIRTOOLS {
     PAIRTOOLS_MERGE.out.pairs
   )
 
+  ch_pairsam2split = params.keep_dups ? PAIRTOOLS_MERGE.out.pairs : PAIRTOOLS_DEDUP.out.pairs
   PAIRTOOLS_SPLIT(
-    PAIRTOOLS_DEDUP.out.pairs
+    ch_pairsam2split
   )
 
   SAMTOOLS_INDEX(
