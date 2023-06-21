@@ -29,7 +29,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
       3. Duplicates removal
       4. Generate raw and normalized contact maps ([`iced`](https://github.com/hiclib/iced))
 	  5. Generate `pairs` files for downstream analysis
-  2. [`Pairtools`](https://github.com/open2c/pairtools)
+   2. [`Pairtools`](https://github.com/open2c/pairtools)
       1. Mapping using [`BWA-mem`](https://github.com/lh3/bwa)
 	  2. Detection of valid interaction products with [`pairtools`](https://github.com/open2c/pairtools)
 	  3. Duplicates removal
