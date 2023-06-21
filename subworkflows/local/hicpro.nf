@@ -71,28 +71,44 @@ workflow HICPRO {
   // MERGE AND REMOVE DUPLICATES
   
   //if (params.split_fastq){
-  ch_valid_pairs = ch_valid_pairs.map{ it -> removeChunks(it)}.groupTuple()
-  ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.map{it->removeChunks(it)}.groupTuple()
-                      .concat(HICPRO_MAPPING.out.pairstats.map{it->removeChunks(it)}.groupTuple(),
-		        ch_valid_stats.map{it->removeChunks(it)}.groupTuple())
-  //}else{
-  //  ch_hicpro_stats = HICPRO_MAPPING.out.mapstats.groupTuple()
-  //                      .concat(HICPRO_MAPPING.out.pairstats.groupTuple(),
-  //                              ch_valid_stats.groupTuple())
-  //}
+  ch_valid_pairs = ch_valid_pairs
+    .map{ meta, valid_pairs ->
+      def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
+      [ groupKey(newMeta, meta.part), valid_pairs ]
+    }.groupTuple()
 
   MERGE_VALID_INTERACTION (
     ch_valid_pairs
   )
   ch_versions = ch_versions.mix(MERGE_VALID_INTERACTION.out.versions)
 
+
+  ch_hicpro_mappingstats = HICPRO_MAPPING.out.mapstats
+    .map{ meta, stats ->
+      def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
+      [ groupKey(newMeta, meta.part), stats ]
+    }.groupTuple()
+
+  ch_hicpro_pairstats = HICPRO_MAPPING.out.pairstats
+    .map{ meta, stats ->
+      def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
+      [ groupKey(newMeta, meta.part), stats ]
+    }.groupTuple()
+ 
+  ch_hicpro_validstats = ch_valid_stats
+    .map{ meta, stats ->
+      def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
+      [ groupKey(newMeta, meta.part), stats ]
+    }.groupTuple()
+
   MERGE_STATS(
-    ch_hicpro_stats
+    ch_hicpro_mappingstats.concat(ch_hicpro_pairstats, ch_hicpro_validstats)
   )
   ch_versions = ch_versions.mix(MERGE_STATS.out.versions)
 
   //***************************************
   // CONVERTS TO PAIRS
+
   HICPRO2PAIRS (
     MERGE_VALID_INTERACTION.out.valid_pairs,
     chrsize.collect()

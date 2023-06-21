@@ -19,13 +19,6 @@ include { PAIRTOOLS_SPLIT } from '../../modules/local/pairtools/pairtools_split'
 include { PAIRTOOLS_STATS } from '../../modules/local/pairtools/pairtools_stats'
 
 
-// Remove meta.chunks
-def removeChunks(row){
-  meta = row[0].clone()
-  meta.remove('chunk')
-  return [meta, row[1]]
-}
-
 workflow PAIRTOOLS {
 
   take:
@@ -58,16 +51,27 @@ workflow PAIRTOOLS {
     ch_pairsam
   )
 
-  ch_valid_pairs = PAIRTOOLS_SORT.out.sorted.map{ it -> removeChunks(it)}.groupTuple()
+  ch_valid_pairs = PAIRTOOLS_SORT.out.sorted
+    .view()
+    .map{ meta, pairs -> 
+      def newMeta = [ id: meta.id, single_end: meta.single_end, part:meta.part ]
+      [ groupKey(newMeta, meta.part), pairs ]
+    }
+    .groupTuple()
+    .branch {
+      single: it[0].part <=1
+      multiple: it[0].part > 1
+    }
+
   PAIRTOOLS_MERGE(
-    ch_valid_pairs
+    ch_valid_pairs.multiple
   )
 
   PAIRTOOLS_DEDUP(
-    PAIRTOOLS_MERGE.out.pairs
+    PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single)
   )
 
-  ch_pairsam2split = params.keep_dups ? PAIRTOOLS_MERGE.out.pairs : PAIRTOOLS_DEDUP.out.pairs
+  ch_pairsam2split = params.keep_dups ? PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single) : PAIRTOOLS_DEDUP.out.pairs
   PAIRTOOLS_SPLIT(
     ch_pairsam2split
   )
