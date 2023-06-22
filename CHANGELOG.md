@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- cooltools version in COOLTOOLS_INSULATION not parsed correctly
+
 ## v2.0.0 - 2023-01-12
 
 ### `Added`
