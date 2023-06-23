@@ -32,18 +32,18 @@ workflow PAIRTOOLS {
 
   BWA_MEM(
     reads,
-    index,
+    index.collect(),
     Channel.value([])
   )
 
   PAIRTOOLS_PARSE(
     BWA_MEM.out.bam,
-    chrsize
+    chrsize.collect()
   )
 
   PAIRTOOLS_RESTRICT(
     PAIRTOOLS_PARSE.out.pairsam,
-    frag.map{it->it[1]}
+    frag.map{it->it[1]}.collect()
   )
 
   ch_pairsam = params.dnase ? PAIRTOOLS_PARSE.out.pairsam : PAIRTOOLS_RESTRICT.out.restrict
@@ -52,12 +52,12 @@ workflow PAIRTOOLS {
   )
 
   ch_valid_pairs = PAIRTOOLS_SORT.out.sorted
-    .view()
     .map{ meta, pairs -> 
       def newMeta = [ id: meta.id, single_end: meta.single_end, part:meta.part ]
       [ groupKey(newMeta, meta.part), pairs ]
     }
     .groupTuple()
+    .view()
     .branch {
       single: it[0].part <=1
       multiple: it[0].part > 1
@@ -66,6 +66,8 @@ workflow PAIRTOOLS {
   PAIRTOOLS_MERGE(
     ch_valid_pairs.multiple
   )
+
+  PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single).view()
 
   PAIRTOOLS_DEDUP(
     PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single)
