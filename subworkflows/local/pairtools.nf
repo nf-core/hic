@@ -11,6 +11,7 @@ include { PAIRTOOLS_PARSE } from '../../modules/nf-core/pairtools/parse/main'
 include { PAIRTOOLS_RESTRICT } from '../../modules/nf-core/pairtools/restrict/main'
 include { PAIRTOOLS_SELECT } from '../../modules/nf-core/pairtools/select/main'
 include { PAIRTOOLS_SORT } from '../../modules/nf-core/pairtools/sort/main'
+include { SAMTOOLS_SORT } from '../../modules/nf-core/samtools/sort/main'
 include { SAMTOOLS_INDEX } from '../../modules/nf-core/samtools/index/main'
 include { PAIRIX } from '../../modules/nf-core/pairix/main'
 
@@ -78,8 +79,12 @@ workflow PAIRTOOLS {
     ch_pairsam2split
   )
 
-  SAMTOOLS_INDEX(
+  SAMTOOLS_SORT(
     PAIRTOOLS_SPLIT.out.bam
+  )
+
+  SAMTOOLS_INDEX(
+    SAMTOOLS_SORT.out.bam
   )
 
   PAIRTOOLS_SELECT(

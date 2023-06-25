@@ -137,6 +137,13 @@
                         "installed_by": [
                             "modules"
                         ]
+                    },
+                    "samtools/sort": {
+                        "branch": "master",
+                        "git_sha": "a0f7be95788366c1923171e358da7d049eb440f9",
+                        "installed_by": [
+                            "modules"
+                        ]
                     }
                 }
             },
