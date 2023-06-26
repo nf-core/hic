@@ -116,9 +116,9 @@ Finally, we generated the contact maps around a specific regions on the X chromo
 using the `cool` files and the TADs calling generated with both tools.  
 No major difference is observed.
 
-![X Inactivation Center - HiC-Pro processing](./image/SRX2636669_hicpro_pygentracks.png)
+![X Inactivation Center - HiC-Pro processing](./images/SRX2636669_hicpro_pygentracks.png)
 
-![X Inactivation Center - Bwa-mem / pairtools](./image/SRX2636669_pairtools_pygentracks.png)
+![X Inactivation Center - Bwa-mem / pairtools](./images/SRX2636669_pairtools_pygentracks.png)
 
 
 
