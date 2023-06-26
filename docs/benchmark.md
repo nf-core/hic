@@ -114,7 +114,7 @@ explained by distinct mapping procedures.
 
 Finally, we generated the contact maps around a specific regions on the X chromosome
 using the `cool` files and the TADs calling generated with both tools.  
-No major difference is observed.
+**No difference is observed at the contact map level.**
 
 ![X Inactivation Center - HiC-Pro processing](./images/SRX2636669_hicpro_pygentracks.png)
 
