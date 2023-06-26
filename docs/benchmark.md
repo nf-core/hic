@@ -1,10 +1,10 @@
 # nf-core/hic: Output
 
-## Benchmark `HiC-Pro` vs `Pairtools`
+## Benchmark `HiC-Pro` vs `pairtools`
 
 ### Profile test
 
-Comparison of the test profile run with HiC-Pro ;
+Comparison of the test profile run with `HiC-Pro` ;
 
 ```bash
 nextflow run nf-core-hic/main.nf \
@@ -13,7 +13,7 @@ nextflow run nf-core-hic/main.nf \
   --outdir '/tmp/results_test_hicpro/'
 ```
 
-and bwa-mem/Pairtools ;
+and `bwa-mem/pairtools` ;
 
 ```bash
 nextflow run nf-core-hic/main.nf \
@@ -46,16 +46,17 @@ Here is a quick summary statistics ;
 # Filtered by Pairtools only = 4686 (11.58%)
 ```
 
-Overall, we can see that 70% of valid interactions are called by both `HiC-Pro` and `Pairtools`.  
+Overall, we can see that **70%** of valid interactions are called by both `HiC-Pro` and `Pairtools`.  
 Regarding the 30% of read pairs which are different between the two tools, we can see that a large
-majority (>75%) are due to difference in the read mapping (`bowtie2` versus `bwa-mem`).  
+majority (>75%) are due to differences in the read mapping (`bowtie2` versus `bwa-mem`).  
 
-The few other differences are due to small differences in the algorithm such as how a read is assigned
+The few other differences can be at least partly explain by differences in the read pairs selection such as how a read is assigned
 to a restriction fragments, etc.
 
 ### Full test dataset (SRX2636669)
 
-Mouse Hi-C data from embryonic stem cells (Bonev et al., 2017 - GSE96107) processed with HiC-Pro ;
+We then applied the same approach on the full test profile which is based on Mouse Hi-C data from embryonic stem cells
+(Bonev et al., 2017 - GSE96107) processed either with `HiC-Pro` ;
 
 ```bash
 nextflow run nf-core-hic/main.nf \
@@ -70,7 +71,7 @@ nextflow run nf-core-hic/main.nf \
   -profile singularity 
 ```
 
-and bwa-mem/Pairtools ;
+or `bwa-mem/pairtools` ;
 
 ```bash
 nextflow run nf-core-hic/main.nf \
@@ -85,9 +86,7 @@ nextflow run nf-core-hic/main.nf \
   -profile singularity
 ```
 
-As before, we compute some small statistics to compare the list of valid (not valid) interactions.
-
-Here are the comparison results ;
+As before, small statistics were computed to compare the list of valid (and not valid) interactions.
 
 ```bash
 # valid pairs from HiC-Pro = 225982881
@@ -108,7 +107,7 @@ Here are the comparison results ;
 # Filtered by Pairtools only = 6386317 (10.65%)
 ```
 
-Almost 80% of valid interactions are called in common by `HiC-Pro` and `Pairtools`.  
+Almost **80%** of valid interactions are called in common by `HiC-Pro` and `pairtools`.  
 As previously observed, most of the differences observed between the two tools are
 explained by distinct mapping procedures.
 
@@ -118,6 +117,7 @@ using the `cool` files and the TADs calling generated with both tools.
 No major difference is observed.
 
 ![X Inactivation Center - HiC-Pro processing](./image/SRX2636669_hicpro_pygentracks.png)
+
 ![X Inactivation Center - Bwa-mem / pairtools](./image/SRX2636669_pairtools_pygentracks.png)
 
 
