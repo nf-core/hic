@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM python:3.6
 
 RUN wget -q https://github.com/JinLabBioinfo/DeepLoop/archive/refs/heads/master.zip
 RUN unzip master.zip
