@@ -3,6 +3,8 @@ process DEEPLOOP {
     tag "$meta.id"
     label 'process_high_memory'
 
+    // TODO There's no conda package 🤠
+    container 'nf-core/deeploop:1.0.1'
 
     input:
 
