@@ -1,5 +1,7 @@
 FROM python:3.6
 
+RUN apt update && apt install liblist-moreutils-perl -y
+
 RUN wget -q https://github.com/JinLabBioinfo/DeepLoop/archive/refs/heads/master.zip
 RUN unzip master.zip
 
