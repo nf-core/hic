@@ -32,17 +32,11 @@ process DEEPLOOP {
     ls output
     head output/\$chr.denoised.anchor.to.anchor
 
-    echo "Visulaize contact heatmaps from raw, HiCorr, and DeepLoop given a genomic location chr start end"
-    chr=chr11
-    start=130000000
-    end=130800000
-    outplot="./test"
-    echo 1
-    /DeepLoop-master/lib/generate.matrix.from_HiCorr.pl DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/\$chr.bed \$HiCorr_path/anchor_2_anchor.loop.\$chr \$chr \$start \$end ./\${chr}_\${start}_\${end}
-    echo 2
-    /DeepLoop-master/lib/generate.matrix.from_DeepLoop.pl DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/\$chr.bed output/\$chr.denoised.anchor.to.anchor \$chr \$start \$end ./\${chr}_\${start}_\${end}
-    echo 3
-    /DeepLoop-master/lib/plot.multiple.r \$outplot 1 3 \${chr}_\${start}_\${end}.raw.matrix \${chr}_\${start}_\${end}.ratio.matrix \${chr}_\${start}_\${end}.denoise.matrix
+    bash /DeepLoop-master/lib/plot.sh /DeepLoop-master \\
+                                    /DeepLoop-master/DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/ \\
+                                    \$HiCorr_path \\
+                                    output/ \\
+                                    chr11 130000000 130800000 ./test
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
