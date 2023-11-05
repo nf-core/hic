@@ -20,6 +20,7 @@ process DEEPLOOP {
     python3 /DeepLoop-master/prediction/predict_chromosome.py --full_matrix_dir \$HiCorr_path/ \
                                                 --input_name anchor_2_anchor.loop.\$chr.p_val \
                                                 --h5_file /DeepLoop-master/DeepLoop_models/CPGZ_trained/LoopDenoise.h5 \
+                                                --json_file /DeepLoop-master/DeepLoop_models/CPGZ_trained/LoopDenoise.json \
                                                 --out_dir output/ \
                                                 --anchor_dir /DeepLoop-master/DeepLoop_models/ref/hg19_HindIII_anchor_bed/ \
                                                 --chromosome \$chr \
