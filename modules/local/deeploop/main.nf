@@ -7,7 +7,7 @@ process DEEPLOOP {
     container 'nf-core/deeploop:1.0.1'
 
     input:
-    tuple val(meta), val(tar_file)
+    tuple val(meta), path(tar_file)
 
     output:
     path("versions.yml"), emit: versions
