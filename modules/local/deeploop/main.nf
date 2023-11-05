@@ -17,7 +17,7 @@ process DEEPLOOP {
     tar -xvf $tar_file
     HiCorr_path=HiCorr_output
     chr=chr11
-    python3 DeepLoop/prediction/predict_chromosome.py --full_matrix_dir \$HiCorr_path/ \
+    python3 /DeepLoop-master/prediction/predict_chromosome.py --full_matrix_dir \$HiCorr_path/ \
                                                 --input_name anchor_2_anchor.loop.\$chr.p_val \
                                                 --h5_file DeepLoop/DeepLoop_models/CPGZ_trained/LoopDenoise.h5 \
                                                 --out_dir output/ \
@@ -36,10 +36,9 @@ process DEEPLOOP {
     start=130000000
     end=130800000
     outplot="./test"
-    ./DeepLoop/lib/generate.matrix.from_HiCorr.pl DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/\$chr.bed \$HiCorr_path/anchor_2_anchor.loop.\$chr \$chr \$start \$end ./\${chr}_\${start}_\${end}
-    ./DeepLoop/lib/generate.matrix.from_DeepLoop.pl DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/\$chr.bed output/\$chr.denoised.anchor.to.anchor \$chr \$start \$end ./\${chr}_\${start}_\${end}
-    ./DeepLoop/lib/plot.multiple.r \$outplot 1 3 \${chr}_\${start}_\${end}.raw.matrix \${chr}_\${start}_\${end}.ratio.matrix \${chr}_\${start}_\${end}.denoise.matrix
-    https://github.com/JinLabBioinfo/DeepLoop/blob/master/images/test.plot.png
+    /DeepLoop-master/lib/generate.matrix.from_HiCorr.pl DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/\$chr.bed \$HiCorr_path/anchor_2_anchor.loop.\$chr \$chr \$start \$end ./\${chr}_\${start}_\${end}
+    /DeepLoop-master/lib/generate.matrix.from_DeepLoop.pl DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/\$chr.bed output/\$chr.denoised.anchor.to.anchor \$chr \$start \$end ./\${chr}_\${start}_\${end}
+    /DeepLoop-master/lib/plot.multiple.r \$outplot 1 3 \${chr}_\${start}_\${end}.raw.matrix \${chr}_\${start}_\${end}.ratio.matrix \${chr}_\${start}_\${end}.denoise.matrix
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
