@@ -10,3 +10,5 @@ ENV PATH /DeepLoop-master/prediction:$PATH
 
 RUN wget --no-check-certificate https://hiview.case.edu/ssz20/tmp.HiCorr.ref/DeepLoop_models.tar.gz
 RUN tar -xvf DeepLoop_models.tar.gz
+
+RUN chmod +x lib/*.pl lib/*.r
