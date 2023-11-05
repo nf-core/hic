@@ -7,3 +7,6 @@ WORKDIR /DeepLoop-master
 RUN pip3 install -r requirements.txt
 
 ENV PATH /DeepLoop-master/prediction:$PATH
+
+RUN wget --no-check-certificate https://hiview.case.edu/ssz20/tmp.HiCorr.ref/DeepLoop_models.tar.gz
+RUN tar -xvf DeepLoop_models.tar.gz
