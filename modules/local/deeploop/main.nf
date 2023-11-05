@@ -17,16 +17,16 @@ process DEEPLOOP {
     tar -xvf $tar_file
     HiCorr_path=HiCorr_output
     chr=chr11
-    python3 /DeepLoop-master/prediction/predict_chromosome.py --full_matrix_dir \$HiCorr_path/ \
-                                                --input_name anchor_2_anchor.loop.\$chr.p_val \
-                                                --h5_file /DeepLoop-master/DeepLoop_models/CPGZ_trained/LoopDenoise.h5 \
-                                                --json_file /DeepLoop-master/DeepLoop_models/CPGZ_trained/LoopDenoise.json \
-                                                --out_dir output/ \
-                                                --anchor_dir /DeepLoop-master/DeepLoop_models/ref/hg19_HindIII_anchor_bed/ \
-                                                --chromosome \$chr \
-                                                --small_matrix_size 128 \
-                                                --step_size 128 \
-                                                --dummy 5 \
+    python3 /DeepLoop-master/prediction/predict_chromosome.py --full_matrix_dir \$HiCorr_path/ \\
+                                                --input_name anchor_2_anchor.loop.\$chr.p_val \\
+                                                --h5_file /DeepLoop-master/DeepLoop_models/CPGZ_trained/LoopDenoise.h5 \\
+                                                --json_file /DeepLoop-master/DeepLoop_models/CPGZ_trained/LoopDenoise.json \\
+                                                --out_dir output/ \\
+                                                --anchor_dir /DeepLoop-master/DeepLoop_models/ref/hg19_HindIII_anchor_bed/ \\
+                                                --chromosome \$chr \\
+                                                --small_matrix_size 128 \\
+                                                --step_size 128 \\
+                                                --dummy 5 \\
                                                 --val_cols obs exp pval
 
     ls output
