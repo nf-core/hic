@@ -25,6 +25,7 @@ def usage():
     print("-r/--mappedReadsFile <BAM/SAM file of mapped reads>")
     print("[-o/--outputDir] <Output directory. Default is current directory>")
     print("[-d/--minCisDist] <Minimum distance between intrachromosomal contact to consider>")
+    print("[-i/--IntraChromOnly] <Only keep intrachromosomal interactions>")
     print(
         "[-g/--gtag] <Genotype tag. If specified, this tag will be reported in the valid pairs output for allele specific classification>"
     )
@@ -41,8 +42,8 @@ def get_args():
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            "r:o:d:g:avh",
-            ["mappedReadsFile=", "outputDir=", "minDist=", "gatg", "all", "verbose", "help"],
+            "r:o:d:i:g:avh",
+            ["mappedReadsFile=", "outputDir=", "minDist=", "IntraChromOnly", "gatg", "all", "verbose", "help"],
         )
     except getopt.GetoptError:
         usage()
@@ -218,6 +219,8 @@ if __name__ == "__main__":
             outputDir = arg
         elif opt in ("-d", "--minCisDist"):
             minDist = arg
+        elif opt in ("-i", "--IntraChromOnly"):
+            IntraChromOnly = arg
         elif opt in ("-g", "--gtag"):
             gtag = arg
         elif opt in ("-a", "--all"):
@@ -232,6 +235,7 @@ if __name__ == "__main__":
         print("## overlapMapped2HiCFragments.py")
         print("## mappedReadsFile=", mappedReadsFile)
         print("## minCisDist=", minDist)
+        print("## IntraChromOnly=", IntraChromOnly)
         print("## allOuput=", allOutput)
         print("## verbose={}\n".format(verbose))
 
@@ -311,6 +315,12 @@ if __name__ == "__main__":
 
             # Check Distance criteria - Filter
             if minDist is not None and dist is not None and dist < int(minDist):
+                interactionType = "FILT"
+                filt_counter += 1
+                cur_handler = handle_filt if allOutput else None
+
+            # Check intrachromosomal criteria - Filter
+            if IntraChromOnly is not None and isIntraChrom(r1, r2) is None:
                 interactionType = "FILT"
                 filt_counter += 1
                 cur_handler = handle_filt if allOutput else None

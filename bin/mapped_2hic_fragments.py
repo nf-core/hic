@@ -10,7 +10,7 @@
 
 """
 Script to keep only valid 3C products - DE and SC are removed
-Output is : readname / 
+Output is : readname /
 """
 import time
 import getopt
@@ -32,6 +32,7 @@ def usage():
     print("[-t/--shortestFragmentLength] <Shortest restriction fragment length to consider>")
     print("[-m/--longestFragmentLength] <Longest restriction fragment length to consider>")
     print("[-d/--minCisDist] <Minimum distance between intrachromosomal contact to consider>")
+    print("[-i/--IntraChromOnly] <Only keep intrachromosomal interactions>")
     print(
         "[-g/--gtag] <Genotype tag. If specified, this tag will be reported in the valid pairs output for allele specific classification>"
     )
@@ -49,7 +50,7 @@ def get_args():
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
-            "f:r:o:s:l:t:m:d:g:Svah",
+            "f:r:o:s:l:t:m:d:i:g:Svah",
             [
                 "fragmentFile=",
                 "mappedReadsFile=",
@@ -59,6 +60,7 @@ def get_args():
                 "minFragSize",
                 "maxFragSize",
                 "minDist",
+                "IntraChromOnly"
                 "gatg",
                 "sam",
                 "verbose",

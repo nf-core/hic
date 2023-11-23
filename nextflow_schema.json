@@ -220,7 +220,11 @@
                 "save_pairs_intermediates": {
                     "type": "boolean",
                     "description": "Save all types of non valid read pairs in distinct output files"
-                }
+                },
+                "IntraChromOnly": {
+                   "type": "boolean",
+                   "description": "To filter out inter chromosme interactions"
+               }
             }
         },
         "contact_maps": {
