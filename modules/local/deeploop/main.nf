@@ -29,14 +29,12 @@ process DEEPLOOP {
                                                 --dummy 5 \\
                                                 --val_cols obs exp pval
 
-    ls output
-    head output/\$chr.denoised.anchor.to.anchor
-
-    bash /DeepLoop-master/lib/plot.sh /DeepLoop-master \\
-                                    /DeepLoop-master/DeepLoop/DeepLoop_models/ref/hg19_HindIII_anchor_bed/ \\
-                                    \$HiCorr_path \\
-                                    output/ \\
-                                    chr11 130000000 130800000 ./test
+    python3 /DeepLoop-master/utils/convert_to_cooler.py --anchor_dir /DeepLoop-master/training_data/anchor_bed/ \
+                                        --loop_dir output/H9_denoised/ \
+                                        --out_file coolers/H9_denoise_chr11.cool \
+                                        --col_names a1 a2 denoise \
+                                        --cooler_col denoise \
+                                        --single_chrom chr11;
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
