@@ -68,17 +68,12 @@ workflow PAIRTOOLS {
     ch_valid_pairs.multiple
   )
 
-  PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single).view()
-
-  PAIRTOOLS_DEDUP(
+  // Separate pairs/bam files
+  PAIRTOOLS_SPLIT(
     PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single)
   )
 
-  ch_pairsam2split = params.keep_dups ? PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single) : PAIRTOOLS_DEDUP.out.pairs
-  PAIRTOOLS_SPLIT(
-    ch_pairsam2split
-  )
-
+  // Manage BAM files
   SAMTOOLS_SORT(
     PAIRTOOLS_SPLIT.out.bam
   )
@@ -87,12 +82,19 @@ workflow PAIRTOOLS {
     SAMTOOLS_SORT.out.bam
   )
 
-  PAIRTOOLS_SELECT(
+  // TODO - add samtools flagstat
+
+  PAIRTOOLS_DEDUP(
     PAIRTOOLS_SPLIT.out.pairs
   )
 
+  ch_pairselect = params.keep_dups ? PAIRTOOLS_SPLIT.out.pairs : PAIRTOOLS_DEDUP.out.pairs
+  PAIRTOOLS_SELECT(
+    ch_pairselect
+  )
+
   PAIRTOOLS_STATS(
-    PAIRTOOLS_SPLIT.out.pairs
+    PAIRTOOLS_SELECT.out.selected
   )
 
   PAIRIX(
