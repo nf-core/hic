@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 - New subworkflow based on `pairtools` to detect valid pairs. The user
-can now choose between `--processing hicpro` (default) or `--processing pairtools`
+  can now choose between `--processing hicpro` (default) or `--processing pairtools`
 
 - Default mapping options with `HiC-Pro` has been updated to give closer results in comparison
-with `BWA-mem/pairtools`
+  with `BWA-mem/pairtools`
 
 ### `Removed`
 

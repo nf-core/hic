@@ -87,10 +87,10 @@
                     "type": "string",
                     "description": "Full path to directory containing Bwa-mem index",
                     "fa_icon": "far fa-file-alt"
-               }
+                }
             }
         },
-        "hic_processing":{
+        "hic_processing": {
             "title": "Hi-C processing",
             "type": "object",
             "description": "Define the Hi-C processing subworkflow to use to extract the valid pairs from raw data",
@@ -100,7 +100,7 @@
                     "type": "string",
                     "description": "Hi-C processing method",
                     "default": "hicpro",
-                    "enum": ["hicpro", "pairtools"]                                                                                                                                 
+                    "enum": ["hicpro", "pairtools"]
                 }
             }
         },
@@ -240,7 +240,7 @@
                 "pairtools_parse_opts": {
                     "type": "string",
                     "description": "Update 'pairtools parse' options",
-                    "default": "--walks-policy 5unique" 
+                    "default": "--walks-policy 5unique"
                 },
                 "save_interaction_bam": {
                     "type": "boolean",

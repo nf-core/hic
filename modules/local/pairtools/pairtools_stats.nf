@@ -26,10 +26,10 @@ process PAIRTOOLS_STATS {
     def prefix = task.ext.prefix ?: "${meta.id}_stats"
     """
     pairtools stats \
-      ${args} \
-      --nproc-in ${task.cpus} --nproc-out ${task.cpus} \
-      -o ${prefix}.txt \
-      ${pairs}
+        ${args} \
+        --nproc-in ${task.cpus} --nproc-out ${task.cpus} \
+        -o ${prefix}.txt \
+        ${pairs}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

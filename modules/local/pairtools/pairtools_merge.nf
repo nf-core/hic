@@ -27,10 +27,10 @@ process PAIRTOOLS_MERGE {
     def prefix = task.ext.prefix ?: "${meta.id}_merged"
     """
     pairtools merge \
-      ${args} \
-      --nproc ${task.cpus} \
-      -o ${prefix}.pairs.gz \
-      ${allpairs}
+        ${args} \
+        --nproc ${task.cpus} \
+        -o ${prefix}.pairs.gz \
+        ${allpairs}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
