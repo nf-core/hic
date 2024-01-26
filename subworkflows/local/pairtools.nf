@@ -7,18 +7,21 @@
 //include { BWAMEM2_MEM } from '../../modules/nf-core/bwamem2/mem/main'
 include { BWA_MEM } from '../../modules/nf-core/bwa/mem/main'
 include { PAIRTOOLS_DEDUP } from '../../modules/nf-core/pairtools/dedup/main'
-include { PAIRTOOLS_PARSE } from '../../modules/nf-core/pairtools/parse/main'
+//include { PAIRTOOLS_PARSE } from '../../modules/nf-core/pairtools/parse/main'
 include { PAIRTOOLS_RESTRICT } from '../../modules/nf-core/pairtools/restrict/main'
 include { PAIRTOOLS_SELECT } from '../../modules/nf-core/pairtools/select/main'
 include { PAIRTOOLS_SORT } from '../../modules/nf-core/pairtools/sort/main'
+include { PAIRTOOLS_MERGE } from '../../modules/nf-core/pairtools/merge/main'
+include { PAIRTOOLS_STATS } from '../../modules/nf-core/pairtools/stats/main'
+include { SAMTOOLS_FLAGSTAT } from '../../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_SORT } from '../../modules/nf-core/samtools/sort/main'
 include { SAMTOOLS_INDEX } from '../../modules/nf-core/samtools/index/main'
 include { PAIRIX } from '../../modules/nf-core/pairix/main'
 
-include { PAIRTOOLS_MERGE } from '../../modules/local/pairtools/pairtools_merge'
+//include { PAIRTOOLS_MERGE } from '../../modules/local/pairtools/pairtools_merge'
 include { PAIRTOOLS_SPLIT } from '../../modules/local/pairtools/pairtools_split'
-include { PAIRTOOLS_STATS } from '../../modules/local/pairtools/pairtools_stats'
-
+//include { PAIRTOOLS_STATS } from '../../modules/local/pairtools/pairtools_stats'
+include { PAIRTOOLS_PARSE } from '../../modules/local/pairtools/pairtools_parse'
 
 workflow PAIRTOOLS {
 
@@ -82,7 +85,9 @@ workflow PAIRTOOLS {
     SAMTOOLS_SORT.out.bam
   )
 
-  // TODO - add samtools flagstat
+  SAMTOOLS_FLAGSTAT(
+    SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai)
+  )
 
   PAIRTOOLS_DEDUP(
     PAIRTOOLS_SPLIT.out.pairs
@@ -106,4 +111,5 @@ workflow PAIRTOOLS {
   pairs = PAIRIX.out.index
   bam = PAIRTOOLS_SPLIT.out.bam.join(SAMTOOLS_INDEX.out.bai)
   stats = PAIRTOOLS_STATS.out.stats.map{it->it[1]}
+  flagstat = SAMTOOLS_FLAGSTAT.out.flagstat
 }

@@ -288,6 +288,11 @@
                     "default": 100,
                     "description": "Maximum number of iteraction for HiC-Pro ICE normalization"
                 },
+		"balancing_opts": {
+                    "type": "string",
+                    "description": "Update 'cooler balance' options",
+                    "default": "--force"
+		},
                 "res_zoomify": {
                     "type": "string",
                     "default": "5000",
