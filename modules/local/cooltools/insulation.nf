@@ -26,7 +26,7 @@ process COOLTOOLS_INSULATION {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cooltools: \$(cooltools --version 2>&1 | grep version | sed 's/cooltools, version //')
+        cooltools: \$(cooltools --version | grep 'cooltools, version ' | sed 's/cooltools, version //')
     END_VERSIONS
     """
 }

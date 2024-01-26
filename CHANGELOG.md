@@ -13,6 +13,9 @@ can now choose between `--processing hicpro` (default) or `--processing pairtool
 - Default mapping options with `HiC-Pro` has been updated to give closer results in comparison
 with `BWA-mem/pairtools`
 
+### `Removed`
+
+- Removed public_aws_ecr profile
 
 ## v2.1.0 - 2023-06-01
 
@@ -21,6 +24,8 @@ with `BWA-mem/pairtools`
 - Added public_aws_ecr profile for using containers stored on ECR.
 
 ### `Fixed`
+
+- cooltools version in COOLTOOLS_INSULATION not parsed correctly
 
 ## v2.0.0 - 2023-01-12
 
