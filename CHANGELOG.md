@@ -3,7 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## dev
+## v2.2.0dev
+
+### `Added`
+
+- Add new '--balancing_opts' to update `cooler balance` arguments
+
+- New subworkflow based on `pairtools` to detect valid pairs. The user
+  can now choose between `--processing hicpro` (default) or `--processing pairtools`
+
+- Default mapping options with `HiC-Pro` has been updated to give closer results in comparison
+  with `BWA-mem/pairtools`
 
 ### `Removed`
 

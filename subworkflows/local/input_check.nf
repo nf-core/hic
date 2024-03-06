@@ -20,11 +20,6 @@ workflow INPUT_CHECK {
 	.groupTuple(by: [0])
         .flatMap { it -> setMetaChunk(it) }
         .collate(2)
-	//.map { it ->
-	//  def meta = it[0].clone()
-	//  meta.chunk = it[1].baseName - ~/.fastq(.gz)?/
-	//  return [meta, [it[1], it[2]]]
-	//}
         .set { reads }
 
     }else{
@@ -66,6 +61,7 @@ def setMetaChunk(row){
   row[1].eachWithIndex() { file,i ->
     meta = row[0].clone()
     meta.chunk = i
+    meta.part = row[1].size()
     map += [meta, file]
   }
   return map
