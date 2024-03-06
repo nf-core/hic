@@ -162,12 +162,12 @@
                 },
                 "bwt2_opts_end2end": {
                     "type": "string",
-                    "default": "'--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
+                    "default": "--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end --reorder",
                     "description": "Option for HiC-Pro end-to-end bowtie mapping"
                 },
                 "bwt2_opts_trimmed": {
                     "type": "string",
-                    "default": "'--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
+                    "default": "--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end --reorder",
                     "description": "Option for HiC-Pro trimmed reads mapping"
                 },
                 "save_aligned_intermediates": {
@@ -227,7 +227,7 @@
                 "bin_size": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "1000000,500000",
+                    "default": "1000000",
                     "description": "Resolution to build the maps (comma separated)"
                 },
                 "hicpro_maps": {
@@ -255,7 +255,6 @@
                 },
                 "res_zoomify": {
                     "type": "string",
-                    "default": "5000",
                     "description": "Maximum resolution to build mcool file"
                 },
                 "save_raw_maps": {
@@ -273,18 +272,18 @@
                 "res_dist_decay": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "1000000",
+                    "default": "250000",
                     "description": "Resolution to build count/distance plot"
                 },
                 "tads_caller": {
                     "type": "string",
-                    "default": "hicexplorer,insulation",
+                    "default": "insulation",
                     "description": "Define methods for TADs calling"
                 },
                 "res_tads": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "40000,20000",
+                    "default": "40000",
                     "description": "Resolution to run TADs callers (comma separated)"
                 },
                 "res_compartments": {
