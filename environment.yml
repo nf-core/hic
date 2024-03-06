@@ -1,0 +1,32 @@
+# You can use this file to create a conda environment for this pipeline:
+#   conda env create -f environment.yml
+name: nf-core-hic-2.0.0
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::python=3.9.12=h9a8a25e_1_cpython
+  - pip=22.0.4=pyhd8ed1ab_0
+  - conda-forge::tbb=2020.2=hc9558a2_0
+  - conda-forge::scipy=1.8.0=py39hee8e79c_1
+  - conda-forge::numpy=1.22.3=py39hc58783e_2
+  - bioconda::iced=0.5.10=py39h919a90d_1
+  - bioconda::bx-python=0.8.13=py39h6471ffd_1
+  - bioconda::pysam=0.19.0=py39h5030a8b_0
+  - conda-forge::pymdown-extensions=7.1=pyh9f0ad1d_0
+  - bioconda::cooler=0.8.11=pyh5e36f6f_1
+  - bioconda::cooltools=0.5.1=py39h5371cbf_1
+  - bioconda::bowtie2=2.4.5=py39hd2f7db1_2
+  - bioconda::samtools=1.15.1=h1170115_0
+  - bioconda::multiqc=1.12=pyhdfd78af_0
+  - bioconda::fastqc=0.11.9=hdfd78af_1
+
+  ## Dev tools
+  - bioconda::hicexplorer=3.7.2=pyhdfd78af_1
+  - bioconda::bioconductor-hitc=1.38.0=r41hdfd78af_0
+  - conda-forge::r-optparse=1.7.1=r41hc72bb7e_0
+  - bioconda::ucsc-bedgraphtobigwig=377=ha8a8165_3
+  - conda-forge::cython=0.29.28=py39h5a03fae_2
+  - pip:
+      - fanc==0.9.23
