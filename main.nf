@@ -31,6 +31,7 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_hic_
 
 params.fasta = getGenomeAttribute('fasta')
 params.bwt2_index = getGenomeAttribute('bowtie2')
+params.bwa_index = getGenomeAttribute('bwamem2')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

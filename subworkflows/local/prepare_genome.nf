@@ -3,6 +3,7 @@
  */
 
 include { BOWTIE2_BUILD } from '../../modules/nf-core/bowtie2/build/main'
+include { BWA_INDEX } from '../../modules/nf-core/bwa/index/main'
 include { CUSTOM_GETCHROMSIZES } from '../../modules/nf-core/custom/getchromsizes/main'
 include { GET_RESTRICTION_FRAGMENTS } from '../../modules/local/hicpro/get_restriction_fragments'
 
@@ -16,18 +17,37 @@ workflow PREPARE_GENOME {
   ch_versions = Channel.empty()
 
   //***************************************
-  // Bowtie Index
-  if(!params.bwt2_index){
-    BOWTIE2_BUILD (
-      fasta
-    )
-    ch_index = BOWTIE2_BUILD.out.index
-    ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
-  }else{
-    Channel.fromPath( params.bwt2_index , checkIfExists: true)
-           .map { it -> [[:], it]}
-           .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
-           .set { ch_index }
+  // Bowtie index
+  if (params.processing == "hicpro"){
+    if(!params.bwt2_index){
+      BOWTIE2_BUILD (
+        fasta
+      )
+      ch_index = BOWTIE2_BUILD.out.index
+      ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
+    }else{
+      Channel.fromPath( params.bwt2_index , checkIfExists: true)
+             .map { it -> [[:], it]}
+             .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
+             .set { ch_index }
+    }
+  }
+
+  //***************************************
+  // Bwa-mem index
+  if (params.processing == "pairtools"){
+    if(!params.bwa_index){
+      BWA_INDEX (
+        fasta
+      )
+      ch_index = BWA_INDEX.out.index
+      ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+    }else{
+      Channel.fromPath( params.bwa_index , checkIfExists: true)
+             .map { it -> [[:], it]}
+             .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwa_index}" }
+             .set { ch_index }
+    }
   }
 
   //***************************************

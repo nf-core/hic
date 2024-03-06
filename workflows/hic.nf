@@ -17,6 +17,7 @@ include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDi
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
+include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
@@ -80,9 +81,10 @@ if (params.res_compartments && !params.skip_compartments){
 
 ch_map_res = ch_map_res.unique()
 
+def genomeName = params.genome ?: params.fasta.substring(params.fasta.lastIndexOf(File.separator)+1)
 Channel.fromPath( params.fasta )
        .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-       .map{it->[[:],it]}
+       .map{it->[[id:genomeName],it]}
        .set { ch_fasta }
 
 /*
@@ -122,22 +124,35 @@ workflow HIC {
   //
   // SUB-WORFLOW: HiC-Pro
   //
-  ch_samplesheet.view()
-  HICPRO (
-    ch_samplesheet,
-    PREPARE_GENOME.out.index,
-    PREPARE_GENOME.out.res_frag,
-    PREPARE_GENOME.out.chromosome_size,
-    ch_ligation_site,
-    ch_map_res
-  )
-  ch_versions = ch_versions.mix(HICPRO.out.versions)
+  if (params.processing == 'hicpro'){
+    HICPRO (
+      ch_samplesheet,
+      PREPARE_GENOME.out.index,
+      PREPARE_GENOME.out.res_frag,
+      PREPARE_GENOME.out.chromosome_size,
+      ch_ligation_site,
+      ch_map_res
+    )
+    ch_versions = ch_versions.mix(HICPRO.out.versions)
+    ch_pairs = HICPRO.out.pairs
+    ch_process_mqc = HICPRO.out.mqc
+  }else if (params.processing == 'pairtools'){
+    PAIRTOOLS(
+      ch_samplesheet,
+      PREPARE_GENOME.out.index,
+      PREPARE_GENOME.out.res_frag,
+      PREPARE_GENOME.out.chromosome_size
+    )
+    ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)
+    ch_pairs = PAIRTOOLS.out.pairs
+    ch_process_mqc = PAIRTOOLS.out.stats
+  }
 
   //
   // SUB-WORKFLOW: COOLER
   //
   COOLER (
-    HICPRO.out.pairs,
+    ch_pairs,
     PREPARE_GENOME.out.chromosome_size,
     ch_map_res
   )
@@ -182,10 +197,10 @@ workflow HIC {
   //
   if (!params.skip_tads){
     COOLER.out.cool
-        .combine(ch_tads_res)
-        .filter{ it[0].resolution == it[2] }
-        .map { it -> [it[0], it[1]]}
-        .set{ ch_cool_tads }
+      .combine(ch_tads_res)
+      .filter{ it[0].resolution == it[2] }
+      .map { it -> [it[0], it[1]]}
+      .set{ ch_cool_tads }
 
     TADS(
       ch_cool_tads
