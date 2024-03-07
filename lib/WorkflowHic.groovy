@@ -3,7 +3,9 @@
 //
 
 import nextflow.Nextflow
+import nextflow.Channel
 import groovy.text.SimpleTemplateEngine
+import groovyx.gpars.dataflow.DataflowWriteChannel
 
 class WorkflowHic {
 
@@ -17,6 +19,11 @@ class WorkflowHic {
         if (params.digest && params.digestion && !params.digest.containsKey(params.digestion)) {
             Nextflow.error "Unknown digestion protocol. Currently, the available digestion options are ${params.digest.keySet().join(", ")}. Please set manually the '--restriction_site' and '--ligation_site' parameters."
         }
+
+        checkParamIntList(params.bin_size, log)
+        checkParamIntList(params.res_dist_decay, log)
+        checkParamIntList(params.res_tads, log)
+        checkParamIntList(params.res_compartments, log)
 
         // Check Digestion or DNase Hi-C mode
         //if (!params.dnase && !params.ligation_site) {
@@ -80,6 +87,25 @@ class WorkflowHic {
                 "  ${params.genomes.keySet().join(", ")}\n" +
                 "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             Nextflow.error(error_string)
+        }
+    }
+
+        // Check the params 'list of Integer' or Integer (ex bin_size)
+    public static void checkParamIntList(def param2check, log) {
+        if (param2check !instanceof Integer && !(param2check instanceof String && param2check ==~ /(\d+)(,\d+)*/)){
+            println "\n"
+            log.error "ERROR: ${param2check} must be integer or list of integer"
+            Nextflow.error('Exiting!')
+        }
+    }
+
+    // In hic.nf: check if the param is int. If true, don't splitCsv and flatten to avoid error
+    public static DataflowWriteChannel checkIfInt(def param2check) {
+        if (param2check instanceof Integer) {
+            return Channel.from( param2check ).toInteger()
+        }
+        else {
+            return Channel.from( param2check ).splitCsv().flatten().toInteger()
         }
     }
 }
