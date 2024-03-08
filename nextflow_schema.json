@@ -191,7 +191,7 @@
                 },
                 "bwa_opts": {
                     "type": "string",
-                    "default": "'-5SP -T0'",
+                    "default": "-5SP -T0",
                     "description": "Option for Bwa-mem mapping"
                 },
                 "save_aligned_intermediates": {
