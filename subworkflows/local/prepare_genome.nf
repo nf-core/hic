@@ -75,7 +75,7 @@ workflow PREPARE_GENOME {
     ch_versions = ch_versions.mix(GET_RESTRICTION_FRAGMENTS.out.versions)
   }else if (!params.dnase){
      Channel.fromPath( params.restriction_fragments, checkIfExists: true )
-            .map{ it -> [[:], it] }
+            .map { it -> [[:], it] }
             .set {ch_resfrag}
   }else{
     ch_resfrag = Channel.empty()

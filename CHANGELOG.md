@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default mapping options with `HiC-Pro` has been updated to give closer results in comparison
   with `BWA-mem/pairtools`
 
+- [#194](https://github.com/nf-core/hic/pull/194) - Update pipeline template to [nf-core/tools 2.13.1](https://github.com/nf-core/tools/releases/tag/2.13.1)
+
 ### `Removed`
 
 - Removed public_aws_ecr profile
