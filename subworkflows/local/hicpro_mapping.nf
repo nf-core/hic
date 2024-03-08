@@ -13,95 +13,95 @@ include { MAPPING_STATS_DNASE } from '../../modules/local/hicpro/dnase_mapping_s
 
 workflow HICPRO_MAPPING {
 
-  take:
-  reads // [meta, read1, read2]
-  index // [meta, path]
-  ligation_site // value
+    take:
+    reads // [meta, read1, read2]
+    index // [meta, path]
+    ligation_site // value
 
-  main:
-  ch_versions = Channel.empty()
- 
-  // Align each mates separetly and add mates information in [meta]
-  ch_reads_r1 = reads
-    .map{ meta, fastq ->
-      def newMeta = [ id: meta.id, single_end:true, chunk:meta.chunk, part:meta.part, mates:'R1' ]
-      [ newMeta, fastq[0] ]
+    main:
+    ch_versions = Channel.empty()
+
+    // Align each mates separetly and add mates information in [meta]
+    ch_reads_r1 = reads
+        .map{ meta, fastq ->
+            def newMeta = [ id: meta.id, single_end:true, chunk:meta.chunk, part:meta.part, mates:'R1' ]
+            [ newMeta, fastq[0] ]
+        }
+
+    ch_reads_r2 = reads
+        .map{ meta, fastq ->
+            def newMeta = [ id: meta.id, single_end:true, chunk:meta.chunk, part:meta.part, mates:'R2' ]
+            [ newMeta, fastq[1] ]
+        }
+
+    ch_reads = ch_reads_r1.concat(ch_reads_r2)
+
+    // bowtie2 - save_unaligned=true - sort_bam=false
+    BOWTIE2_ALIGN(
+        ch_reads,
+        index.collect(),
+        true,
+        false
+    )
+    ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
+
+    if (!params.dnase){
+
+        // trim reads
+        TRIM_READS(
+            BOWTIE2_ALIGN.out.fastq,
+            ligation_site.collect()
+        )
+        ch_versions = ch_versions.mix(TRIM_READS.out.versions)
+
+        // bowtie2 on trimmed reads - save_unaligned=false - sort_bam=false
+        BOWTIE2_ALIGN_TRIMMED(
+            TRIM_READS.out.fastq,
+            index.collect(),
+            false,
+            false
+        )
+        ch_versions = ch_versions.mix(BOWTIE2_ALIGN_TRIMMED.out.versions)
+
+        // Merge the two mapping steps
+        ch_bowtie2_align = BOWTIE2_ALIGN.out.aligned
+            .combine(BOWTIE2_ALIGN_TRIMMED.out.aligned, by:[0])
+
+        MERGE_BOWTIE2(
+            ch_bowtie2_align
+        )
+        ch_versions = ch_versions.mix(MERGE_BOWTIE2.out.versions)
+        ch_mapping_stats = MERGE_BOWTIE2.out.stats
+
+        ch_bams = MERGE_BOWTIE2.out.bam
+            .map{ meta, bam ->
+                def newMeta = [ id: meta.id, single_end:false, chunk:meta.chunk, part:meta.part ]
+                [ newMeta, bam ]
+            }.groupTuple()
+
+
+    }else{
+
+        MAPPING_STATS_DNASE(
+            BOWTIE2_ALIGN.out.aligned
+        )
+        ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
+
+        ch_bams = BOWTIE2_ALIGN.out.aligned
+            .map{ meta, bam ->
+                def newMeta = [ id: meta.id, single_end: false, chunk:meta.chunk, part:meta.part ]
+                [ newMeta, bam ]
+            }.groupTuple()
     }
 
-  ch_reads_r2 = reads
-    .map{ meta, fastq ->
-      def newMeta = [ id: meta.id, single_end:true, chunk:meta.chunk, part:meta.part, mates:'R2' ]
-      [ newMeta, fastq[1] ]
-    }
-
-  ch_reads = ch_reads_r1.concat(ch_reads_r2)
-
-  // bowtie2 - save_unaligned=true - sort_bam=false
-  BOWTIE2_ALIGN(
-    ch_reads,
-    index.collect(),
-    true,
-    false
-  )
-  ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
-
-  if (!params.dnase){
-
-    // trim reads
-    TRIM_READS(
-      BOWTIE2_ALIGN.out.fastq,
-      ligation_site.collect()
+    COMBINE_MATES (
+        ch_bams
     )
-    ch_versions = ch_versions.mix(TRIM_READS.out.versions)
+    ch_versions = ch_versions.mix(COMBINE_MATES.out.versions)
 
-    // bowtie2 on trimmed reads - save_unaligned=false - sort_bam=false
-    BOWTIE2_ALIGN_TRIMMED(
-      TRIM_READS.out.fastq,
-      index.collect(),
-      false,
-      false
-    )
-    ch_versions = ch_versions.mix(BOWTIE2_ALIGN_TRIMMED.out.versions)
-
-    // Merge the two mapping steps
-    ch_bowtie2_align = BOWTIE2_ALIGN.out.aligned
-      .combine(BOWTIE2_ALIGN_TRIMMED.out.aligned, by:[0])
-
-    MERGE_BOWTIE2(
-      ch_bowtie2_align
-    )
-    ch_versions = ch_versions.mix(MERGE_BOWTIE2.out.versions)
-    ch_mapping_stats = MERGE_BOWTIE2.out.stats
-    
-    ch_bams = MERGE_BOWTIE2.out.bam
-      .map{ meta, bam -> 
-        def newMeta = [ id: meta.id, single_end:false, chunk:meta.chunk, part:meta.part ]
-        [ newMeta, bam ]
-      }.groupTuple()
-      
-
-  }else{
-
-    MAPPING_STATS_DNASE(
-      BOWTIE2_ALIGN.out.aligned
-    )
-    ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
-
-    ch_bams = BOWTIE2_ALIGN.out.aligned
-      .map{ meta, bam -> 
-        def newMeta = [ id: meta.id, single_end: false, chunk:meta.chunk, part:meta.part ]
-        [ newMeta, bam ]
-      }.groupTuple()
-  }
-
-  COMBINE_MATES (
-    ch_bams
-  )
-  ch_versions = ch_versions.mix(COMBINE_MATES.out.versions)
-
-  emit:
-  versions = ch_versions
-  bam = COMBINE_MATES.out.bam
-  mapstats = ch_mapping_stats
-  pairstats = COMBINE_MATES.out.stats
+    emit:
+    versions = ch_versions
+    bam = COMBINE_MATES.out.bam
+    mapstats = ch_mapping_stats
+    pairstats = COMBINE_MATES.out.stats
 }
