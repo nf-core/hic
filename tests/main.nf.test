@@ -1,0 +1,24 @@
+nextflow_pipeline {
+
+    name "Test pipeline"
+    script "../main.nf"
+    tag "PIPELINE"
+    config "conf/test.config"
+
+    test("Run with profile test") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            // TODO
+            // assertAll(
+            // )
+        }
+    }
+}
