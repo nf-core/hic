@@ -109,7 +109,7 @@ can thus be discarded using the `--min_cis_dist` parameter.
 - `*.FiltPairs` - List of filtered pairs
 - `*RSstat` - Statitics of number of read pairs falling in each category
 
-Of note, these results are saved only if `--save_pairs_intermediates` is used.  
+Of note, these results are saved only if `--save_pairs_intermediates` is used.
 The `validPairs` are stored using a simple tab-delimited text format ;
 
 ```bash
@@ -195,9 +195,8 @@ is specified on the command line.
 - `*.matrix` - genome-wide contact maps
 - `*_iced.matrix` - genome-wide iced contact maps
 
-The contact maps are generated for all specified resolutions
-(see `--bin_size` argument).  
-A contact map is defined by :
+The contact maps are generated for all specified resolutions (see `--bin_size` argument).
+A contact map is defined by:
 
 - A list of genomic intervals related to the specified resolution (BED format).
 - A matrix, stored as standard triplet sparse format (i.e. list format).
@@ -221,7 +220,7 @@ downstream analysis.
 ## Hi-C contact maps
 
 Contact maps are usually stored as simple txt (`HiC-Pro`), .hic (`Juicer/Juicebox`) and .(m)cool (`cooler/Higlass`) formats.
-The .cool and .hic format are compressed and indexed and usually much more efficient than the txt format.  
+The .cool and .hic format are compressed and indexed and usually much more efficient than the txt format.
 In the current workflow, we propose to use the `cooler` format as a standard to build the raw and normalised maps
 after valid pairs detection as it is used by several downstream analysis and visualisation tools.
 

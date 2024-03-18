@@ -46,7 +46,7 @@ Here is a quick summary statistics ;
 # Filtered by Pairtools only = 4686 (11.58%)
 ```
 
-Overall, we can see that **70%** of valid interactions are called by both `HiC-Pro` and `Pairtools`.  
+Overall, we can see that **70%** of valid interactions are called by both `HiC-Pro` and `Pairtools`.
 Regarding the 30% of read pairs which are different between the two tools, we can see that a large
 majority (>75%) are due to differences in the read mapping (`bowtie2` versus `bwa-mem`).
 
@@ -107,12 +107,12 @@ As before, small statistics were computed to compare the list of valid (and not 
 # Filtered by Pairtools only = 6386317 (10.65%)
 ```
 
-Almost **80%** of valid interactions are called in common by `HiC-Pro` and `pairtools`.  
+Almost **80%** of valid interactions are called in common by `HiC-Pro` and `pairtools`.
 As previously observed, most of the differences observed between the two tools are
 explained by distinct mapping procedures.
 
 Finally, we generated the contact maps around a specific regions on the X chromosome
-using the `cool` files and the TADs calling generated with both tools.  
+using the `cool` files and the TADs calling generated with both tools.
 **No difference is observed at the contact map level.**
 
 ![X Inactivation Center - HiC-Pro processing](./images/SRX2636669_hicpro_pygentracks.png)
