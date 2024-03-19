@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#194](https://github.com/nf-core/hic/pull/194) - Update pipeline template to [nf-core/tools 2.13.1](https://github.com/nf-core/tools/releases/tag/2.13.1)
 
+- [#196](https://github.com/nf-core/hic/pull/196) - Add nf-test
+
 ### `Removed`
 
 - Removed public_aws_ecr profile
