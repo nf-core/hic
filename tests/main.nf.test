@@ -21,4 +21,22 @@ nextflow_pipeline {
             // )
         }
     }
+
+    test("Should split fastqs") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                split_fastq = true
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            // TODO
+            // assertAll(
+            // )
+        }
+    }
 }
