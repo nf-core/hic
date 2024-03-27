@@ -83,7 +83,7 @@
     },
     "Should split fastqs": {
         "content": [
-            37,
+            70,
             [
                 "SRR4292758.2000_compartments.cis.bw:md5,d7b3015f4856ef058a870056f9c3bdf1",
                 "SRR4292758.2000_compartments.cis.lam.txt:md5,e05a7cc3c0af218a5cf6f3ad6ffa8da5",
@@ -95,13 +95,16 @@
             ],
             [
                 [
-                    "SRR4292758_0_bwt2pairs.bam:md5,676047426d024788971139d92d2ab097"
+                    "SRR4292758_0_bwt2pairs.bam:md5,22ddfe3478dce932d7ac675347713ff2",
+                    "SRR4292758_1_bwt2pairs.bam:md5,3d6aecbf178c60f1569884c022954549",
+                    "SRR4292758_2_bwt2pairs.bam:md5,11dc852af492a171a80584d8289cf57a",
+                    "SRR4292758_3_bwt2pairs.bam:md5,4b0297fbf1f6058e8072a3dcd85c0af0"
                 ],
                 [
                     [
                         "SRR4292758.mRSstat:md5,17bfb0c8be6c0940c2863d147c1ea824",
-                        "SRR4292758.mpairstat:md5,281aa85283e57308187c33a5bad7dc82",
-                        "SRR4292758.null.mmapstat:md5,5a72e08a7b8098eeb6e1331c8b866b15",
+                        "SRR4292758.mpairstat:md5,a11582165e0b7c4dcb92a4ec1e386004",
+                        "SRR4292758.null.mmapstat:md5,acd2498b689e3c3f1075a2b2350d2147",
                         "SRR4292758_allValidPairs.mergestat:md5,b0a81a4d69ea8e44495a714ac87701e8"
                     ]
                 ],
@@ -114,14 +117,14 @@
                 ]
             ],
             [
-                "multiqc.log:md5,5e26b89dad43c71657280738996dbd0d",
+                "multiqc.log:md5,5511aba692e73cda6d79d4829307ebc7",
                 "multiqc_citations.txt:md5,76bcbb4e4103209b523ed9da8fef74bc",
-                "multiqc_data.json:md5,41cf9afa708b9a7cdaf827f28f38b096",
-                "multiqc_fastqc.txt:md5,64b89edc94607362b7591cb821b28b93",
-                "multiqc_general_stats.txt:md5,892258a0f91b4d21d95e2c5e1ff1cc08",
-                "multiqc_hicpro.txt:md5,b97b7b08c5075b76c99a902bd268095c",
+                "multiqc_data.json:md5,b74316fef34083bd9067bac294fa8b9e",
+                "multiqc_fastqc.txt:md5,48bb574f77c2075cf8e0d4ad601dbfc3",
+                "multiqc_general_stats.txt:md5,a5349bbfb06594658b9b46faefc74298",
+                "multiqc_hicpro.txt:md5,dc06d0ca4000f957f87336caee63de66",
                 "multiqc_software_versions.txt:md5,8700e2b122c2107aff2a88dbd18933ec",
-                "multiqc_sources.txt:md5,d79093d1f6997a31509a14695dd635ea"
+                "multiqc_sources.txt:md5,664b1c154779e917886b3f180c656613"
             ],
             [
                 [
@@ -130,7 +133,7 @@
                     "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                     "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,da38c91d9b23820e290d2c987f27ab70",
                     "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,81b33e5cd3ff14efac94c2065ac68fe1",
-                    "SRR4292758.1000_balanced_hicfindtads_zscore_matrix.cool:md5,3cef5afd1125b90bb73dcce77d987129"
+                    "SRR4292758.1000_balanced_hicfindtads_zscore_matrix.cool:md5,09813863808bbbf10fede3547007f131"
                 ],
                 [
                     "SRR4292758.1000_balanced_insulation.tsv:md5,fd0a37e94600e9da4c8de0c58f07e3ed"
@@ -141,6 +144,6 @@
             "nf-test": "0.8.4",
             "nextflow": "23.10.1"
         },
-        "timestamp": "2024-03-26T19:31:20.698967004"
+        "timestamp": "2024-03-27T14:12:00.152845997"
     }
 }

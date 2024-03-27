@@ -39,6 +39,7 @@ nextflow_pipeline {
             params {
                 outdir = "$outputDir"
                 split_fastq = true
+                fastq_chunks_size = 125000
             }
         }
 
