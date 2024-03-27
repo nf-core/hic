@@ -14,11 +14,22 @@ nextflow_pipeline {
         }
 
         then {
-            assert workflow.success
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match("software_versions") },
+                { assert snapshot(
+                    workflow.trace.tasks().size(),
+                    path("$outputDir/compartments").list(),
+                    path("$outputDir/distance_decay").list(),
+                    path("$outputDir/hicpro").list(),
+                    path("$outputDir/multiqc/multiqc_data").list(),
+                    path("$outputDir/tads").list(),
+                ).match()},
 
-            // TODO
-            // assertAll(
-            // )
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_1_fastqc.html").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_2_fastqc.html").exists() },
+            )
         }
     }
 
@@ -32,11 +43,22 @@ nextflow_pipeline {
         }
 
         then {
-            assert workflow.success
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match("split_software_versions") },
+                { assert snapshot(
+                    workflow.trace.tasks().size(),
+                    path("$outputDir/compartments").list(),
+                    path("$outputDir/distance_decay").list(),
+                    path("$outputDir/hicpro").list(),
+                    path("$outputDir/multiqc/multiqc_data").list(),
+                    path("$outputDir/tads").list(),
+                ).match()},
 
-            // TODO
-            // assertAll(
-            // )
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_1_fastqc.html").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_2_fastqc.html").exists() },
+            )
         }
     }
 }
