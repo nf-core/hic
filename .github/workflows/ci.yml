@@ -73,9 +73,7 @@ jobs:
           architecture: "x64"
 
       - name: Install pdiff to see diff between nf-test snapshots
-        run: |
-          python -m pip install --upgrade pip
-          pip install pdiff
+        run: python -m pip install --upgrade pip pdiff cryptography
 
       - uses: nf-core/setup-nf-test@v1
 
@@ -84,6 +82,9 @@ jobs:
           nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
 
       - name: Run nf-test
+        env:
+          NFT_DIFF: "pdiff"
+          NFT_DIFF_ARGS: "--line-numbers --width 120 --expand-tabs=2"
         run: |
           nf-test test --verbose --tag PIPELINE --profile "+${{ matrix.profile }}" --junitxml=test.xml --tap=test.tap
 
