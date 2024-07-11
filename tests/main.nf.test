@@ -1,0 +1,99 @@
+nextflow_pipeline {
+
+    name "Test pipeline"
+    script "../main.nf"
+    tag "PIPELINE"
+    config "conf/test.config"
+
+    test("Run with profile test") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match("software_versions") },
+                { assert snapshot(
+                    workflow.trace.tasks().size(),
+                    // FIXME Not deterministic on CI but works locally
+                    // path("$outputDir/compartments").list(),
+                    path("$outputDir/distance_decay").list(),
+                    path("$outputDir/hicpro/stats/SRR4292758/SRR4292758.mpairstat"),
+                    path("$outputDir/hicpro/stats/SRR4292758/SRR4292758_allValidPairs.mergestat"),
+                    path("$outputDir/hicpro/valid_pairs").list(),
+                    // path("$outputDir/multiqc/multiqc_data").list(),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_boundaries.bed"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_boundaries.gff"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_domains.bed"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_score.bedgraph"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_tad_score.bm"),
+                    path("$outputDir/tads/insulation").list(),
+                ).match()},
+
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/compartments/SRR4292758.2000_compartments.cis.bw").exists() },
+                { assert new File("$outputDir/compartments/SRR4292758.2000_compartments.cis.lam.txt").exists() },
+                { assert new File("$outputDir/compartments/SRR4292758.2000_compartments.cis.vecs.tsv").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_1_fastqc.html").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_2_fastqc.html").exists() },
+                { assert new File("$outputDir/hicpro/mapping/SRR4292758_0_bwt2pairs.bam").exists() },
+                { assert new File("$outputDir/hicpro/stats/SRR4292758/SRR4292758.mRSstat").exists() },
+                { assert new File("$outputDir/hicpro/stats/SRR4292758/SRR4292758.null.mmapstat").exists() },
+                { assert new File("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_zscore_matrix.cool").exists() },
+            )
+        }
+    }
+
+    test("Should split fastqs") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                split_fastq = true
+                fastq_chunks_size = 125000
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match("split_software_versions") },
+                { assert snapshot(
+                    workflow.trace.tasks().size(),
+                    // FIXME Not deterministic on CI but works locally
+                    // path("$outputDir/compartments").list(),
+                    path("$outputDir/distance_decay").list(),
+                    path("$outputDir/hicpro/stats/SRR4292758/SRR4292758_allValidPairs.mergestat"),
+                    // FIXME path("$outputDir/hicpro/valid_pairs").list(),
+                    // path("$outputDir/multiqc/multiqc_data").list(),
+                    // path("$outputDir/multiqc/multiqc_data").list(),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_boundaries.bed"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_boundaries.gff"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_domains.bed"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_score.bedgraph"),
+                    path("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_tad_score.bm"),
+                    path("$outputDir/tads/insulation").list(),
+                ).match()},
+
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/compartments/SRR4292758.2000_compartments.cis.bw").exists() },
+                { assert new File("$outputDir/compartments/SRR4292758.2000_compartments.cis.lam.txt").exists() },
+                { assert new File("$outputDir/compartments/SRR4292758.2000_compartments.cis.vecs.tsv").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_1_fastqc.html").exists() },
+                { assert new File("$outputDir/fastqc/SRR4292758_2_fastqc.html").exists() },
+                { assert new File("$outputDir/hicpro/mapping/SRR4292758_0_bwt2pairs.bam").exists() },
+                { assert new File("$outputDir/hicpro/mapping/SRR4292758_1_bwt2pairs.bam").exists() },
+                { assert new File("$outputDir/hicpro/mapping/SRR4292758_2_bwt2pairs.bam").exists() },
+                { assert new File("$outputDir/hicpro/mapping/SRR4292758_3_bwt2pairs.bam").exists() },
+                { assert new File("$outputDir/hicpro/stats/SRR4292758/SRR4292758.mpairstat").exists() },
+                { assert new File("$outputDir/hicpro/stats/SRR4292758/SRR4292758.mRSstat").exists() },
+                { assert new File("$outputDir/hicpro/stats/SRR4292758/SRR4292758.null.mmapstat").exists() },
+                { assert new File("$outputDir/tads/hicExplorer/SRR4292758.1000_balanced_hicfindtads_zscore_matrix.cool").exists() },
+            )
+        }
+    }
+}

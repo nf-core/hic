@@ -31,3 +31,14 @@ indent_size = unset
 # ignore python and markdown
 [*.{py,md}]
 indent_style = unset
+
+# C++ compiles code
+[/bin/cutsite_trimming]
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
+
+[*.cpp]
+indent_size = 2

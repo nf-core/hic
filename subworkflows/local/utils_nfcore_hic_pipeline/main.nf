@@ -82,21 +82,31 @@ workflow PIPELINE_INITIALISATION {
     //
     Channel
         .fromSamplesheet("input")
+        .set { ch_input }
+    if (params.split_fastq) {
+        ch_input
+            .splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
+            .set { ch_input }
+    }
+
+    ch_input
         .map {
             meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
+            if (!fastq_2) {
+                return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+            } else {
+                return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+            }
         }
         .groupTuple()
         .map {
             validateInputSamplesheet(it)
         }
+        .flatMap { it -> setMetaChunk(it) }
+        .collate(2)
         .map {
             meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
+            return [ meta, fastqs.flatten() ]
         }
         .set { ch_samplesheet }
 
@@ -260,4 +270,17 @@ def methodsDescriptionText(mqc_methods_yaml) {
     def description_html = engine.createTemplate(methods_text).make(meta)
 
     return description_html.toString()
+}
+
+// Set the meta.chunk value in case of technical replicates
+def setMetaChunk(row){
+    def map = []
+    row[1].eachWithIndex() { file, i ->
+        println row[0]
+        meta = row[0].clone()
+        meta.chunk = i
+        meta.part = row[1].size()
+        map += [meta, file]
+    }
+    return map
 }

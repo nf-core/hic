@@ -11,6 +11,82 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_hic_pipeline'
 
+// MODULE: Local to the pipeline
+include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts'
+
+// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
+include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
+include { HICPRO } from '../subworkflows/local/hicpro'
+include { PAIRTOOLS } from '../subworkflows/local/pairtools'
+include { COOLER } from '../subworkflows/local/cooler'
+include { COMPARTMENTS } from '../subworkflows/local/compartments'
+include { TADS } from '../subworkflows/local/tads'
+
+//*****************************************
+// Digestion parameters
+if (params.digestion){
+    restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
+    ch_restriction_site = Channel.value(restriction_site)
+    ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
+    ch_ligation_site = Channel.value(ligation_site)
+}else if (params.restriction_site && params.ligation_site){
+    ch_restriction_site = Channel.value(params.restriction_site)
+    ch_ligation_site = Channel.value(params.ligation_site)
+}else if (params.dnase){
+    ch_restriction_site = Channel.empty()
+    ch_ligation_site = Channel.empty()
+}else{
+    exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
+}
+
+//****************************************
+// Combine all maps resolution for downstream analysis
+
+ch_map_res = Channel.from( params.bin_size ).splitCsv().flatten().toInteger()
+
+if (params.res_zoomify){
+    ch_zoom_res = Channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+    ch_map_res = ch_map_res.concat(ch_zoom_res)
+}
+
+if (params.res_tads && !params.skip_tads){
+    ch_tads_res = Channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
+    ch_map_res = ch_map_res.concat(ch_tads_res)
+}else{
+    ch_tads_res=Channel.empty()
+    if (!params.skip_tads){
+        log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
+    }
+}
+
+if (params.res_dist_decay && !params.skip_dist_decay){
+    ch_ddecay_res = Channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
+    ch_map_res = ch_map_res.concat(ch_ddecay_res)
+}else{
+    ch_ddecay_res = Channel.empty()
+    if (!params.skip_dist_decay){
+        log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay"
+    }
+}
+
+if (params.res_compartments && !params.skip_compartments){
+    ch_comp_res = Channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
+    ch_map_res = ch_map_res.concat(ch_comp_res)
+}else{
+    ch_comp_res = Channel.empty()
+    if (!params.skip_compartments){
+        log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
+    }
+}
+
+ch_map_res = ch_map_res.unique()
+
+def genomeName = params.genome ?: params.fasta.substring(params.fasta.lastIndexOf(File.separator)+1)
+Channel.fromPath( params.fasta )
+    .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
+    .map{it->[[id:genomeName],it]}
+    .set { ch_fasta }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -35,6 +111,102 @@ workflow HIC {
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    //
+    // SUBWORKFLOW: Prepare genome annotation
+    //
+    PREPARE_GENOME(
+        ch_fasta,
+        ch_restriction_site
+    )
+    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
+
+    //
+    // SUB-WORFLOW: HiC-Pro
+    //
+    if (params.processing == 'hicpro'){
+        HICPRO (
+            ch_samplesheet,
+            PREPARE_GENOME.out.index,
+            PREPARE_GENOME.out.res_frag,
+            PREPARE_GENOME.out.chromosome_size,
+            ch_ligation_site,
+            ch_map_res
+        )
+        ch_versions = ch_versions.mix(HICPRO.out.versions)
+        ch_pairs = HICPRO.out.pairs
+        ch_process_mqc = HICPRO.out.mqc
+    }else if (params.processing == 'pairtools'){
+        PAIRTOOLS(
+            ch_samplesheet,
+            PREPARE_GENOME.out.index,
+            PREPARE_GENOME.out.res_frag,
+            PREPARE_GENOME.out.chromosome_size
+        )
+        ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)
+        ch_pairs = PAIRTOOLS.out.pairs
+        ch_process_mqc = PAIRTOOLS.out.stats
+    }
+
+    //
+    // SUB-WORKFLOW: COOLER
+    //
+    COOLER (
+        ch_pairs,
+        PREPARE_GENOME.out.chromosome_size,
+        ch_map_res
+    )
+    ch_versions = ch_versions.mix(COOLER.out.versions)
+
+    //
+    // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS
+    //
+    if (!params.skip_dist_decay){
+        COOLER.out.cool
+            .combine(ch_ddecay_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_distdecay }
+
+        HIC_PLOT_DIST_VS_COUNTS(
+            ch_distdecay
+        )
+        ch_versions = ch_versions.mix(HIC_PLOT_DIST_VS_COUNTS.out.versions)
+    }
+
+    //
+    // SUB-WORKFLOW: COMPARTMENT CALLING
+    //
+    if (!params.skip_compartments){
+        COOLER.out.cool
+            .combine(ch_comp_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1], it[2]]}
+            .set{ ch_cool_compartments }
+
+        COMPARTMENTS (
+            ch_cool_compartments,
+            ch_fasta,
+            PREPARE_GENOME.out.chromosome_size
+        )
+        ch_versions = ch_versions.mix(COMPARTMENTS.out.versions)
+    }
+
+    //
+    // SUB-WORKFLOW : TADS CALLING
+    //
+    if (!params.skip_tads){
+        COOLER.out.cool
+            .combine(ch_tads_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_cool_tads }
+
+        TADS(
+            ch_cool_tads
+        )
+        ch_versions = ch_versions.mix(TADS.out.versions)
+    }
 
     //
     // Collate and save software versions
@@ -78,6 +250,8 @@ workflow HIC {
             sort: true
         )
     )
+
+    ch_multiqc_files                      = ch_multiqc_files.mix(HICPRO.out.mqc)
 
     MULTIQC (
         ch_multiqc_files.collect(),
