@@ -239,7 +239,7 @@ def toolBibliographyText() {
             "<li>Servant, N., Varoquaux, N., Lajoie, B.R., Viara, E., Chen, CJ., Vert, JP., Heard E., Dekker J., Barillot, E. (2015) HiC-Pro: an optimized and flexible pipeline for Hi-C data processing. Genome Biol 16, 259. https://doi.org/10.1186/s13059-015-0831-x</li>",
             "<li>Open2C, Abdennur, N., Fudenberg, G., Flyamer, IM., Galitsyna, AA., Goloborodko, A., Imakaev, M., Venev, SV. (2023). Pairtools: from sequencing data to chromosome contacts. PloS Comput Biol. 20(5):e1012164. doi: 10.1371/journal.pcbi.1012164</li>",
             "<li>Open2C, Abdennur, N., Abraham, S., Fudenberg, G., Flyamer, IM., Galitsyna, AA., Goloborodko, A., Imakaev, M., Oksuz, BA., & Venev, SV. (2024). Cooltools: Enabling High-Resolution Hi-C Analysis in Python. PLoS Comput Biol. 6;20(5):e1012067. doi: 10.1371/journal.pcbi.1012067</li>",
-            "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: /10.1093/bioinformatics/btw354</li>"	    
+            "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: /10.1093/bioinformatics/btw354</li>"
         ].join(' ').trim()
 
     return reference_text

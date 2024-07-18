@@ -1,5 +1,6 @@
 include { COOLTOOLS_EIGSCIS } from '../../modules/local/cooltools/eigscis'
 include { CALDER2 } from '../../modules/nfcore/calder2/main'
+
 workflow COMPARTMENTS {
 
     take:
@@ -17,7 +18,7 @@ workflow COMPARTMENTS {
             chrsize.map{it -> it[1]}.collect()
         )
         ch_versions = ch_versions.mix(COOLTOOLS_EIGSCIS.out.versions)
-	ch_comp = COOLTOOLS_EIGSCIS.out.results
+        ch_comp = COOLTOOLS_EIGSCIS.out.results
     }
 
     if (params.compartments_caller =~ 'calder2'){
@@ -25,7 +26,7 @@ workflow COMPARTMENTS {
             cool,
             Channel.value([])
         )
-        ch_versions = ch_versions.mix(CALDER2.out.versions
+        ch_versions = ch_versions.mix(CALDER2.out.versions)
         ch_comp = CALDER2.out.output_folder
     }
 
