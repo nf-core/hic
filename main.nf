@@ -56,7 +56,7 @@ workflow NFCORE_HIC {
     //
     PREPARE_GENOME(
         params.fasta,
-	params.bwt2_index,
+        params.bwt2_index,
         params.bwa_index
     )
     ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
