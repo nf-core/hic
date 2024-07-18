@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
-  Parameter `--dnase`is now replaced by `--no_digestion`
+- Parameter `--dnase`is now replaced by `--no_digestion`
 
-  Add CALDER2 compartments calling (see '--compartments_caller' option)
+- Add CALDER2 compartments calling (see '--compartments_caller' option)
 
 - Add new '--balancing_opts' to update `cooler balance` arguments (#193)
 
