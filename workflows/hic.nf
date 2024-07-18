@@ -15,29 +15,11 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_hic_
 include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts'
 
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
 include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
-
-//*****************************************
-// Digestion parameters
-if (params.digestion){
-    restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
-    ch_restriction_site = Channel.value(restriction_site)
-    ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
-    ch_ligation_site = Channel.value(ligation_site)
-}else if (params.restriction_site && params.ligation_site){
-    ch_restriction_site = Channel.value(params.restriction_site)
-    ch_ligation_site = Channel.value(params.ligation_site)
-}else if (params.no_digestion){
-    ch_restriction_site = Channel.empty()
-    ch_ligation_site = Channel.empty()
-}else{
-    exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase/Micro-C Hi-C, please use '--no_digestion' option"
-}
 
 //****************************************
 // Combine all maps resolution for downstream analysis
@@ -81,12 +63,6 @@ if (params.res_compartments && !params.skip_compartments){
 
 ch_map_res = ch_map_res.unique()
 
-def genomeName = params.genome ?: params.fasta.substring(params.fasta.lastIndexOf(File.separator)+1)
-Channel.fromPath( params.fasta )
-    .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-    .map{it->[[id:genomeName],it]}
-    .set { ch_fasta }
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -97,6 +73,12 @@ workflow HIC {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    ch_fasta
+    ch_index
+    ch_chromosome_size
+    ch_res_frag
+    ch_restriction_site
+    ch_ligation_site
 
     main:
 
@@ -113,24 +95,15 @@ workflow HIC {
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
     //
-    // SUBWORKFLOW: Prepare genome annotation
-    //
-    PREPARE_GENOME(
-        ch_fasta,
-        ch_restriction_site
-    )
-    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
-
-    //
     // SUB-WORFLOW: HiC-Pro
     //
     if (params.processing == 'hicpro'){
         HICPRO (
             ch_samplesheet,
             ch_fasta,
-            PREPARE_GENOME.out.index,
-            PREPARE_GENOME.out.res_frag,
-            PREPARE_GENOME.out.chromosome_size,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size,
             ch_ligation_site,
             ch_map_res
         )
@@ -141,9 +114,9 @@ workflow HIC {
         PAIRTOOLS(
             ch_samplesheet,
             ch_fasta,
-            PREPARE_GENOME.out.index,
-            PREPARE_GENOME.out.res_frag,
-            PREPARE_GENOME.out.chromosome_size
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size
         )
         ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)
         ch_pairs = PAIRTOOLS.out.pairs
@@ -155,7 +128,7 @@ workflow HIC {
     //
     COOLER (
         ch_pairs,
-        PREPARE_GENOME.out.chromosome_size,
+        ch_chromosome_size,
         ch_map_res
     )
     ch_versions = ch_versions.mix(COOLER.out.versions)
@@ -189,7 +162,7 @@ workflow HIC {
         COMPARTMENTS (
             ch_cool_compartments,
             ch_fasta,
-            PREPARE_GENOME.out.chromosome_size
+            ch_chromosome_size
         )
         ch_versions = ch_versions.mix(COMPARTMENTS.out.versions)
     }
