@@ -623,7 +623,12 @@ Several resolutions can be specified (comma-separeted). Default: '250000'
 
 ### Compartment calling
 
-Call open/close compartments for each chromosome, using the `cooltools` command.
+Call open/close compartments for each chromosome, using the `cooltools` or `calder2` tools.
+
+#### `--compartments_caller`
+
+Compartments calling can be performed with either `cooltools`
+or `calder2`. Multiple choices are possible (comma-separated).
 
 #### `--res_compartments`
 
