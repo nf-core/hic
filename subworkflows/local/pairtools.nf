@@ -55,7 +55,7 @@ workflow PAIRTOOLS {
     )
     ch_versions = ch_versions.mix(PAIRTOOLS_RESTRICT.out.versions)
 
-    ch_pairsam = params.dnase ? PAIRTOOLS_PARSE.out.pairsam : PAIRTOOLS_RESTRICT.out.restrict
+    ch_pairsam = params.no_digestion ? PAIRTOOLS_PARSE.out.pairsam : PAIRTOOLS_RESTRICT.out.restrict
     PAIRTOOLS_SORT(
         ch_pairsam
     )

@@ -251,15 +251,15 @@ Note that by default, no filters are applied on DNA and restriction fragment siz
 nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
 ```
 
-### DNase Hi-C protocol
+### DNase Hi-C / Micro-C protocol
 
-Here is an command line example for DNase protocol.
+Here is an command line example for DNase or Micro-C protocol.
 Alignment will be performed on the `mm10` genome with default paramters.
 Multi-hits will not be considered and duplicates will be removed.
 Contacts involving fragments separated by less than 1000bp will be discarded.
 
 ```bash
-nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --no_digestion --min_cis 1000
 ```
 
 ## Inputs
@@ -456,9 +456,9 @@ Default: 'AAGCTAGCTT'
 
 Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 
-### DNAse Hi-C
+### DNAse/Micro-C
 
-#### `--dnase`
+#### `--no_digestion`
 
 In DNAse Hi-C mode, all options related to digestion Hi-C
 (see previous section) are ignored.
@@ -466,7 +466,7 @@ In this case, it is highly recommended to use the `--min_cis_dist` parameter
 to remove spurious ligation products.
 
 ```bash
---dnase
+--no_digestion
 ```
 
 ### HiC-pro processing
@@ -510,7 +510,7 @@ Default: '0' - no filter
 #### `--min_cis_dist`
 
 Filter short range contact below the specified distance.
-Mainly useful for DNase Hi-C. Default: '0'
+Mainly useful for DNAse/Micro-C. Default: '0'
 
 ```bash
 --min_cis_dist '[numeric]'

@@ -46,7 +46,7 @@ workflow HICPRO {
     //***************************************
     // DIGESTION PROTOCOLS
 
-    if (!params.dnase){
+    if (!params.no_digestion){
         GET_VALID_INTERACTION (
             HICPRO_MAPPING.out.bam,
             fragments.collect()

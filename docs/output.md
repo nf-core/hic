@@ -45,7 +45,7 @@ and aligned back on the genome.
 Aligned reads for both fragment mates are then paired in a single paired-end
 BAM file.
 Singletons and low quality mapped reads are filtered (`--min_mapq`).
-Note that if the `--dnase` mode is activated, HiC-Pro will skip the second
+Note that if the `--no_digestion` mode is activated, HiC-Pro will skip the second
 mapping step.
 
 **Output directory: `results/hicpro/mapping`**
@@ -95,8 +95,8 @@ Duplicated valid pairs associated to PCR artefacts are discarded
 (see `--keep_dup` to not discard them).
 
 In case of Hi-C protocols that do not require a restriction enzyme such as
-DNase Hi-C or micro Hi-C, the assignment to a restriction is not possible
-(see `--dnase`).
+DNase Hi-C or micro-C, the assignment to a restriction is not possible
+(see `--no_digestion`).
 Short range interactions that are likely to be spurious ligation products
 can thus be discarded using the `--min_cis_dist` parameter.
 

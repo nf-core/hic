@@ -47,7 +47,7 @@ workflow HICPRO_MAPPING {
     )
     ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
 
-    if (!params.dnase){
+    if (!params.no_digestion){
 
         // trim reads
         TRIM_READS(

@@ -32,11 +32,11 @@ if (params.digestion){
 }else if (params.restriction_site && params.ligation_site){
     ch_restriction_site = Channel.value(params.restriction_site)
     ch_ligation_site = Channel.value(params.ligation_site)
-}else if (params.dnase){
+}else if (params.no_digestion){
     ch_restriction_site = Channel.empty()
     ch_ligation_site = Channel.empty()
 }else{
-    exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
+    exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase/Micro-C Hi-C, please use '--no_digestion' option"
 }
 
 //****************************************

@@ -66,14 +66,14 @@ workflow PREPARE_GENOME {
 
     //***************************************
     // Restriction fragments
-    if(!params.restriction_fragments && !params.dnase){
+    if(!params.restriction_fragments && !params.no_digestion){
         GET_RESTRICTION_FRAGMENTS(
             fasta,
             restriction_site
         )
         ch_resfrag = GET_RESTRICTION_FRAGMENTS.out.results
         ch_versions = ch_versions.mix(GET_RESTRICTION_FRAGMENTS.out.versions)
-    }else if (!params.dnase){
+    }else if (!params.no_digestion){
         Channel.fromPath( params.restriction_fragments, checkIfExists: true )
             .map { it -> [[:], it] }
             .set {ch_resfrag}
