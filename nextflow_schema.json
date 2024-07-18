@@ -314,6 +314,11 @@
                     "default": "insulation",
                     "description": "Define methods for TADs calling"
                 },
+		"compartments_caller": {
+		    "type": "string",
+		    "default": "cooltools",
+		    "description": "Define methods for compartments calling"
+		},
                 "res_tads": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",

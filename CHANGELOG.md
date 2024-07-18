@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+  Add CALDER2 compartments calling (see '--compartments_caller' option)
+
 - Add new '--balancing_opts' to update `cooler balance` arguments
 
 - New subworkflow based on `pairtools` to detect valid pairs. The user
