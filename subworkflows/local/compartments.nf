@@ -17,7 +17,7 @@ workflow COMPARTMENTS {
             chrsize.map{it -> it[1]}.collect()
         )
         ch_versions = ch_versions.mix(COOLTOOLS_EIGSCIS.out.versions)
-        ch_comp = COOLTOOLS_EIGSCIS.out.results	
+	ch_comp = COOLTOOLS_EIGSCIS.out.results
     }
 
     if (params.compartments_caller =~ 'calder2'){
