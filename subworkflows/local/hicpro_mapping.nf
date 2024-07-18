@@ -85,6 +85,7 @@ workflow HICPRO_MAPPING {
         MAPPING_STATS_DNASE(
             BOWTIE2_ALIGN.out.aligned
         )
+	ch_versions = ch_versions.mix(MAPPING_STATS_DNASE.out.versions)
         ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
 
         ch_bams = BOWTIE2_ALIGN.out.aligned
