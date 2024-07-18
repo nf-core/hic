@@ -45,7 +45,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 4. Contact maps normalization using balancing algorithm ([`cooler`](https://github.com/open2c/cooler))
 5. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler))
 6. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
-7. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/))
+7. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/), [`Calder2`](https://github.com/CSOgroup/CALDER2))
 8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooltools`](https://cooltools.readthedocs.io/en/latest/))
 9. Quality control report ([`MultiQC`](https://multiqc.info/))
 
