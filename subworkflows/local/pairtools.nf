@@ -67,7 +67,6 @@ workflow PAIRTOOLS {
             [ groupKey(newMeta, meta.part), pairs ]
         }
         .groupTuple()
-        .view()
         .branch {
             single: it[0].part <=1
             multiple: it[0].part > 1

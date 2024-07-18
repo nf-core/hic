@@ -1,5 +1,5 @@
 process CALDER2 {
-    tag '$meta.id'
+    tag "$meta.id"
     label 'process_high'
 
     conda "${moduleDir}/environment.yml"
