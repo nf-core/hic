@@ -142,18 +142,18 @@
             }
         },
         "no_digestion_hi_c": {
-            "title": "DNAse Hi-C",
+            "title": "Micro-C/DNAse Hi-C",
             "type": "object",
-            "description": "Parameters for protocols based on DNAse digestion",
+            "description": "Parameters for protocols which are not based on restriction enzymes",
             "default": "",
             "properties": {
-                "dnase": {
+                "no_digestion": {
                     "type": "boolean",
-                    "description": "For Hi-C protocols which are not based on enzyme digestion such as DNase Hi-C"
+                    "description": "For Hi-C protocols which are not based on enzyme digestion such as DNAse Hi-C or Micro-C"
                 },
                 "min_cis_dist": {
                     "type": "integer",
-                    "description": "Minimum distance between loci to consider. Useful for --dnase mode to remove spurious ligation products. Only values > 0 are considered"
+                    "description": "Minimum distance between loci to consider. Useful for --no-digestion mode to remove spurious ligation products. Only values > 0 are considered"
                 }
             }
         },
@@ -313,6 +313,11 @@
                     "type": "string",
                     "default": "insulation",
                     "description": "Define methods for TADs calling"
+                },
+                "compartments_caller": {
+                    "type": "string",
+                    "default": "cooltools",
+                    "description": "Define methods for compartments calling"
                 },
                 "res_tads": {
                     "type": "string",

@@ -15,6 +15,7 @@ workflow HICPRO_MAPPING {
 
     take:
     reads // [meta, read1, read2]
+    fasta // [meta, fasta]
     index // [meta, path]
     ligation_site // value
 
@@ -40,12 +41,13 @@ workflow HICPRO_MAPPING {
     BOWTIE2_ALIGN(
         ch_reads,
         index.collect(),
+        fasta.collect(),
         true,
         false
     )
     ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
 
-    if (!params.dnase){
+    if (!params.no_digestion){
 
         // trim reads
         TRIM_READS(
@@ -58,14 +60,15 @@ workflow HICPRO_MAPPING {
         BOWTIE2_ALIGN_TRIMMED(
             TRIM_READS.out.fastq,
             index.collect(),
+            fasta.collect(),
             false,
             false
         )
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN_TRIMMED.out.versions)
 
         // Merge the two mapping steps
-        ch_bowtie2_align = BOWTIE2_ALIGN.out.aligned
-            .combine(BOWTIE2_ALIGN_TRIMMED.out.aligned, by:[0])
+        ch_bowtie2_align = BOWTIE2_ALIGN.out.bam
+            .combine(BOWTIE2_ALIGN_TRIMMED.out.bam, by:[0])
 
         MERGE_BOWTIE2(
             ch_bowtie2_align
@@ -85,6 +88,7 @@ workflow HICPRO_MAPPING {
         MAPPING_STATS_DNASE(
             BOWTIE2_ALIGN.out.aligned
         )
+        ch_versions = ch_versions.mix(MAPPING_STATS_DNASE.out.versions)
         ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
 
         ch_bams = BOWTIE2_ALIGN.out.aligned

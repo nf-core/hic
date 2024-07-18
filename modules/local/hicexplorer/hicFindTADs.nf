@@ -4,6 +4,7 @@
 
 process HIC_FIND_TADS {
     label 'process_medium'
+    tag "$meta.id"
 
     conda "bioconda::hicexplorer=3.7.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

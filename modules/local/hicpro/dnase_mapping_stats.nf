@@ -14,6 +14,7 @@ process MAPPING_STATS_DNASE {
     output:
     tuple val(meta), path(bam), emit:bam
     tuple val(meta), path("${prefix}.mapstat"), emit:stats
+    path("versions.yml"), emit: versions
 
     script:
     prefix = meta.id + "_" + meta.chunk + "_" + meta.mates
@@ -27,5 +28,10 @@ process MAPPING_STATS_DNASE {
     echo -n "global_${tag}\t" >> ${prefix}.mapstat
     samtools view -c -F 4 ${bam} >> ${prefix}.mapstat
     echo -n "local_${tag}\t0"  >> ${prefix}.mapstat
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+    END_VERSIONS
     """
 }
