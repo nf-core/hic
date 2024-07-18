@@ -27,6 +27,7 @@ workflow PAIRTOOLS {
 
     take:
     reads // [meta, read1, read2]
+    fasta // [meta, fasta]
     index // [meta2, path]
     frag // path
     chrsize // path
@@ -37,6 +38,7 @@ workflow PAIRTOOLS {
     BWA_MEM(
         reads,
         index.collect(),
+	fasta.collect(),
         Channel.value([])
     )
     ch_versions = ch_versions.mix(BWA_MEM.out.versions)
@@ -84,7 +86,8 @@ workflow PAIRTOOLS {
 
     // Manage BAM files
     SAMTOOLS_SORT(
-        PAIRTOOLS_SPLIT.out.bam
+        PAIRTOOLS_SPLIT.out.bam,
+	fasta
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
 

@@ -24,6 +24,7 @@ workflow HICPRO {
 
     take:
     reads // [meta, read1, read2]
+    fasta // [meta, fasta]
     index // path
     fragments // path
     chrsize // path
@@ -36,6 +37,7 @@ workflow HICPRO {
     // Fastq to paired-end bam
     HICPRO_MAPPING(
         reads,
+	fasta,
         index,
         ligation_site
     )
