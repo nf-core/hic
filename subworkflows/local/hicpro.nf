@@ -37,7 +37,7 @@ workflow HICPRO {
     // Fastq to paired-end bam
     HICPRO_MAPPING(
         reads,
-	fasta,
+        fasta,
         index,
         ligation_site
     )

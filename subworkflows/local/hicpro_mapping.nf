@@ -41,7 +41,7 @@ workflow HICPRO_MAPPING {
     BOWTIE2_ALIGN(
         ch_reads,
         index.collect(),
-	fasta.collect(),
+        fasta.collect(),
         true,
         false
     )
@@ -60,7 +60,7 @@ workflow HICPRO_MAPPING {
         BOWTIE2_ALIGN_TRIMMED(
             TRIM_READS.out.fastq,
             index.collect(),
-	    fasta.collect(),
+            fasta.collect(),
             false,
             false
         )

@@ -24,7 +24,7 @@ workflow COMPARTMENTS {
     if (params.compartments_caller =~ 'calder2'){
         CALDER2(
             cool,
-	    Channel.value([])
+            Channel.value([])
         )
         ch_versions = ch_versions.mix(CALDER2.out.versions)
         ch_comp = CALDER2.out.output_folder

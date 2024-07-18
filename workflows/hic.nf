@@ -127,7 +127,7 @@ workflow HIC {
     if (params.processing == 'hicpro'){
         HICPRO (
             ch_samplesheet,
-	    ch_fasta,
+            ch_fasta,
             PREPARE_GENOME.out.index,
             PREPARE_GENOME.out.res_frag,
             PREPARE_GENOME.out.chromosome_size,
@@ -140,7 +140,7 @@ workflow HIC {
     }else if (params.processing == 'pairtools'){
         PAIRTOOLS(
             ch_samplesheet,
-	    ch_fasta,
+            ch_fasta,
             PREPARE_GENOME.out.index,
             PREPARE_GENOME.out.res_frag,
             PREPARE_GENOME.out.chromosome_size
@@ -262,8 +262,8 @@ workflow HIC {
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
-	Channel.value([]),
-	Channel.value([])
+        Channel.value([]),
+        Channel.value([])
     )
 
     emit:
