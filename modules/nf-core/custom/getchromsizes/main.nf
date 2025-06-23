@@ -1,5 +1,5 @@
 process CUSTOM_GETCHROMSIZES {
-    tag "$fasta"
+    tag "${fasta.baseName.replaceAll(/[^a-zA-Z0-9_-]/, '_')}"
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
