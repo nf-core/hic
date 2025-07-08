@@ -6,7 +6,4 @@ results/
 testing/
 testing*
 *.pyc
-.nf-test.log
-nf-test
-.nf-test*
-test.xml
+null/

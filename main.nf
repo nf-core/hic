@@ -9,8 +9,6 @@
 ----------------------------------------------------------------------------------------
 */
 
-nextflow.enable.dsl = 2
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
@@ -73,11 +71,9 @@ workflow NFCORE_HIC {
         PREPARE_GENOME.out.restriction_site,
         PREPARE_GENOME.out.ligation_site
     )
-    ch_versions = ch_versions.mix(HIC.out.versions)
 
     emit:
     multiqc_report = HIC.out.multiqc_report // channel: /path/to/multiqc_report.html
-    versions       = ch_versions
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,13 +84,11 @@ workflow NFCORE_HIC {
 workflow {
 
     main:
-
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
     PIPELINE_INITIALISATION (
         params.version,
-        params.help,
         params.validate_params,
         params.monochrome_logs,
         args,
@@ -108,7 +102,6 @@ workflow {
     NFCORE_HIC (
         PIPELINE_INITIALISATION.out.samplesheet
     )
-
     //
     // SUBWORKFLOW: Run completion tasks
     //
