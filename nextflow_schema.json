@@ -531,31 +531,31 @@
             "$ref": "#/$defs/reference_genome_options"
         },
         {
-            "$ref": "#/defs/hic_processing"
+            "$ref": "#/$defs/hic_processing"
         },
         {
-            "$ref": "#/defs/digestion_hi_c"
+            "$ref": "#/$defs/digestion_hi_c"
         },
         {
-            "$ref": "#/defs/no_digestion_hi_c"
+            "$ref": "#/$defs/no_digestion_hi_c"
         },
         {
-            "$ref": "#/defs/alignments"
+            "$ref": "#/$defs/alignments"
         },
         {
-            "$ref": "#/defs/valid_pairs_detection"
+            "$ref": "#/$defs/valid_pairs_detection"
         },
         {
-            "$ref": "#/defs/contact_maps"
+            "$ref": "#/$defs/contact_maps"
         },
         {
-            "$ref": "#/defs/downstream_analysis"
+            "$ref": "#/$defs/downstream_analysis"
         },
         {
-            "$ref": "#/defs/skip_options"
+            "$ref": "#/$defs/skip_options"
         },
         {
-            "$ref": "#/defs/generic_options"
+            "$ref": "#/$defs/generic_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
