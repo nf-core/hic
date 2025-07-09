@@ -2,7 +2,7 @@
 
 ## [pairtoorls](https://github.com/open2c/pairtools)
 
->  Open2C, Abdennur N, Fudenberg G, Flyamer IM, Galitsyna AA, Goloborodko A, et al. (2024) Pairtools: From sequencing data to chromosome contacts. PLoS Comput Biol 20(5): e1012164. https://doi.org/10.1371/journal.pcbi.1012164
+> Open2C, Abdennur N, Fudenberg G, Flyamer IM, Galitsyna AA, Goloborodko A, et al. (2024) Pairtools: From sequencing data to chromosome contacts. PLoS Comput Biol 20(5): e1012164. https://doi.org/10.1371/journal.pcbi.1012164
 
 ## [cooltools](https://github.com/open2c/cooltools)
 
