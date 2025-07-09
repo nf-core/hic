@@ -79,7 +79,7 @@
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "default": "s3://ngi-igenomes/igenomes/"
-		},
+                },
                 "bwt2_index": {
                     "type": "string",
                     "description": "Full path to directory containing Bowtie index",

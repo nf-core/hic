@@ -139,5 +139,3 @@ int main(int argc, char* argv[])
     printf("\n##Trimmed reads: %d\n", trim_count);
     return(0);
 }
-
-

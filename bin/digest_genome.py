@@ -200,4 +200,3 @@ if __name__ == "__main__":
                         outfile.write("{}\t{}\t{}\t{}\t0\t+\n".format(str(chrom_name), int(begin), int(end), str(frag_name)))
                     else:
                         outfile.write("{}\t{}\t{}\n".format(str(chrom_name), int(begin), int(end)))
-
