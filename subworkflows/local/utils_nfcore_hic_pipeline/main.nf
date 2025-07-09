@@ -78,7 +78,6 @@ workflow PIPELINE_INITIALISATION {
     }
 
     ch_input
-	.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map {
             meta, fastq_1, fastq_2 ->
             if (!fastq_2) {
