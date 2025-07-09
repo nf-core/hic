@@ -1,5 +1,7 @@
 nf_core_version: 3.3.1
 repository_type: pipeline
+lint:
+  nf_test_content: false
 template:
   author: Nicolas Servant
   description: Analysis of Chromosome Conformation Capture data (Hi-C)
