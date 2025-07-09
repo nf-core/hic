@@ -3,10 +3,9 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-validation'
+include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_hic_pipeline'
@@ -15,29 +14,11 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_hic_
 include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts'
 
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
 include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
-
-//*****************************************
-// Digestion parameters
-if (params.digestion){
-    restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
-    ch_restriction_site = Channel.value(restriction_site)
-    ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
-    ch_ligation_site = Channel.value(ligation_site)
-}else if (params.restriction_site && params.ligation_site){
-    ch_restriction_site = Channel.value(params.restriction_site)
-    ch_ligation_site = Channel.value(params.ligation_site)
-}else if (params.dnase){
-    ch_restriction_site = Channel.empty()
-    ch_ligation_site = Channel.empty()
-}else{
-    exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
-}
 
 //****************************************
 // Combine all maps resolution for downstream analysis
@@ -81,12 +62,6 @@ if (params.res_compartments && !params.skip_compartments){
 
 ch_map_res = ch_map_res.unique()
 
-def genomeName = params.genome ?: params.fasta.substring(params.fasta.lastIndexOf(File.separator)+1)
-Channel.fromPath( params.fasta )
-    .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-    .map{it->[[id:genomeName],it]}
-    .set { ch_fasta }
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -97,12 +72,17 @@ workflow HIC {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    ch_fasta
+    ch_index
+    ch_chromosome_size
+    ch_res_frag
+    ch_restriction_site
+    ch_ligation_site
 
     main:
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-
     //
     // MODULE: Run FastQC
     //
@@ -113,23 +93,15 @@ workflow HIC {
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
     //
-    // SUBWORKFLOW: Prepare genome annotation
-    //
-    PREPARE_GENOME(
-        ch_fasta,
-        ch_restriction_site
-    )
-    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
-
-    //
     // SUB-WORFLOW: HiC-Pro
     //
     if (params.processing == 'hicpro'){
         HICPRO (
             ch_samplesheet,
-            PREPARE_GENOME.out.index,
-            PREPARE_GENOME.out.res_frag,
-            PREPARE_GENOME.out.chromosome_size,
+            ch_fasta,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size,
             ch_ligation_site,
             ch_map_res
         )
@@ -139,9 +111,10 @@ workflow HIC {
     }else if (params.processing == 'pairtools'){
         PAIRTOOLS(
             ch_samplesheet,
-            PREPARE_GENOME.out.index,
-            PREPARE_GENOME.out.res_frag,
-            PREPARE_GENOME.out.chromosome_size
+            ch_fasta,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size
         )
         ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)
         ch_pairs = PAIRTOOLS.out.pairs
@@ -153,7 +126,7 @@ workflow HIC {
     //
     COOLER (
         ch_pairs,
-        PREPARE_GENOME.out.chromosome_size,
+        ch_chromosome_size,
         ch_map_res
     )
     ch_versions = ch_versions.mix(COOLER.out.versions)
@@ -187,7 +160,7 @@ workflow HIC {
         COMPARTMENTS (
             ch_cool_compartments,
             ch_fasta,
-            PREPARE_GENOME.out.chromosome_size
+            ch_chromosome_size
         )
         ch_versions = ch_versions.mix(COMPARTMENTS.out.versions)
     }
@@ -214,10 +187,11 @@ workflow HIC {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_pipeline_software_mqc_versions.yml',
+            name: 'nf_core_'  +  'hic_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }
+
 
     //
     // MODULE: MultiQC
@@ -234,15 +208,14 @@ workflow HIC {
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
     ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
-
+    ch_multiqc_files = ch_multiqc_files.mix(
+        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
     ch_methods_description                = Channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_methods_description.collectFile(
@@ -251,18 +224,22 @@ workflow HIC {
         )
     )
 
-    ch_multiqc_files                      = ch_multiqc_files.mix(HICPRO.out.mqc)
+    if (params.processing == 'hicpro'){
+        ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
+    }
 
     MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        [],
+        []
     )
 
-    emit:
-    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
 }
 
 /*

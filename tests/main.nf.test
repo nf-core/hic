@@ -16,7 +16,7 @@ nextflow_pipeline {
         then {
             assertAll(
                 { assert workflow.success },
-                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match("software_versions") },
+                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_hic_software_mqc_versions.yml")).match("software_versions") },
                 { assert snapshot(
                     workflow.trace.tasks().size(),
                     // FIXME Not deterministic on CI but works locally
@@ -61,7 +61,7 @@ nextflow_pipeline {
         then {
             assertAll(
                 { assert workflow.success },
-                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml")).match("split_software_versions") },
+                { assert snapshot(UTILS.removeNextflowVersion("$outputDir/pipeline_info/nf_core_hic_software_mqc_versions.yml")).match("split_software_versions") },
                 { assert snapshot(
                     workflow.trace.tasks().size(),
                     // FIXME Not deterministic on CI but works locally

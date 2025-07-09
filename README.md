@@ -9,13 +9,14 @@
 [![GitHub Actions Linting Status](https://github.com/nf-core/hic/actions/workflows/linting.yml/badge.svg)](https://github.com/nf-core/hic/actions/workflows/linting.yml)[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/hic/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.2669512-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.2669512)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.1)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/nf-core/hic)
 
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/hic)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23hic-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/hic)[![Follow on Bluesky](https://img.shields.io/badge/bluesky-%40nf__core-1185fe?labelColor=000000&logo=bluesky)](https://bsky.app/profile/nf-co.re)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 ## Introduction
 
@@ -35,17 +36,17 @@ On release, automated continuous integration tests run the pipeline on a full-si
       2. Detection of valid interaction products
       3. Duplicates removal
       4. Generate raw and normalized contact maps ([`iced`](https://github.com/hiclib/iced))
-   2. Generate `pairs` files for downstream analysis
-   3. [`Pairtools`](https://github.com/open2c/pairtools)
+      5. Generate `pairs` files for downstream analysis
+   2. [`Pairtools`](https://github.com/open2c/pairtools)
       1. Mapping using [`BWA-mem`](https://github.com/lh3/bwa)
-   4. Detection of valid interaction products with [`pairtools`](https://github.com/open2c/pairtools)
-   5. Duplicates removal
-   6. Generate `pairs` files for downstream analysis
+      2. Detection of valid interaction products with [`pairtools`](https://github.com/open2c/pairtools)
+      3. Duplicates removal
+      4. Generate `pairs` files for downstream analysis
 3. Create genome-wide contact maps at various resolutions ([`cooler`](https://github.com/open2c/cooler))
 4. Contact maps normalization using balancing algorithm ([`cooler`](https://github.com/open2c/cooler))
 5. Export to various contact maps formats ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`cooler`](https://github.com/open2c/cooler))
 6. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
-7. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/))
+7. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/), [`Calder2`](https://github.com/CSOgroup/CALDER2))
 8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooltools`](https://cooltools.readthedocs.io/en/latest/))
 9. Quality control report ([`MultiQC`](https://multiqc.info/))
 
@@ -75,8 +76,7 @@ nextflow run nf-core/hic \
 ```
 
 > [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
-> see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/hic/usage) and the [parameter documentation](https://nf-co.re/hic/parameters).
 
