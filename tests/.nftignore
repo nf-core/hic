@@ -1,11 +1,12 @@
 .DS_Store
+compartments/*_compartments.cis.bw
 compartments/*_compartments.cis.lam.txt
 compartments/*_compartments.cis.vecs.tsv
 contact_maps/cool/*.mcool
 contact_maps/cool/*_balanced.cool
 contact_maps/cool/*_balanced.cool
 fastqc/*_fastqc.{html,zip}
-hicpro/mapping/*_0_bwt2pairs.bam
+hicpro/mapping/*_bwt2pairs.bam
 hicpro/stats/*/*.mRSstat
 hicpro/stats/*/*.mmapstat
 hicpro/stats/*/*.mpairstat
