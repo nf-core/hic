@@ -71,24 +71,30 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
+    ch_input = Channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
 
-    Channel
-        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
+    if (params.split_fastq) {
+        ch_input = ch_input.splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
+    }
+
+    ch_input
         .map {
             meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
+            if (!fastq_2) {
+                return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+            } else {
+                return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+            }
         }
         .groupTuple()
         .map { samplesheet ->
             validateInputSamplesheet(samplesheet)
         }
+        .flatMap { it -> setMetaChunk(it) }
+        .collate(2)
         .map {
             meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
+            return [ meta, fastqs.flatten() ]
         }
         .set { ch_samplesheet }
 
@@ -200,12 +206,16 @@ def genomeExistsError() {
 // Generate methods description for MultiQC
 //
 def toolCitationText() {
-    // TODO nf-core: Optionally add in-text citation tools to this list.
     // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
     // Uncomment function in methodsDescriptionText to render in MultiQC report
     def citation_text = [
             "Tools used in the workflow included:",
             "FastQC (Andrews 2010),",
+            "Bowtie2 (Langmead 2012),",
+            "BWA-MEM (Li 2013),",
+            "HiC-Pro (Servant 2015),",
+            "Pairtools (Open2C 2023),",
+            "Cooltools (Open2C 2024),",
             "MultiQC (Ewels et al. 2016)",
             "."
         ].join(' ').trim()
@@ -214,11 +224,15 @@ def toolCitationText() {
 }
 
 def toolBibliographyText() {
-    // TODO nf-core: Optionally add bibliographic entries to this list.
     // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "<li>Author (2023) Pub name, Journal, DOI</li>" : "",
     // Uncomment function in methodsDescriptionText to render in MultiQC report
     def reference_text = [
             "<li>Andrews S, (2010) FastQC, URL: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).</li>",
+            "<li>Langmead, B., Salzberg, S. (2012) Fast gapped-read alignment with Bowtie 2. Nat Methods 9, 357–359. https://doi.org/10.1038/nmeth.1923</li>",
+            "<li>Li, H. (2013) Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv:1303.3997v2</li>",
+            "<li>Servant, N., Varoquaux, N., Lajoie, B.R., Viara, E., Chen, CJ., Vert, JP., Heard E., Dekker J., Barillot, E. (2015) HiC-Pro: an optimized and flexible pipeline for Hi-C data processing. Genome Biol 16, 259. https://doi.org/10.1186/s13059-015-0831-x</li>",
+            "<li>Open2C, Abdennur, N., Fudenberg, G., Flyamer, IM., Galitsyna, AA., Goloborodko, A., Imakaev, M., Venev, SV. (2023). Pairtools: from sequencing data to chromosome contacts. PloS Comput Biol. 20(5):e1012164. doi: 10.1371/journal.pcbi.1012164</li>",
+            "<li>Open2C, Abdennur, N., Abraham, S., Fudenberg, G., Flyamer, IM., Galitsyna, AA., Goloborodko, A., Imakaev, M., Oksuz, BA., & Venev, SV. (2024). Cooltools: Enabling High-Resolution Hi-C Analysis in Python. PLoS Comput Biol. 6;20(5):e1012067. doi: 10.1371/journal.pcbi.1012067</li>",
             "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: /10.1093/bioinformatics/btw354</li>"
         ].join(' ').trim()
 
@@ -249,7 +263,7 @@ def methodsDescriptionText(mqc_methods_yaml) {
     meta["tool_citations"] = ""
     meta["tool_bibliography"] = ""
 
-    // TODO nf-core: Only uncomment below if logic in toolCitationText/toolBibliographyText has been filled!
+    // nf-core: Only uncomment below if logic in toolCitationText/toolBibliographyText has been filled!
     // meta["tool_citations"] = toolCitationText().replaceAll(", \\.", ".").replaceAll("\\. \\.", ".").replaceAll(", \\.", ".")
     // meta["tool_bibliography"] = toolBibliographyText()
 
@@ -260,4 +274,17 @@ def methodsDescriptionText(mqc_methods_yaml) {
     def description_html = engine.createTemplate(methods_text).make(meta)
 
     return description_html.toString()
+}
+
+// Set the meta.chunk value in case of technical replicates
+def setMetaChunk(row){
+    def map = []
+    row[1].eachWithIndex() { file, i ->
+        println row[0]
+        meta = row[0].clone()
+        meta.chunk = i
+        meta.part = row[1].size()
+        map += [meta, file]
+    }
+    return map
 }
