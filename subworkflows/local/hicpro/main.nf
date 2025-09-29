@@ -128,6 +128,7 @@ workflow HICPRO {
             chrsize.collect()
         )
         ch_hicpro_raw_maps = BUILD_CONTACT_MAPS.out.maps
+        ch_versions = ch_versions.mix(BUILD_CONTACT_MAPS.out.versions)
 
         // run_ice
         ICE_NORMALIZATION(
