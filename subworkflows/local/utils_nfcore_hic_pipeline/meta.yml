@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "PIPELINE_INITIALISATION"
+description: |
+  Subworkflow to initialise the nf-core/hic pipeline. Handles version printing,
+  parameter validation, configuration checks, and creation of the input samplesheet
+  channel from the provided samplesheet file.
+keywords:
+  - Hi-C
+  - Pipeline initialisation
+  - nf-core
+  - Parameters
+  - Samplesheet
+components:
+  - utils/nextflow_pipeline
+  - utils/nfschema_plugin
+  - utils/nfcore_pipeline
+input:
+  - version:
+      type: boolean
+      description: |
+        Print pipeline version and exit
+  - validate_params:
+      type: boolean
+      description: |
+        Validate parameters against the schema at runtime
+  - monochrome_logs:
+      type: boolean
+      description: |
+        Disable coloured log outputs
+  - nextflow_cli_args:
+      type: array
+      description: |
+        List of positional Nextflow CLI arguments
+  - outdir:
+      type: string
+      description: |
+        Output directory where results will be saved
+  - input:
+      type: string
+      description: |
+        Path to input samplesheet
+output:
+  - samplesheet:
+      type: file
+      description: |
+        Channel containing validated input samplesheet entries
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@adamrtalbot"
+  - "@drpatelh"
+maintainers:
+  - "@adamrtalbot"
+  - "@drpatelh"
+  - "@maxulysse"
+  

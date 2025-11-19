@@ -1,0 +1,73 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "PREPARE_GENOME"
+description: |
+  Workflow to prepare a reference genome for Hi-C data analysis. Builds Bowtie2 or
+  BWA indexes depending on the processing mode, generates chromosome sizes, sets
+  digestion parameters (restriction and ligation sites), and computes restriction
+  fragments if required. Outputs ready-to-use genome resources for downstream Hi-C
+  workflows.
+keywords:
+  - Hi-C
+  - Genome preparation
+  - Bowtie2
+  - BWA
+  - Restriction fragments
+  - Chromosome sizes
+components:
+  - bowtie2_build
+  - bwa_index
+  - custom_getchromsizes
+  - get_restriction_fragments
+input:
+  - fasta:
+      type: file
+      description: |
+        Reference genome FASTA file
+      pattern: "*.fa"
+  - bwt2_index:
+      type: directory
+      description: |
+        Optional pre-built Bowtie2 index directory (used if processing mode is hicpro)
+  - bwa_index:
+      type: directory
+      description: |
+        Optional pre-built BWA index directory (used if processing mode is pairtools)
+output:
+  - fasta:
+      type: file
+      description: |
+        Reference genome FASTA file with metadata
+      pattern: "*.fa"
+  - index:
+      type: directory
+      description: |
+        Genome index directory (Bowtie2 or BWA depending on processing mode)
+  - chromosome_size:
+      type: file
+      description: |
+        Chromosome sizes file generated from the reference genome
+      pattern: "*.txt"
+  - res_frag:
+      type: file
+      description: |
+        Restriction fragments file generated from the reference genome
+      pattern: "*.txt"
+  - restriction_site:
+      type: string
+      description: |
+        Restriction site motif used for digestion protocols
+  - ligation_site:
+      type: string
+      description: |
+        Ligation site motif used for digestion protocols
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@adamrtalbot"
+  - "@drpatelh"
+maintainers:
+  - "@adamrtalbot"
+  - "@drpatelh"
+  - "@maxulysse"

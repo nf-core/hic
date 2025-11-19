@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "COOLER"
+description: |
+  Main workflow to generate and process cooler files from Hi-C interaction pairs.
+  Takes a .pairs file of valid interactions, chromosome sizes, and bin definitions.
+  Builds cooler files at multiple resolutions, balances them, zoomifies at selected
+  resolution(s), and produces dumps for downstream analysis.
+keywords:
+  - Hi-C
+  - Cooler
+  - Genomics
+  - Chromosome interactions
+components:
+  - cooler_makebins
+  - cooler_cload
+  - cooler_balance
+  - cooler_zoomify
+  - cooler_dump
+  - split_cooler_dump
+input:
+  - pairs:
+      type: file
+      description: |
+        Input .pairs text file containing valid Hi-C interactions
+      pattern: "*.pairs"
+  - chromsize:
+      type: file
+      description: |
+        Chromosome sizes file
+      pattern: "*.txt"
+  - cool_bins:
+      type: file
+      description: |
+        Bin size definitions for cooler construction
+      pattern: "*.txt"
+output:
+  - cool:
+      type: file
+      description: |
+        Balanced cooler files at specified resolutions
+      pattern: "*.cool"
+  - mcool:
+      type: file
+      description: |
+        Multi-resolution cooler file (zoomified)
+      pattern: "*.mcool"
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@adamrtalbot"
+  - "@drpatelh"
+maintainers:
+  - "@adamrtalbot"
+  - "@drpatelh"
+  - "@maxulysse"

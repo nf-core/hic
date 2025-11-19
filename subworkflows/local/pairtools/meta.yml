@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "PAIRTOOLS"
+description: |
+  Main workflow to process raw Hi-C sequencing reads into valid interaction pairs
+  using the Pairtools suite. Aligns reads with BWA, parses and restricts pairs,
+  sorts and merges them, deduplicates or retains duplicates depending on parameters,
+  selects valid pairs, computes statistics, and indexes with Pairix. Also manages
+  BAM files with Samtools for sorting, indexing, and flagstat reporting.
+keywords:
+  - Hi-C
+  - Pairtools
+  - Genomics
+  - Chromosome interactions
+  - Contact maps
+components:
+  - bwa_mem
+  - bwamem2_mem
+  - pairtools_parse
+  - pairtools_restrict
+  - pairtools_sort
+  - pairtools_merge
+  - pairtools_split
+  - pairtools_dedup
+  - pairtools_select
+  - pairtools_stats
+  - pairix
+  - samtools_sort
+  - samtools_index
+  - samtools_flagstat
+input:
+  - reads:
+      type: file
+      description: |
+        Raw sequencing reads (paired-end FASTQ files)
+      pattern: "*.fastq.gz"
+  - fasta:
+      type: file
+      description: |
+        Reference genome FASTA file
+      pattern: "*.fa"
+  - index:
+      type: directory
+      description: |
+        Path to the genome index for BWA mapping
+  - frag:
+      type: file
+      description: |
+        Restriction fragments file for digestion protocols
+      pattern: "*.txt"
+  - chrsize:
+      type: file
+      description: |
+        Chromosome sizes file
+      pattern: "*.txt"
+output:
+  - pairs:
+      type: file
+      description: |
+        Indexed valid interaction pairs in .pairs format
+      pattern: "*.pairs"
+  - bam:
+      type: file
+      description: |
+        BAM files with corresponding index (.bai) after alignment and processing
+      pattern: "*.bam"
+  - stats:
+      type: file
+      description: |
+        Pairtools statistics on selected valid pairs
+      pattern: "*.txt"
+  - flagstat:
+      type: file
+      description: |
+        Samtools flagstat output for BAM files
+      pattern: "*.txt"
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@adamrtalbot"
+  - "@drpatelh"
+maintainers:
+  - "@adamrtalbot"
+  - "@drpatelh"
+  - "@maxulysse"

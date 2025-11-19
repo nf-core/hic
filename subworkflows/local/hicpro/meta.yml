@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "HICPRO"
+description: |
+  Main workflow to process raw Hi-C sequencing reads into valid interaction pairs
+  and contact maps. Performs mapping, digestion or DNase-like protocols, merges
+  interactions and statistics, converts to pairs format, and optionally builds
+  and normalizes contact maps.
+keywords:
+  - Hi-C
+  - Hic-Pro
+  - Genomics
+  - Chromosome interactions
+  - Contact maps
+components:
+  - hicpro_mapping
+  - get_valid_interaction
+  - get_valid_interaction_dnase
+  - merge_valid_interaction
+  - merge_stats
+  - hicpro2pairs
+  - build_contact_maps
+  - ice_normalization
+input:
+  - reads:
+      type: file
+      description: |
+        Raw sequencing reads (paired-end FASTQ files)
+      pattern: "*.fastq.gz"
+  - fasta:
+      type: file
+      description: |
+        Reference genome FASTA file
+      pattern: "*.fa"
+  - index:
+      type: directory
+      description: |
+        Path to the genome index for read mapping
+  - fragments:
+      type: file
+      description: |
+        Restriction fragments file for digestion protocols
+      pattern: "*.txt"
+  - chrsize:
+      type: file
+      description: |
+        Chromosome sizes file
+      pattern: "*.txt"
+  - ligation_site:
+      type: string
+      description: |
+        Ligation site sequence used in digestion protocols
+  - map_res:
+      type: integer
+      description: |
+        Resolution(s) for building contact maps
+output:
+  - pairs:
+      type: file
+      description: |
+        Valid interaction pairs in .pairs format
+      pattern: "*.pairs"
+  - mqc:
+      type: file
+      description: |
+        MultiQC-compatible statistics from mapping, interactions, and merging
+      pattern: "*.mqc"
+  - raw_maps:
+      type: file
+      description: |
+        Raw contact maps generated from valid pairs
+      pattern: "*.txt"
+  - iced_maps:
+      type: file
+      description: |
+        ICE-normalized contact maps
+      pattern: "*.txt"
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@adamrtalbot"
+  - "@drpatelh"
+maintainers:
+  - "@adamrtalbot"
+  - "@drpatelh"
+  - "@maxulysse"

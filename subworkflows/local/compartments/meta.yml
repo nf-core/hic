@@ -1,32 +1,45 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "COMPARTMENTS"
-description: 
+description: |
+  Subworkflow to call genomic compartments from Hi-C data using either
+  Cooltools Eigscis or Calder2. Takes a .cool file, reference FASTA,
+  and chromosome sizes, then runs the selected caller based on the
+  `params.compartments_caller` parameter. Outputs compartment calls
+  and tool version information.
 keywords:
-  - Eigcis
+  - Eigscis
   - Calder2
-components: []
+  - Hi-C
+  - Compartments
+  - Genomics
+components:
+  - cooltools_eigscis
+  - calder2
 input:
-  - print_version:
-      type: boolean
+  - cool:
+      type: file
       description: |
-        Print the version of the pipeline and exit
-  - dump_parameters:
-      type: boolean
+        Input Hi-C contact map in .cool format
+      pattern: "*.cool"
+  - fasta:
+      type: file
       description: |
-        Dump the parameters of the pipeline to a JSON file
-  - output_directory:
-      type: directory
-      description: Path to output dir to write JSON file to.
-      pattern: "results/"
-  - check_conda_channel:
-      type: boolean
+        Reference genome FASTA file
+      pattern: "*.fa"
+  - chrsize:
+      type: file
       description: |
-        Check if the conda channel priority is correct.
+        Chromosome sizes file
+      pattern: "*.txt"
 output:
-  - dummy_emit:
-      type: boolean
+  - compartments:
+      type: directory
       description: |
-        Dummy emit to make nf-core subworkflows lint happy
+        Directory containing compartment calls from the selected caller
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
 authors:
   - "@adamrtalbot"
   - "@drpatelh"
