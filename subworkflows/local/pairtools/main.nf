@@ -89,7 +89,6 @@ workflow PAIRTOOLS {
         fasta,
         "bai"
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
 
     SAMTOOLS_INDEX(
         SAMTOOLS_SORT.out.bam
