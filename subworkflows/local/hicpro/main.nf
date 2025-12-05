@@ -4,14 +4,14 @@
  * From the raw sequencing reads to the list of valid interactions
  */
 
-include { HICPRO_MAPPING } from './hicpro_mapping'
-include { GET_VALID_INTERACTION } from '../../modules/local/hicpro/get_valid_interaction'
-include { GET_VALID_INTERACTION_DNASE } from '../../modules/local/hicpro/get_valid_interaction_dnase'
-include { MERGE_VALID_INTERACTION } from '../../modules/local/hicpro/merge_valid_interaction'
-include { MERGE_STATS } from '../../modules/local/hicpro/merge_stats'
-include { HICPRO2PAIRS } from '../../modules/local/hicpro/hicpro2pairs'
-include { BUILD_CONTACT_MAPS } from '../../modules/local/hicpro/build_contact_maps'
-include { ICE_NORMALIZATION } from '../../modules/local/hicpro/run_ice'
+include { HICPRO_MAPPING } from '../hicpro_mapping'
+include { GET_VALID_INTERACTION } from '../../../modules/local/hicpro/get_valid_interaction'
+include { GET_VALID_INTERACTION_DNASE } from '../../../modules/local/hicpro/get_valid_interaction_dnase'
+include { MERGE_VALID_INTERACTION } from '../../../modules/local/hicpro/merge_valid_interaction'
+include { MERGE_STATS } from '../../../modules/local/hicpro/merge_stats'
+include { HICPRO2PAIRS } from '../../../modules/local/hicpro/hicpro2pairs'
+include { BUILD_CONTACT_MAPS } from '../../../modules/local/hicpro/build_contact_maps'
+include { ICE_NORMALIZATION } from '../../../modules/local/hicpro/run_ice'
 
 // Remove meta.chunks
 def removeChunks(row){
@@ -32,7 +32,7 @@ workflow HICPRO {
     map_res // values
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // Fastq to paired-end bam
     HICPRO_MAPPING(
@@ -138,8 +138,8 @@ workflow HICPRO {
         ch_versions = ch_versions.mix(ICE_NORMALIZATION.out.versions)
 
     }else{
-        ch_hicpro_raw_maps = Channel.empty()
-        ch_hicpro_iced_maps = Channel.empty()
+        ch_hicpro_raw_maps = channel.empty()
+        ch_hicpro_iced_maps = channel.empty()
     }
 
     emit:

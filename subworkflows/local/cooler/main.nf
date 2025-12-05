@@ -4,13 +4,13 @@
  * OUTPUT : cooler files
  */
 
-include { COOLER_ZOOMIFY } from '../../modules/nf-core/cooler/zoomify/main'
-include { COOLER_DUMP } from '../../modules/nf-core/cooler/dump/main'
-include { COOLER_CLOAD } from '../../modules/nf-core/cooler/cload/main'
-include { COOLER_BALANCE } from '../../modules/nf-core/cooler/balance/main'
-include { COOLER_MAKEBINS } from '../../modules/nf-core/cooler/makebins/main'
+include { COOLER_ZOOMIFY } from '../../../modules/nf-core/cooler/zoomify/main'
+include { COOLER_DUMP } from '../../../modules/nf-core/cooler/dump/main'
+include { COOLER_CLOAD } from '../../../modules/nf-core/cooler/cload/main'
+include { COOLER_BALANCE } from '../../../modules/nf-core/cooler/balance/main'
+include { COOLER_MAKEBINS } from '../../../modules/nf-core/cooler/makebins/main'
 
-include { SPLIT_COOLER_DUMP } from '../../modules/local/split_cooler_dump'
+include { SPLIT_COOLER_DUMP } from '../../../modules/local/split_cooler_dump'
 
 // add resolution in meta
 def addResolution(row) {
@@ -28,7 +28,7 @@ workflow COOLER {
     cool_bins
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     //*****************************************
     // EXPORT BINS
@@ -40,11 +40,12 @@ workflow COOLER {
 
     //*****************************************
     // BUILD COOL FILE PER RESOLUTION
-    // [meta, pairs, resolution]
 
     COOLER_CLOAD(
-        pairs.combine(cool_bins),
-        chromsize.map{it -> it[1]}.collect()
+        pairs,
+        chromsize,
+        "pairs",
+        cool_bins
     )
     ch_versions = ch_versions.mix(COOLER_CLOAD.out.versions)
 
@@ -62,7 +63,7 @@ workflow COOLER {
     if (!params.res_zoomify){
         ch_res_zoomify = cool_bins.min()
     }else{
-        ch_res_zoomify = Channel.from(params.res_zoomify).splitCsv().flatten().unique().toInteger()
+        ch_res_zoomify = channel.from(params.res_zoomify).splitCsv().flatten().unique().toInteger()
     }
 
     ch_cool

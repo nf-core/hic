@@ -1,5 +1,5 @@
-include { COOLTOOLS_EIGSCIS } from '../../modules/local/cooltools/eigscis'
-include { CALDER2 } from '../../modules/nf-core/calder2/main'
+include { COOLTOOLS_EIGSCIS } from '../../../modules/local/cooltools/eigscis.nf'
+include { CALDER2 } from '../../../modules/nf-core/calder2/main'
 
 workflow COMPARTMENTS {
 
@@ -9,7 +9,7 @@ workflow COMPARTMENTS {
     chrsize
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     if (params.compartments_caller =~ 'cooltools'){
         COOLTOOLS_EIGSCIS(
@@ -24,7 +24,7 @@ workflow COMPARTMENTS {
     if (params.compartments_caller =~ 'calder2'){
         CALDER2(
             cool.map{meta, cool, res -> [meta, cool] },
-            Channel.value([])
+            channel.value([])
         )
         ch_versions = ch_versions.mix(CALDER2.out.versions)
         ch_comp = CALDER2.out.output_folder

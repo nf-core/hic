@@ -3,12 +3,12 @@
  * From the raw sequencing reads to a paired-end bam file
  */
 
-include { BOWTIE2_ALIGN } from '../../modules/nf-core/bowtie2/align/main'
-include { TRIM_READS } from '../../modules/local/hicpro/trim_reads'
-include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_TRIMMED } from '../../modules/nf-core/bowtie2/align/main'
-include { MERGE_BOWTIE2 } from '../../modules/local/hicpro/bowtie2_merge'
-include { COMBINE_MATES} from '../../modules/local/hicpro/combine_mates'
-include { MAPPING_STATS_DNASE } from '../../modules/local/hicpro/dnase_mapping_stats'
+include { BOWTIE2_ALIGN } from '../../../modules/nf-core/bowtie2/align/main'
+include { TRIM_READS } from '../../../modules/local/hicpro/trim_reads'
+include { BOWTIE2_ALIGN as BOWTIE2_ALIGN_TRIMMED } from '../../../modules/nf-core/bowtie2/align/main'
+include { MERGE_BOWTIE2 } from '../../../modules/local/hicpro/bowtie2_merge'
+include { COMBINE_MATES} from '../../../modules/local/hicpro/combine_mates'
+include { MAPPING_STATS_DNASE } from '../../../modules/local/hicpro/dnase_mapping_stats'
 
 
 workflow HICPRO_MAPPING {

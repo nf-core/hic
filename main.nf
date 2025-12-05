@@ -47,7 +47,7 @@ workflow NFCORE_HIC {
 
     main:
 
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     //
     // SUBWORKFLOW: prepare genome annotation

@@ -1,5 +1,5 @@
-include { COOLTOOLS_INSULATION } from '../../modules/local/cooltools/insulation'
-include { HIC_FIND_TADS } from '../../modules/local/hicexplorer/hicFindTADs'
+include { COOLTOOLS_INSULATION } from '../../../modules/local/cooltools/insulation.nf'
+include { HIC_FIND_TADS } from '../../../modules/local/hicexplorer/hicFindTADs'
 
 workflow TADS {
 
@@ -7,8 +7,8 @@ workflow TADS {
     cool
 
     main:
-    ch_versions = Channel.empty()
-    ch_tads = Channel.empty()
+    ch_versions = channel.empty()
+    ch_tads = channel.empty()
 
     if (params.tads_caller =~ 'insulation'){
         COOLTOOLS_INSULATION(cool)

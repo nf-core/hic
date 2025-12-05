@@ -4,24 +4,24 @@
  * From the raw sequencing reads to the list of valid interactions
  */
 
-//include { BWAMEM2_MEM } from '../../modules/nf-core/bwamem2/mem/main'
-include { BWA_MEM } from '../../modules/nf-core/bwa/mem/main'
-include { PAIRTOOLS_DEDUP } from '../../modules/nf-core/pairtools/dedup/main'
-//include { PAIRTOOLS_PARSE } from '../../modules/nf-core/pairtools/parse/main'
-include { PAIRTOOLS_RESTRICT } from '../../modules/nf-core/pairtools/restrict/main'
-include { PAIRTOOLS_SELECT } from '../../modules/nf-core/pairtools/select/main'
-include { PAIRTOOLS_SORT } from '../../modules/nf-core/pairtools/sort/main'
-include { PAIRTOOLS_MERGE } from '../../modules/nf-core/pairtools/merge/main'
-include { PAIRTOOLS_STATS } from '../../modules/nf-core/pairtools/stats/main'
-include { SAMTOOLS_FLAGSTAT } from '../../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_SORT } from '../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX } from '../../modules/nf-core/samtools/index/main'
-include { PAIRIX } from '../../modules/nf-core/pairix/main'
+//include { BWAMEM2_MEM } from '../../../modules/nf-core/bwamem2/mem/main'
+include { BWA_MEM } from '../../../modules/nf-core/bwa/mem/main'
+include { PAIRTOOLS_DEDUP } from '../../../modules/nf-core/pairtools/dedup/main'
+//include { PAIRTOOLS_PARSE } from '../../../modules/nf-core/pairtools/parse/main'
+include { PAIRTOOLS_RESTRICT } from '../../../modules/nf-core/pairtools/restrict/main'
+include { PAIRTOOLS_SELECT } from '../../../modules/nf-core/pairtools/select/main'
+include { PAIRTOOLS_SORT } from '../../../modules/nf-core/pairtools/sort/main'
+include { PAIRTOOLS_MERGE } from '../../../modules/nf-core/pairtools/merge/main'
+include { PAIRTOOLS_STATS } from '../../../modules/nf-core/pairtools/stats/main'
+include { SAMTOOLS_FLAGSTAT } from '../../../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_SORT } from '../../../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_INDEX } from '../../../modules/nf-core/samtools/index/main'
+include { PAIRIX } from '../../../modules/nf-core/pairix/main'
 
-//include { PAIRTOOLS_MERGE } from '../../modules/local/pairtools/pairtools_merge'
-include { PAIRTOOLS_SPLIT } from '../../modules/local/pairtools/pairtools_split'
-//include { PAIRTOOLS_STATS } from '../../modules/local/pairtools/pairtools_stats'
-include { PAIRTOOLS_PARSE } from '../../modules/local/pairtools/pairtools_parse'
+//include { PAIRTOOLS_MERGE } from '../../../modules/local/pairtools/pairtools_merge'
+include { PAIRTOOLS_SPLIT } from '../../../modules/local/pairtools/pairtools_split'
+//include { PAIRTOOLS_STATS } from '../../../modules/local/pairtools/pairtools_stats'
+include { PAIRTOOLS_PARSE } from '../../../modules/local/pairtools/pairtools_parse'
 
 workflow PAIRTOOLS {
 
@@ -33,13 +33,13 @@ workflow PAIRTOOLS {
     chrsize // path
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     BWA_MEM(
         reads,
         index.collect(),
         fasta.collect(),
-        Channel.value([])
+        channel.value([])
     )
     ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
@@ -86,7 +86,8 @@ workflow PAIRTOOLS {
     // Manage BAM files
     SAMTOOLS_SORT(
         PAIRTOOLS_SPLIT.out.bam,
-        fasta
+        fasta,
+        "bai"
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
 

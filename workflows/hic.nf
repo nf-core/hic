@@ -23,38 +23,38 @@ include { TADS } from '../subworkflows/local/tads'
 //****************************************
 // Combine all maps resolution for downstream analysis
 
-ch_map_res = Channel.from( params.bin_size ).splitCsv().flatten().toInteger()
+ch_map_res = channel.from( params.bin_size ).splitCsv().flatten().toInteger()
 
 if (params.res_zoomify){
-    ch_zoom_res = Channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+    ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
     ch_map_res = ch_map_res.concat(ch_zoom_res)
 }
 
 if (params.res_tads && !params.skip_tads){
-    ch_tads_res = Channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
+    ch_tads_res = channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
     ch_map_res = ch_map_res.concat(ch_tads_res)
 }else{
-    ch_tads_res=Channel.empty()
+    ch_tads_res=channel.empty()
     if (!params.skip_tads){
         log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
     }
 }
 
 if (params.res_dist_decay && !params.skip_dist_decay){
-    ch_ddecay_res = Channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
+    ch_ddecay_res = channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
     ch_map_res = ch_map_res.concat(ch_ddecay_res)
 }else{
-    ch_ddecay_res = Channel.empty()
+    ch_ddecay_res = channel.empty()
     if (!params.skip_dist_decay){
         log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay"
     }
 }
 
 if (params.res_compartments && !params.skip_compartments){
-    ch_comp_res = Channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
+    ch_comp_res = channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
     ch_map_res = ch_map_res.concat(ch_comp_res)
 }else{
-    ch_comp_res = Channel.empty()
+    ch_comp_res = channel.empty()
     if (!params.skip_compartments){
         log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
     }
@@ -81,8 +81,8 @@ workflow HIC {
 
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
     //
     // MODULE: Run FastQC
     //
@@ -196,24 +196,24 @@ workflow HIC {
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = Channel.fromPath(
+    ch_multiqc_config        = channel.fromPath(
         "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+        channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        channel.empty()
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    ch_workflow_summary = channel.value(paramsSummaryMultiqc(summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
         file(params.multiqc_methods_description, checkIfExists: true) :
         file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
+    ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
