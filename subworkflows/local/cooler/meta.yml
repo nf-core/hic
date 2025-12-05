@@ -11,12 +11,12 @@ keywords:
   - Genomics
   - Chromosome interactions
 components:
-  - cooler_makebins
-  - cooler_cload
-  - cooler_balance
-  - cooler_zoomify
-  - cooler_dump
-  - split_cooler_dump
+  - cooler/makebins
+  - cooler/cload
+  - cooler/balance
+  - cooler/zoomify
+  - cooler/dump
+  - split/cooler/dump
 input:
   - pairs:
       type: file

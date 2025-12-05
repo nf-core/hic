@@ -12,8 +12,8 @@ keywords:
   - HiCExplorer
   - Genomics
 components:
-  - cooltools_insulation
-  - hic_find_tads
+  - cooltools/insulation
+  - hic/find/tads
 input:
   - cool:
       type: file

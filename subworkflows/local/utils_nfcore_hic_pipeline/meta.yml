@@ -11,9 +11,10 @@ keywords:
   - Parameters
   - Samplesheet
 components:
-  - utils/nextflow_pipeline
-  - utils/nfschema_plugin
-  - utils/nfcore_pipeline
+  - utils/nextflow/pipeline
+  - utils/nfschema/plugin
+  - utils/nfcore/pipeline
+  - completionsummary
 input:
   - version:
       type: boolean

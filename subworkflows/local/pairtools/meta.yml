@@ -13,20 +13,20 @@ keywords:
   - Chromosome interactions
   - Contact maps
 components:
-  - bwa_mem
-  - bwamem2_mem
-  - pairtools_parse
-  - pairtools_restrict
-  - pairtools_sort
-  - pairtools_merge
-  - pairtools_split
-  - pairtools_dedup
-  - pairtools_select
-  - pairtools_stats
+  - bwa/mem
+  - bwamem2/mem
+  - pairtools/parse
+  - pairtools/restrict
+  - pairtools/sort
+  - pairtools/merge
+  - pairtools/split
+  - pairtools/dedup
+  - pairtools/select
+  - pairtools/stats
   - pairix
-  - samtools_sort
-  - samtools_index
-  - samtools_flagstat
+  - samtools/sort
+  - samtools/index
+  - samtools/flagstat
 input:
   - reads:
       type: file

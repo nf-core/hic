@@ -14,10 +14,10 @@ keywords:
   - Restriction fragments
   - Chromosome sizes
 components:
-  - bowtie2_build
-  - bwa_index
-  - custom_getchromsizes
-  - get_restriction_fragments
+  - bowtie2/build
+  - bwa/index
+  - samtools/faidx
+  - get/restriction/fragments
 input:
   - fasta:
       type: file

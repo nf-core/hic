@@ -13,12 +13,12 @@ keywords:
   - Bowtie2
   - Genomics
 components:
-  - bowtie2_align
-  - trim_reads
-  - merge_bowtie2
-  - hicpro_combine_mates
-  - mapping_stats_dnase
-  - combine_mates
+  - bowtie2/align
+  - trim/reads
+  - merge/bowtie2
+  - hicpro/combine/mates
+  - mapping/stats/dnase
+  - combine/mates
 input:
   - reads:
       type: file

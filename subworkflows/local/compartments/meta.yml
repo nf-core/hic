@@ -13,7 +13,7 @@ keywords:
   - Compartments
   - Genomics
 components:
-  - cooltools_eigscis
+  - cooltools/eigscis
   - calder2
 input:
   - cool:

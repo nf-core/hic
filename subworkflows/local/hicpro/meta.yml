@@ -13,13 +13,13 @@ keywords:
   - Contact maps
 components:
   - hicpro_mapping
-  - get_valid_interaction
-  - get_valid_interaction_dnase
-  - merge_valid_interaction
-  - merge_stats
+  - get/valid/interaction
+  - get/valid/interaction/dnase
+  - merge/valid/interaction
+  - merge/stats
   - hicpro2pairs
-  - build_contact_maps
-  - ice_normalization
+  - build/contact/maps
+  - ice/normalization
 input:
   - reads:
       type: file
