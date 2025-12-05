@@ -7,6 +7,12 @@
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { UTILS_NEXTFLOW_PIPELINE     } from '../../../subworkflows/nf-core/utils_nextflow_pipeline/main.nf'
+include { UTILS_NFCORE_PIPELINE     } from '../../../subworkflows/nf-core/utils_nfcore_pipeline/main.nf'
+include { UTILS_NFSCHEMA_PLUGIN     } from '../../../subworkflows/nf-core/utils_nfschema_plugin/main.nf'
+include { completionSummary         } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
+include { samplesheetToList         } from 'plugin/nf-schema'
+include { paramsSummaryMap         } from 'plugin/nf-schema'
 
 
 /*
@@ -27,7 +33,7 @@ workflow PIPELINE_INITIALISATION {
 
     main:
 
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     //
     // Print version and exit if required and dump pipeline parameters to JSON file
@@ -42,10 +48,16 @@ workflow PIPELINE_INITIALISATION {
     //
     // Validate parameters and generate parameter summary to stdout
     //
-    UTILS_NFSCHEMA_PLUGIN (
-        workflow,
-        validate_params,
-        null
+    UTILS_NFSCHEMA_PLUGIN(
+        workflow,          // input_workflow
+        validate_params,   // validate_params
+        null,              // parameters_schema (null: will use default schema)
+        false,             // help (true: help message)
+        false,             // help_full (true: full help message)
+        false,             // show_hidden (true: show hidden params)
+        "",              // before_text (string before help message)
+        "",              // after_text (string after help message)
+        ""               // command (example command string)
     )
 
     //
@@ -63,7 +75,7 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
-    ch_input = Channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
+    ch_input = channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
 
     if (params.split_fastq) {
         ch_input = ch_input.splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
