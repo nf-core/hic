@@ -20,7 +20,7 @@ workflow HICPRO_MAPPING {
     ligation_site // value
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     // Align each mates separetly and add mates information in [meta]
     ch_reads_r1 = reads
