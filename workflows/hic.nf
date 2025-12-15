@@ -23,7 +23,7 @@ include { TADS } from '../subworkflows/local/tads'
 //****************************************
 // Combine all maps resolution for downstream analysis
 
-ch_map_res = channel.from( params.bin_size ).splitCsv().flatten().toInteger()
+ch_map_res = channel.from( params.bin_size.toString()).splitCsv().flatten().toInteger()
 
 if (params.res_zoomify){
     ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()

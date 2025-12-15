@@ -262,7 +262,7 @@
             "fa_icon": "fas fa-chess-board",
             "properties": {
                 "bin_size": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "1000000",
                     "description": "Resolution to build the maps (comma separated)"
