@@ -19,6 +19,7 @@ include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main.nf'
 
 //****************************************
 // Combine all maps resolution for downstream analysis
@@ -90,6 +91,16 @@ workflow HIC {
         ch_samplesheet
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+    
+    //
+    // MODULE: Run trimgalore
+    //
+    if (params.digestion == 'arimaV2'){
+        TRIMGALORE (
+            ch_samplesheet
+        )
+        ch_samplesheet = TRIMGALORE.out.reads
+    }
 
     //
     // SUB-WORFLOW: HiC-Pro

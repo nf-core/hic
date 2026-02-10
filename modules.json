@@ -124,6 +124,11 @@
                         "branch": "master",
                         "git_sha": "0b2435805036a16dcdcf21533632d956b8273ac4",
                         "installed_by": ["modules"]
+                    },
+                    "trimgalore": {
+                        "branch": "master",
+                        "git_sha": "1b32b48b7d2803ae78a1beb20b7e9657dbcda776",
+                        "installed_by": ["modules"]
                     }
                 }
             },
