@@ -12,14 +12,6 @@ include { COOLER_MAKEBINS } from '../../../modules/nf-core/cooler/makebins/main'
 
 include { SPLIT_COOLER_DUMP } from '../../../modules/local/split_cooler_dump'
 
-// add resolution in meta
-def addResolution(row) {
-    def meta = [:]
-    meta.id = row[0].id
-    meta.resolution = row[2]
-    return [meta, row[1], row[2]]
-}
-
 workflow COOLER {
 
     take:
@@ -51,8 +43,11 @@ workflow COOLER {
 
     // Add resolution in meta
     COOLER_CLOAD.out.cool
-        .map{ it -> addResolution(it) }
-        .set{ ch_cool }
+        .combine(cool_bins)
+        .map { meta, file, res ->
+            [meta + [resolution: res], file]
+        }
+        .set { ch_cool }
 
     COOLER_BALANCE(
         ch_cool.map{[it[0], it[1], ""]}
