@@ -10,6 +10,7 @@ include { COOLER_CLOAD } from '../../../modules/nf-core/cooler/cload/main'
 include { COOLER_BALANCE } from '../../../modules/nf-core/cooler/balance/main'
 include { COOLER_MAKEBINS } from '../../../modules/nf-core/cooler/makebins/main'
 
+include { FILTER_CHROMSIZE } from '../../../modules/local/filter_chromsize'
 include { SPLIT_COOLER_DUMP } from '../../../modules/local/split_cooler_dump'
 
 workflow COOLER {
@@ -21,6 +22,13 @@ workflow COOLER {
 
     main:
     ch_versions = channel.empty()
+
+    //*****************************************
+    // FILTER CHROMOSOMES ON SIZE
+
+    if( params.min_size ) {
+        chromsize = chromsize | FILTER_CHROMSIZE
+    }
 
     //*****************************************
     // EXPORT BINS
