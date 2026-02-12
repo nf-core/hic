@@ -21,48 +21,6 @@ include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
 include { TRIMGALORE } from '../modules/nf-core/trimgalore/main.nf'
 
-//****************************************
-// Combine all maps resolution for downstream analysis
-
-ch_map_res = channel.from( params.bin_size.toString()).splitCsv().flatten().toInteger()
-
-if (params.res_zoomify){
-    ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
-    ch_map_res = ch_map_res.concat(ch_zoom_res)
-}
-
-if (params.res_tads && !params.skip_tads){
-    ch_tads_res = channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
-    ch_map_res = ch_map_res.concat(ch_tads_res)
-}else{
-    ch_tads_res=channel.empty()
-    if (!params.skip_tads){
-        log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
-    }
-}
-
-if (params.res_dist_decay && !params.skip_dist_decay){
-    ch_ddecay_res = channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
-    ch_map_res = ch_map_res.concat(ch_ddecay_res)
-}else{
-    ch_ddecay_res = channel.empty()
-    if (!params.skip_dist_decay){
-        log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay"
-    }
-}
-
-if (params.res_compartments && !params.skip_compartments){
-    ch_comp_res = channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
-    ch_map_res = ch_map_res.concat(ch_comp_res)
-}else{
-    ch_comp_res = channel.empty()
-    if (!params.skip_compartments){
-        log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
-    }
-}
-
-ch_map_res = ch_map_res.unique()
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -82,16 +40,51 @@ workflow HIC {
 
     main:
 
+    //****************************************
+    // Combine all maps resolution for downstream analysis
+
+    ch_map_res = channel.from( params.bin_size.toString()).splitCsv().flatten().toInteger()
+
+    if (params.res_zoomify){
+        ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_zoom_res)
+    }
+
+    if (params.res_tads && !params.skip_tads){
+        ch_tads_res = channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_tads_res)
+    }else{
+        ch_tads_res=channel.empty()
+        if (!params.skip_tads){
+            log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
+        }
+    }
+
+    if (params.res_dist_decay && !params.skip_dist_decay){
+        ch_ddecay_res = channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_ddecay_res)
+    }else{
+        ch_ddecay_res = channel.empty()
+        if (!params.skip_dist_decay){
+            log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay"
+        }
+    }
+
+    if (params.res_compartments && !params.skip_compartments){
+        ch_comp_res = channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_comp_res)
+    }else{
+        ch_comp_res = channel.empty()
+        if (!params.skip_compartments){
+            log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
+        }
+    }
+
+    ch_map_res = ch_map_res.unique()
+
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    
+
     //
     // MODULE: Run trimgalore
     //
@@ -101,6 +94,15 @@ workflow HIC {
         )
         ch_samplesheet = TRIMGALORE.out.reads
     }
+    
+    //
+    // MODULE: Run FastQC
+    //
+    FASTQC (
+        ch_samplesheet
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+
 
     //
     // SUB-WORFLOW: HiC-Pro
