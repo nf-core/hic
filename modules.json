@@ -22,7 +22,7 @@
                     },
                     "bwa/mem": {
                         "branch": "master",
-                        "git_sha": "966ba9887e2b04d89d64db06c01508873bde13b1",
+                        "git_sha": "707241c72951f24fd89982c4c80c5983a4c437ef",
                         "installed_by": ["modules"]
                     },
                     "calder2": {
