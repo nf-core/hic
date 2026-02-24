@@ -311,6 +311,11 @@
             "description": "Set up downstream analysis from contact maps",
             "default": "",
             "properties": {
+                "min_size": {
+                    "type": "integer",
+                    "description": "Minimum chromosome size to be retained. Useful for Calder2, which cannot be applied to chromosomes that do not have a sufficient number of bins.",
+                    "default": 0
+                },
                 "res_dist_decay": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
