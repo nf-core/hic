@@ -15,7 +15,6 @@ workflow PREPARE_GENOME {
     bwa_index
 
     main:
-    ch_versions = channel.empty()
 
     //
     // Fasta reference genome
@@ -34,7 +33,6 @@ workflow PREPARE_GENOME {
                 ch_fasta
             )
             ch_index = BOWTIE2_BUILD.out.index
-            ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
         }else{
             ch_index = channel.fromPath( bwt2_index , checkIfExists: true)
                 .map { it -> [[:], it]}
@@ -51,7 +49,6 @@ workflow PREPARE_GENOME {
                 ch_fasta
             )
             ch_index = BWA_INDEX.out.index
-            ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
         }else{
             ch_index = channel.fromPath( bwa_index , checkIfExists: true)
                 .map { it -> [[:], it]}
@@ -64,12 +61,10 @@ workflow PREPARE_GENOME {
     //
     if(!params.chromosome_size){
         SAMTOOLS_FAIDX(
-            ch_fasta, 
-            ch_index, 
+            ch_fasta.combine(ch_index), 
             true
             )
             ch_chromsize = SAMTOOLS_FAIDX.out.sizes
-            ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }else{
         ch_chromsize = channel.fromPath( params.chromosome_size , checkIfExists: true)
             .map { it -> [[:], it]}
@@ -104,7 +99,6 @@ workflow PREPARE_GENOME {
             restriction_site
         )
         ch_resfrag = GET_RESTRICTION_FRAGMENTS.out.results
-        ch_versions = ch_versions.mix(GET_RESTRICTION_FRAGMENTS.out.versions)
     }else if (!params.no_digestion){
         channel.fromPath( params.restriction_fragments, checkIfExists: true )
             .map { it -> [[:], it] }
@@ -120,5 +114,4 @@ workflow PREPARE_GENOME {
     res_frag = ch_resfrag
     restriction_site = ch_restriction_site
     ligation_site = ch_ligation_site
-    versions = ch_versions
 }

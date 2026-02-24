@@ -33,7 +33,6 @@ workflow PAIRTOOLS {
     chrsize // path
 
     main:
-    ch_versions = channel.empty()
 
     BWA_MEM(
         reads,
@@ -41,25 +40,21 @@ workflow PAIRTOOLS {
         fasta.collect(),
         channel.value([])
     )
-    ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
     PAIRTOOLS_PARSE(
         BWA_MEM.out.bam,
         chrsize.collect()
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_PARSE.out.versions)
 
     PAIRTOOLS_RESTRICT(
         PAIRTOOLS_PARSE.out.pairsam,
         frag.map{it->it[1]}.collect()
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_RESTRICT.out.versions)
 
     ch_pairsam = params.no_digestion ? PAIRTOOLS_PARSE.out.pairsam : PAIRTOOLS_RESTRICT.out.restrict
     PAIRTOOLS_SORT(
         ch_pairsam
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_SORT.out.versions)
 
     ch_valid_pairs = PAIRTOOLS_SORT.out.sorted
         .map{ meta, pairs ->
@@ -75,13 +70,11 @@ workflow PAIRTOOLS {
     PAIRTOOLS_MERGE(
         ch_valid_pairs.multiple
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_MERGE.out.versions)
 
     // Separate pairs/bam files
     PAIRTOOLS_SPLIT(
         PAIRTOOLS_MERGE.out.pairs.mix(ch_valid_pairs.single)
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_SPLIT.out.versions)
 
     // Manage BAM files
     SAMTOOLS_SORT(
@@ -93,36 +86,29 @@ workflow PAIRTOOLS {
     SAMTOOLS_INDEX(
         SAMTOOLS_SORT.out.bam
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
     SAMTOOLS_FLAGSTAT(
         SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai)
     )
-    ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
     PAIRTOOLS_DEDUP(
         PAIRTOOLS_SPLIT.out.pairs
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_DEDUP.out.versions)
 
     ch_pairselect = params.keep_dups ? PAIRTOOLS_SPLIT.out.pairs : PAIRTOOLS_DEDUP.out.pairs
     PAIRTOOLS_SELECT(
         ch_pairselect
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_SELECT.out.versions)
 
     PAIRTOOLS_STATS(
         PAIRTOOLS_SELECT.out.selected
     )
-    ch_versions = ch_versions.mix(PAIRTOOLS_STATS.out.versions)
 
     PAIRIX(
         PAIRTOOLS_SELECT.out.selected
     )
-    ch_versions = ch_versions.mix(PAIRIX.out.versions)
 
     emit:
-    versions = ch_versions
     pairs = PAIRIX.out.index
     bam = PAIRTOOLS_SPLIT.out.bam.join(SAMTOOLS_INDEX.out.bai)
     stats = PAIRTOOLS_STATS.out.stats.map{it->it[1]}

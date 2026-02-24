@@ -128,7 +128,6 @@ workflow HIC {
             ch_res_frag,
             ch_chromosome_size
         )
-        ch_versions = ch_versions.mix(PAIRTOOLS.out.versions)
         ch_pairs = PAIRTOOLS.out.pairs
         ch_process_mqc = PAIRTOOLS.out.stats
     }
@@ -141,7 +140,6 @@ workflow HIC {
         ch_chromosome_size,
         ch_map_res
     )
-    ch_versions = ch_versions.mix(COOLER.out.versions)
 
     //
     // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS

@@ -21,7 +21,6 @@ workflow COOLER {
     cool_bins
 
     main:
-    ch_versions = channel.empty()
 
     //*****************************************
     // FILTER CHROMOSOMES ON SIZE
@@ -36,7 +35,6 @@ workflow COOLER {
     COOLER_MAKEBINS(
         chromsize.combine(cool_bins)
     )
-    ch_versions = ch_versions.mix(COOLER_MAKEBINS.out.versions)
 
     //*****************************************
     // BUILD COOL FILE PER RESOLUTION
@@ -47,7 +45,6 @@ workflow COOLER {
         "pairs",
         cool_bins
     )
-    ch_versions = ch_versions.mix(COOLER_CLOAD.out.versions)
 
     // Add resolution in meta
     COOLER_CLOAD.out.cool
@@ -60,7 +57,6 @@ workflow COOLER {
     COOLER_BALANCE(
         ch_cool.map{[it[0], it[1], ""]}
     )
-    ch_versions = ch_versions.mix(COOLER_BALANCE.out.versions)
 
     // Zoomify at minimum bin resolution
     if (!params.res_zoomify){
@@ -78,7 +74,6 @@ workflow COOLER {
     COOLER_ZOOMIFY(
         ch_cool_zoomify
     )
-    ch_versions = ch_versions.mix(COOLER_ZOOMIFY.out.versions)
 
     //*****************************************
     // DUMP DATA
@@ -87,15 +82,12 @@ workflow COOLER {
     COOLER_DUMP(
         COOLER_BALANCE.out.cool.map{[it[0], it[1], ""]}
     )
-    ch_versions = ch_versions.mix(COOLER_DUMP.out.versions)
 
     SPLIT_COOLER_DUMP(
         COOLER_DUMP.out.bedpe
     )
-    ch_versions = ch_versions.mix(SPLIT_COOLER_DUMP.out.versions)
 
     emit:
-    versions = ch_versions
     cool = COOLER_BALANCE.out.cool
     mcool = COOLER_ZOOMIFY.out.mcool
 }
