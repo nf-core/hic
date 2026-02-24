@@ -16,6 +16,7 @@ components:
   - cooler/balance
   - cooler/zoomify
   - cooler/dump
+  - filter/chromsize
   - split/cooler/dump
 input:
   - pairs:

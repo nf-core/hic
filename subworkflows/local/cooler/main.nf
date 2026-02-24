@@ -38,19 +38,18 @@ workflow COOLER {
 
     //*****************************************
     // BUILD COOL FILE PER RESOLUTION
-
     COOLER_CLOAD(
-        pairs,
-        chromsize,
+        pairs.collect(),
+        chromsize.collect(),
         "pairs",
         cool_bins
     )
 
     // Add resolution in meta
     COOLER_CLOAD.out.cool
-        .combine(cool_bins)
-        .map { meta, file, res ->
-            [meta + [resolution: res], file]
+        .map { meta, file ->
+            def id = (file.baseName =~ /(\d+)(?!.*\d)/)[0][1]
+            [meta + [resolution: id], file]
         }
         .set { ch_cool }
 
