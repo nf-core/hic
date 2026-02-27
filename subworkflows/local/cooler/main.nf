@@ -49,7 +49,7 @@ workflow COOLER {
     COOLER_CLOAD.out.cool
         .map { meta, file ->
             def id = (file.baseName =~ /(\d+)(?!.*\d)/)[0][1]
-            [meta + [resolution: id], file]
+            [meta + [resolution: id.toInteger()], file]
         }
         .set { ch_cool }
 
