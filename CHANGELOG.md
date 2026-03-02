@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Version 2.2.0  2026-03-02
+## Version 2.2.0 2026-03-02
 
 ### `Added`
 
@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - #62: a single number can be given as BIN_SIZES without error
 - #225:TRIMGALORE remove the first 5 bases of the 5' end and
   fragments and inserts size min/max settings are set to recommended values if Arima/ArimaV2 is used
-- Bug from COOLER_CLOAD deprecated "pairs"  ext.args calling
+- Bug from COOLER_CLOAD deprecated "pairs" ext.args calling
 - Bug on the cooler "add resolution" step caused by module COOLER_CLOAD update
 
 ### `Updated`

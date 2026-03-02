@@ -94,7 +94,7 @@ workflow HIC {
         )
         ch_samplesheet = TRIMGALORE.out.reads
     }
-    
+
     //
     // MODULE: Run FastQC
     //

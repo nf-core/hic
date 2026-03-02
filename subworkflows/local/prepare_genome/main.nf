@@ -61,7 +61,7 @@ workflow PREPARE_GENOME {
     //
     if(!params.chromosome_size){
         SAMTOOLS_FAIDX(
-            ch_fasta.join(ch_index), 
+            ch_fasta.join(ch_index),
             true
             )
             ch_chromsize = SAMTOOLS_FAIDX.out.sizes

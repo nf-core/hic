@@ -1,11 +1,11 @@
 /*
- * Filter chromsize 
- * Filter out chromosomes smaller than a given threshold 
+ * Filter chromsize
+ * Filter out chromosomes smaller than a given threshold
  */
 
 process FILTER_CHROMSIZE {
     tag "${meta.id}"
-    label 'process_low' 
+    label 'process_low'
 
     input:
     tuple val(meta), path(sizes_file)
