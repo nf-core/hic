@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fragments and inserts size min/max settings are set to recommended values if Arima/ArimaV2 is used
 - Bug from COOLER_CLOAD deprecated "pairs" ext.args calling
 - Bug on the cooler "add resolution" step caused by module COOLER_CLOAD update
+- Logo matching template
 
 ### `Updated`
 
