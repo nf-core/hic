@@ -3,13 +3,51 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Version 2.2.0  2026-03-02
+
+### `Added`
+
+- Subworkflows meta.yml
+- Module FAIDX for chromosomes sizes calculation
+- TRIMGALORE module for 5' clipping (see #225)
+- CALDER2 compartments calling (see '--compartments_caller' option)
+- Local FILTER_CHROMSIZE module (in order to apply CALDER2 without error)
+- Optional '--min_size' parameter for chromosome selection
+- Default MIN_FRAG_SIZE, MAX_FRAG_SIZE, MIN_INSERT_SIZE and MAX_INSERT_SIZE values for Arima and ArimV2 protocols
+
+### `Removed`
+
+- Module GETCHROMSIZES (replaced by FAIDX)
+- Version channels from subworkflows (tools versions gathering still a WIP)
+
+### `Fixed`
+
+- #227: MPLCONFIGDIR is set to "${baseDir}/mplconfig"
+- #62: a single number can be given as BIN_SIZES without error
+- #225:TRIMGALORE remove the first 5 bases of the 5' end and
+  fragments and inserts size min/max settings are set to recommended values if Arima/ArimaV2 is used
+- Bug from COOLER_CLOAD deprecated "pairs"  ext.args calling
+- Bug on the cooler "add resolution" step caused by module COOLER_CLOAD update
+
+### `Updated`
+
+- All nf-core modules (including topics channel)
+- Modules path
+- "channel" syntax with lowercase c
+- Components names in subworkflows meta.yml
+- COOLER_CLOAD inputs and outputs
+- BWA_MEM inputs
+- SAMTOOL_SORT inputs
+- UTILS_NFSCHEMA_PLUGIN inputs and outputs
+- Markdown settings
+- Template files
+- nf-core version to 3.5.0
+
 ## v2.2.0dev
 
 ### `Added`
 
 - Parameter `--dnase`is now replaced by `--no_digestion`
-
-- Add CALDER2 compartments calling (see '--compartments_caller' option)
 
 - Add new '--balancing_opts' to update `cooler balance` arguments (#193)
 
