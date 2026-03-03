@@ -32,6 +32,9 @@
                     "@id": "assets/"
                 },
                 {
+                    "@id": "bin/"
+                },
+                {
                     "@id": "conf/"
                 },
                 {
@@ -42,6 +45,9 @@
                 },
                 {
                     "@id": "modules/"
+                },
+                {
+                    "@id": "modules/local/"
                 },
                 {
                     "@id": "modules/nf-core/"
@@ -121,21 +127,39 @@
         },
         {
             "@id": "main.nf",
-            "@type": ["File", "SoftwareSourceCode", "ComputationalWorkflow"],
+            "@type": [
+                "File",
+                "SoftwareSourceCode",
+                "ComputationalWorkflow"
+            ],
             "dateCreated": "",
             "dateModified": "2025-11-20T09:31:58Z",
             "dct:conformsTo": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE/",
-            "keywords": ["nf-core", "nextflow", "chromosome-conformation-capture", "hi-c"],
-            "license": ["MIT"],
-            "name": ["nf-core/hic"],
+            "keywords": [
+                "nf-core",
+                "nextflow",
+                "chromosome-conformation-capture",
+                "hi-c"
+            ],
+            "license": [
+                "MIT"
+            ],
+            "name": [
+                "nf-core/hic"
+            ],
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow"
             },
             "sdPublisher": {
                 "@id": "https://nf-co.re/"
             },
-            "url": ["https://github.com/nf-core/hic", "https://nf-co.re/hic/dev/"],
-            "version": ["2.2.0dev"]
+            "url": [
+                "https://github.com/nf-core/hic",
+                "https://nf-co.re/hic/dev/"
+            ],
+            "version": [
+                "2.2.0dev"
+            ]
         },
         {
             "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow",
@@ -186,6 +210,11 @@
             "description": "Additional files"
         },
         {
+            "@id": "bin/",
+            "@type": "Dataset",
+            "description": "Scripts that must be callable from a pipeline process"
+        },
+        {
             "@id": "conf/",
             "@type": "Dataset",
             "description": "Configuration files"
@@ -204,6 +233,11 @@
             "@id": "modules/",
             "@type": "Dataset",
             "description": "Modules used by the pipeline"
+        },
+        {
+            "@id": "modules/local/",
+            "@type": "Dataset",
+            "description": "Pipeline-specific modules"
         },
         {
             "@id": "modules/nf-core/",
