@@ -78,9 +78,7 @@ output:
       description: |
         Versions of tools used in the workflow
 authors:
-  - "@adamrtalbot"
-  - "@drpatelh"
+  - "@nservant"
 maintainers:
-  - "@adamrtalbot"
-  - "@drpatelh"
-  - "@maxulysse"
+  - "@nservant"
+  - "@Thibault-Poinsignon"
