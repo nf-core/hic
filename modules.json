@@ -5,6 +5,61 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "bowtie2/align": {
+                        "branch": "master",
+                        "git_sha": "e4bad511789f16d0df39ee306b2cd50418365048",
+                        "installed_by": ["modules"]
+                    },
+                    "bowtie2/build": {
+                        "branch": "master",
+                        "git_sha": "1fea64f5132a813ec97c1c6d3a74e0aee7142b6d",
+                        "installed_by": ["modules"]
+                    },
+                    "bwa/index": {
+                        "branch": "master",
+                        "git_sha": "e0ff65e1fb313677de09f5f477ae3da30ce19b7b",
+                        "installed_by": ["modules"]
+                    },
+                    "bwa/mem": {
+                        "branch": "master",
+                        "git_sha": "e0ff65e1fb313677de09f5f477ae3da30ce19b7b",
+                        "installed_by": ["modules"]
+                    },
+                    "calder2": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "cooler/balance": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "cooler/cload": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "cooler/dump": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "cooler/makebins": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "cooler/zoomify": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "custom/getchromsizes": {
+                        "branch": "master",
+                        "git_sha": "1ceaa8ba4d0fd886dbca0e545815d905b7407de7",
+                        "installed_by": ["modules"]
+                    },
                     "fastqc": {
                         "branch": "master",
                         "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
@@ -13,6 +68,61 @@
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "e10b76ca0c66213581bec2833e30d31f239dec0b",
+                        "installed_by": ["modules"]
+                    },
+                    "pairix": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/dedup": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/merge": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/parse": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/restrict": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/select": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/sort": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "pairtools/stats": {
+                        "branch": "master",
+                        "git_sha": "4d3743f71f43cc40505dee2bc0747dca2df5f69a",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/flagstat": {
+                        "branch": "master",
+                        "git_sha": "04fbbc7c43cebc0b95d5b126f6d9fe4effa33519",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/index": {
+                        "branch": "master",
+                        "git_sha": "04fbbc7c43cebc0b95d5b126f6d9fe4effa33519",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/sort": {
+                        "branch": "master",
+                        "git_sha": "04fbbc7c43cebc0b95d5b126f6d9fe4effa33519",
                         "installed_by": ["modules"]
                     }
                 }
