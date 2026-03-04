@@ -102,7 +102,7 @@ workflow PIPELINE_INITIALISATION {
     //
     ch_input = channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        
+
     if (params.split_fastq) {
         ch_input = ch_input.splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
     }
