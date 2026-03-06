@@ -82,7 +82,6 @@ workflow HIC {
 
     ch_map_res = ch_map_res.unique()
 
-    ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
 
     //
@@ -117,7 +116,6 @@ workflow HIC {
             ch_ligation_site,
             ch_map_res
         )
-        ch_versions = ch_versions.mix(HICPRO.out.versions)
         ch_pairs = HICPRO.out.pairs
         ch_process_mqc = HICPRO.out.mqc
     }else if (params.processing == 'pairtools'){
@@ -154,7 +152,6 @@ workflow HIC {
         HIC_PLOT_DIST_VS_COUNTS(
             ch_distdecay
         )
-        ch_versions = ch_versions.mix(HIC_PLOT_DIST_VS_COUNTS.out.versions)
     }
 
     //
@@ -172,7 +169,6 @@ workflow HIC {
             ch_fasta,
             ch_chromosome_size
         )
-        ch_versions = ch_versions.mix(COMPARTMENTS.out.versions)
     }
 
     //
@@ -188,38 +184,7 @@ workflow HIC {
         TADS(
             ch_cool_tads
         )
-        ch_versions = ch_versions.mix(TADS.out.versions)
     }
-
-    //
-    // Collate and save software versions
-    //
-    def topic_versions = Channel.topic("versions")
-        .distinct()
-        .branch { entry ->
-            versions_file: entry instanceof Path
-            versions_tuple: true
-        }
-
-    def topic_versions_string = topic_versions.versions_tuple
-        .map { process, tool, version ->
-            [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
-        }
-        .groupTuple(by:0)
-        .map { process, tool_versions ->
-            tool_versions.unique().sort()
-            "${process}:\n${tool_versions.join('\n')}"
-        }
-
-    softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
-        .mix(topic_versions_string)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_'  +  'hic_software_'  + 'mqc_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
-
 
     //
     // MODULE: MultiQC
@@ -244,7 +209,6 @@ workflow HIC {
     ch_methods_description                = channel.value(
         methodsDescriptionText(ch_multiqc_custom_methods_description))
 
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_methods_description.collectFile(
             name: 'methods_description_mqc.yaml',

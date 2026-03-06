@@ -20,7 +20,6 @@ workflow HICPRO_MAPPING {
     ligation_site // value
 
     main:
-    ch_versions = channel.empty()
 
     // Align each mates separetly and add mates information in [meta]
     ch_reads_r1 = reads
@@ -45,7 +44,6 @@ workflow HICPRO_MAPPING {
         true,
         false
     )
-    ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
 
     if (!params.no_digestion){
 
@@ -54,7 +52,6 @@ workflow HICPRO_MAPPING {
             BOWTIE2_ALIGN.out.fastq,
             ligation_site.collect()
         )
-        ch_versions = ch_versions.mix(TRIM_READS.out.versions)
 
         // bowtie2 on trimmed reads - save_unaligned=false - sort_bam=false
         BOWTIE2_ALIGN_TRIMMED(
@@ -64,7 +61,6 @@ workflow HICPRO_MAPPING {
             false,
             false
         )
-        ch_versions = ch_versions.mix(BOWTIE2_ALIGN_TRIMMED.out.versions)
 
         // Merge the two mapping steps
         ch_bowtie2_align = BOWTIE2_ALIGN.out.bam
@@ -73,7 +69,6 @@ workflow HICPRO_MAPPING {
         MERGE_BOWTIE2(
             ch_bowtie2_align
         )
-        ch_versions = ch_versions.mix(MERGE_BOWTIE2.out.versions)
         ch_mapping_stats = MERGE_BOWTIE2.out.stats
 
         ch_bams = MERGE_BOWTIE2.out.bam
@@ -88,7 +83,6 @@ workflow HICPRO_MAPPING {
         MAPPING_STATS_DNASE(
             BOWTIE2_ALIGN.out.aligned
         )
-        ch_versions = ch_versions.mix(MAPPING_STATS_DNASE.out.versions)
         ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
 
         ch_bams = BOWTIE2_ALIGN.out.aligned
@@ -101,10 +95,8 @@ workflow HICPRO_MAPPING {
     COMBINE_MATES (
         ch_bams
     )
-    ch_versions = ch_versions.mix(COMBINE_MATES.out.versions)
 
     emit:
-    versions = ch_versions
     bam = COMBINE_MATES.out.bam
     mapstats = ch_mapping_stats
     pairstats = COMBINE_MATES.out.stats

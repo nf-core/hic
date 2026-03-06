@@ -32,7 +32,6 @@ workflow HICPRO {
     map_res // values
 
     main:
-    ch_versions = channel.empty()
 
     // Fastq to paired-end bam
     HICPRO_MAPPING(
@@ -41,7 +40,6 @@ workflow HICPRO {
         index,
         ligation_site
     )
-    ch_versions = ch_versions.mix(HICPRO_MAPPING.out.versions)
 
     //***************************************
     // DIGESTION PROTOCOLS
@@ -51,7 +49,6 @@ workflow HICPRO {
             HICPRO_MAPPING.out.bam,
             fragments.collect()
         )
-        ch_versions = ch_versions.mix(GET_VALID_INTERACTION.out.versions)
         ch_valid_pairs = GET_VALID_INTERACTION.out.valid_pairs
         ch_valid_stats = GET_VALID_INTERACTION.out.stats
 
@@ -63,7 +60,6 @@ workflow HICPRO {
         GET_VALID_INTERACTION_DNASE (
             HICPRO_MAPPING.out.bam
         )
-        ch_versions = ch_versions.mix(GET_VALID_INTERACTION_DNASE.out.versions)
         ch_valid_pairs = GET_VALID_INTERACTION_DNASE.out.valid_pairs
         ch_valid_stats = GET_VALID_INTERACTION_DNASE.out.stats
     }
@@ -82,7 +78,6 @@ workflow HICPRO {
     MERGE_VALID_INTERACTION (
         ch_valid_pairs
     )
-    ch_versions = ch_versions.mix(MERGE_VALID_INTERACTION.out.versions)
 
 
     ch_hicpro_mappingstats = HICPRO_MAPPING.out.mapstats
@@ -106,7 +101,6 @@ workflow HICPRO {
     MERGE_STATS(
         ch_hicpro_mappingstats.concat(ch_hicpro_pairstats, ch_hicpro_validstats)
     )
-    ch_versions = ch_versions.mix(MERGE_STATS.out.versions)
 
     //***************************************
     // CONVERTS TO PAIRS
@@ -115,7 +109,6 @@ workflow HICPRO {
         MERGE_VALID_INTERACTION.out.valid_pairs,
         chrsize.collect()
     )
-    ch_versions = ch_versions.mix(HICPRO2PAIRS.out.versions)
 
     //***************************************
     // CONTACT MAPS
@@ -128,14 +121,12 @@ workflow HICPRO {
             chrsize.collect()
         )
         ch_hicpro_raw_maps = BUILD_CONTACT_MAPS.out.maps
-        ch_versions = ch_versions.mix(BUILD_CONTACT_MAPS.out.versions)
 
         // run_ice
         ICE_NORMALIZATION(
             BUILD_CONTACT_MAPS.out.maps
         )
         ch_hicpro_iced_maps = ICE_NORMALIZATION.out.maps
-        ch_versions = ch_versions.mix(ICE_NORMALIZATION.out.versions)
 
     }else{
         ch_hicpro_raw_maps = channel.empty()
@@ -143,7 +134,6 @@ workflow HICPRO {
     }
 
     emit:
-    versions = ch_versions
     pairs = HICPRO2PAIRS.out.pairs
     mqc = MERGE_VALID_INTERACTION.out.mqc.concat(MERGE_STATS.out.mqc)
     raw_maps = ch_hicpro_raw_maps
