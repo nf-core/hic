@@ -67,7 +67,11 @@
                     },
                     "multiqc": {
                         "branch": "master",
+<<<<<<< nf-core-template-merge-3.5.1
                         "git_sha": "af27af1be706e6a2bb8fe454175b0cdf77f47b49",
+=======
+                        "git_sha": "e10b76ca0c66213581bec2833e30d31f239dec0b",
+>>>>>>> dev
                         "installed_by": ["modules"]
                     },
                     "pairix": {
@@ -136,7 +140,11 @@
                     },
                     "utils_nfcore_pipeline": {
                         "branch": "master",
+<<<<<<< nf-core-template-merge-3.5.1
                         "git_sha": "271e7fc14eb1320364416d996fb077421f3faed2",
+=======
+                        "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
+>>>>>>> dev
                         "installed_by": ["subworkflows"]
                     },
                     "utils_nfschema_plugin": {

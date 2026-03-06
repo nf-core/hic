@@ -1,6 +1,10 @@
 lint:
   schema_params: false
+<<<<<<< nf-core-template-merge-3.5.1
 nf_core_version: 3.5.1
+=======
+nf_core_version: 3.4.1
+>>>>>>> dev
 repository_type: pipeline
 template:
   author: Nicolas Servant
