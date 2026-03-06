@@ -1,4 +1,6 @@
 .DS_Store
+multiqc/multiqc_data/fastqc_top_overrepresented_sequences_table.txt
+multiqc/multiqc_data/multiqc.parquet
 compartments/*_compartments.cis.bw
 compartments/*_compartments.cis.lam.txt
 compartments/*_compartments.cis.vecs.tsv
@@ -30,6 +32,7 @@ multiqc/multiqc_data/multiqc_fastqc.txt
 multiqc/multiqc_data/multiqc_general_stats.txt
 multiqc/multiqc_data/multiqc_hicpro.txt
 multiqc/multiqc_data/multiqc_software_versions.txt
+multiqc/multiqc_data/llms-full.txt
 multiqc/multiqc_data/multiqc_sources.txt
 multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
 multiqc/multiqc_report.html

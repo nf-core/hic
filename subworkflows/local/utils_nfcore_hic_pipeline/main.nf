@@ -30,6 +30,9 @@ workflow PIPELINE_INITIALISATION {
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
     input             //  string: Path to input samplesheet
+    help              // boolean: Display help message and exit
+    help_full         // boolean: Show the full help message
+    show_hidden       // boolean: Show hidden parameters in the help message
 
     main:
 
@@ -75,7 +78,8 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
-    ch_input = channel.fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
+    ch_input = channel
+        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
 
     if (params.split_fastq) {
         ch_input = ch_input.splitFastq( by: params.fastq_chunks_size, pe:true, file: true, compress:true)
