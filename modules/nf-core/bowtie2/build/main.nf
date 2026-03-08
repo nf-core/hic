@@ -1,5 +1,5 @@
 process BOWTIE2_BUILD {
-    tag "$fasta"
+    tag "${fasta.baseName.replaceAll(/[^a-zA-Z0-9_-]/, '_')}"
     label 'process_high'
 
     conda "${moduleDir}/environment.yml"

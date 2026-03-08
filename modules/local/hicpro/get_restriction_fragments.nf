@@ -1,5 +1,5 @@
 process GET_RESTRICTION_FRAGMENTS {
-    tag "$res_site"
+    tag "${res_site.replaceAll(/[^a-zA-Z0-9_-]/, '_')}"
     label 'process_low'
 
     conda "conda-forge::python=3.9 conda-forge::numpy=1.22.3"
