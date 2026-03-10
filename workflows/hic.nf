@@ -211,8 +211,8 @@ workflow HIC {
     //
     // MODULE: MultiQC
     //
-    
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+
+    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions.collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_hic_software_mqc_versions.yml', sort: true, newLine: true))
 
     def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
     def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
