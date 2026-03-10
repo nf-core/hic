@@ -231,7 +231,7 @@ workflow HIC {
     MULTIQC(
         ch_multiqc_files.flatten().collect().map { files ->
             [
-                [id: '{{ hic }}'],
+                [id: 'hic'],
                 files,
                 params.multiqc_config
                     ? file(params.multiqc_config, checkIfExists: true)
