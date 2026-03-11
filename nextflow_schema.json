@@ -355,7 +355,7 @@
                 "res_loops": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "10000",
+                    "default": "20000",
                     "description": "Resolution to run loops callers (comma separated)"
                 },
                 "maxloopdistance": {
