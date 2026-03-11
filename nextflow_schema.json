@@ -341,6 +341,66 @@
                 }
             }
         },
+        "loop_calling": {
+            "title": "Loop calling",
+            "type": "object",
+            "description": "Set up loop calling options.",
+            "default": "",
+            "properties": {
+                "loop_caller": {
+                    "type": "string",
+                    "default": "hicexplorer",
+                    "description": "Define methods for loop calling"
+                },
+                "res_loops": {
+                    "type": "string",
+                    "pattern": "^(\\d+)(,\\d+)*$",
+                    "default": "20000",
+                    "description": "Resolution to run loops callers (comma separated)"
+                },
+                "maxloopdistance": {
+                    "type": "integer",
+                    "default": 2000000,
+                    "description": "Maximum genomic distance of a loop, usually loops are within a distance of ~2MB"
+                },
+                "peakwidth": {
+                    "type": "integer",
+                    "default": 2,
+                    "description": "The width of the peak region in bins. The square around the peak will include (2 * peakWidth)^2 bins"
+                },
+                "windowsize": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "The window size for the neighborhood region the peak is located in. All values from this region (exclude the values from the peak region) are tested against the peak region for significant difference. The square will have the size of (2 * windowSize)^2 bins"
+                },
+                "pvaluepreselection": {
+                    "type": "number",
+                    "default": 0.1,
+                    "description": "Only candidates with p-values less the given threshold will be considered as candidates. For each genomic distance a negative binomial distribution is fitted and for each pixel a p-value given by the cumulative density function is given. This does NOT influence the p-value for the neighborhood testing. Can a single value or a threshold file created by hicCreateThresholdFile"
+                },
+                "peakinteractionsthreshold": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "The minimum number of interactions a detected peaks needs to have to be considered"
+                },
+                "obsexpthreshold": {
+                    "type": "number",
+                    "default": 1.5,
+                    "description": "The minimum number of obs/exp interactions a detected peaks needs to have to be considered"
+                },
+                "pvalue": {
+                    "type": "number",
+                    "default": 0.025,
+                    "description": "Rejection level for Anderson-Darling or Wilcoxon-rank sum test for H0. H0 is peak region and background have the same distribution"
+                },
+                "expected": {
+                    "type": "string",
+                    "default": "mean",
+                    "description": "Method to compute the expected value per distance: Either the mean (mean), the mean of non-zero values (mean_nonzero) or the mean of non-zero values with ligation factor correction (mean_nonzero_ligation)",
+                    "enum": ["mean", "mean_nonzero", "mean_nonzero_ligation"]
+                }
+            }
+        },
         "skip_options": {
             "title": "Skip options",
             "type": "object",
@@ -562,6 +622,9 @@
         },
         {
             "$ref": "#/$defs/downstream_analysis"
+        },
+        {
+            "$ref": "#/$defs/loop_calling"
         },
         {
             "$ref": "#/$defs/skip_options"

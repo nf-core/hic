@@ -92,6 +92,7 @@ workflow COOLER {
 
     emit:
     versions = ch_versions
-    cool = COOLER_BALANCE.out.cool
+    cool = ch_cool.map{it -> [it[0], it[1]]}
+    cool_balanced = COOLER_BALANCE.out.cool
     mcool = COOLER_ZOOMIFY.out.mcool
 }

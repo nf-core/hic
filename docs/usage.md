@@ -643,6 +643,27 @@ Default: '40000,20000'
 --res_tads '[string]'
 ```
 
+### Loop calling
+
+#### `--loop_caller`
+
+Loop calling can be performed using different approaches (WIP).
+Currently available options are `hicexplorer` (hicDetectLoops). Note that all options can be specified (comma-separated).
+Default: 'hicexplorer'
+
+```bash
+--loop_caller '[string]'
+```
+
+#### `--res_loops`
+
+Resolution to run the loop calling analysis (comma-separated).
+Default: '20000'
+
+```bash
+--res_loops '[string]'
+```
+
 ## Inputs/Outputs
 
 ### `--split_fastq`

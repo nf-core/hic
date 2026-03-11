@@ -19,6 +19,7 @@ include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
+include { LOOP_CALLING } from '../subworkflows/local/loop_calling'
 
 //****************************************
 // Combine all maps resolution for downstream analysis
@@ -37,6 +38,16 @@ if (params.res_tads && !params.skip_tads){
     ch_tads_res=Channel.empty()
     if (!params.skip_tads){
         log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
+    }
+}
+
+if (params.res_loops && !params.skip_loops){
+    ch_loops_res = Channel.from( "${params.res_loops}" ).splitCsv().flatten().toInteger()
+    ch_map_res = ch_map_res.concat(ch_loops_res)
+}else{
+    ch_loops_res = Channel.empty()
+    if (!params.skip_loops){
+        log.warn "[nf-core/hic] Hi-C resolution for loops calling not specified. See --res_loops"
     }
 }
 
@@ -135,7 +146,7 @@ workflow HIC {
     // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS
     //
     if (!params.skip_dist_decay){
-        COOLER.out.cool
+        COOLER.out.cool_balanced
             .combine(ch_ddecay_res)
             .filter{ it[0].resolution == it[2] }
             .map { it -> [it[0], it[1]]}
@@ -151,7 +162,7 @@ workflow HIC {
     // SUB-WORKFLOW: COMPARTMENT CALLING
     //
     if (!params.skip_compartments){
-        COOLER.out.cool
+        COOLER.out.cool_balanced
             .combine(ch_comp_res)
             .filter{ it[0].resolution == it[2] }
             .map { it -> [it[0], it[1], it[2]]}
@@ -169,7 +180,7 @@ workflow HIC {
     // SUB-WORKFLOW : TADS CALLING
     //
     if (!params.skip_tads){
-        COOLER.out.cool
+        COOLER.out.cool_balanced
             .combine(ch_tads_res)
             .filter{ it[0].resolution == it[2] }
             .map { it -> [it[0], it[1]]}
@@ -179,6 +190,24 @@ workflow HIC {
             ch_cool_tads
         )
         ch_versions = ch_versions.mix(TADS.out.versions)
+    }
+
+    //
+    // SUB-WORKFLOW : LOOP CALLING
+    //
+    if (!params.skip_loops){
+
+        COOLER.out.cool
+            .combine(ch_loops_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_cool_loops }
+
+        LOOP_CALLING (
+            ch_cool_loops,
+            params.loop_caller
+        )
+        ch_versions = ch_versions.mix(LOOP_CALLING.out.versions)
     }
 
     //
