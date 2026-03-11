@@ -624,6 +624,9 @@
             "$ref": "#/$defs/downstream_analysis"
         },
         {
+            "$ref": "#/$defs/loop_calling"
+        },
+        {
             "$ref": "#/$defs/skip_options"
         },
         {
