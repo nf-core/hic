@@ -270,6 +270,16 @@ Currently, the pipeline proposes two approaches :
 
 Usually, TADs results are presented as simple BED files, or bigWig files, with the position of boundaries along the genome.
 
+### Loop calling
+
+Currently, the pipeline can follow these approaches for loop calling:
+
+- Detection of enriched interaction regions using [`HiCExplorer hicDetectLoops`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicDetectLoops.html). This tool can detect enriched interaction regions (peaks / loops) based on a strict candidate selection, negative binomial distributions and Wilcoxon rank-sum tests. Results are available at **`results/loops/hicDetectLoops`**.
+
+The output bedGraph file contains the x and y position of each loop and its corresponding p-value of the statistical test.
+
+These results are then visualized using hicPlotMatrix.
+
 ### MultiQC
 
 <details markdown="1">
