@@ -46,8 +46,10 @@ workflow HIC {
     ch_map_res = channel.from( params.bin_size.toString()).splitCsv().flatten().toInteger()
 
     if (params.res_zoomify){
-        ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+        ch_zoom_res = channel.from( params.res_zoomify.toString()).splitCsv().flatten().toInteger()
         ch_map_res = ch_map_res.concat(ch_zoom_res)
+    } else {
+        ch_zoom_res = ch_map_res.min()
     }
 
     if (params.res_tads && !params.skip_tads){
@@ -136,7 +138,8 @@ workflow HIC {
     COOLER (
         ch_pairs,
         ch_chromosome_size,
-        ch_map_res
+        ch_map_res,
+        ch_zoom_res
     )
 
     //

@@ -296,7 +296,7 @@
                     "default": "--force"
                 },
                 "res_zoomify": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "description": "Maximum resolution to build mcool file"
                 },
                 "save_raw_maps": {
