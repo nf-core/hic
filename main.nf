@@ -47,8 +47,6 @@ workflow NFCORE_HIC {
 
     main:
 
-    ch_versions = Channel.empty()
-
     //
     // SUBWORKFLOW: prepare genome annotation
     //
@@ -57,7 +55,6 @@ workflow NFCORE_HIC {
         params.bwt2_index,
         params.bwa_index
     )
-    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
     //
     // WORKFLOW: Run pipeline
