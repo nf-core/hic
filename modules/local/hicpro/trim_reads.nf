@@ -19,7 +19,7 @@ process TRIM_READS {
     cutsite_trimming.py --fastq ${reads} \\
         --cutsite ${motif[0]} \\
         --out ${reads.simpleName}_trimmed.fastq
-    
+
     gzip ${reads.simpleName}_trimmed.fastq
     """
 }
