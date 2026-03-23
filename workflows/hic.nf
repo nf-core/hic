@@ -92,6 +92,13 @@ workflow HIC {
             ch_samplesheet
         )
         ch_samplesheet = TRIMGALORE.out.reads
+            .map { meta, files ->
+            // keep only the _val_1.fq.gz and _val_2.fq.gz files
+            def paired = files.findAll { it.name =~ /_val_[12]\.fq\.gz$/ }
+            // sort to ensure R1 first, R2 second
+            paired.sort()
+            tuple(meta, paired)
+            }
     }
 
     //
