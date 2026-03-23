@@ -35,7 +35,7 @@ workflow PREPARE_GENOME {
             ch_index = BOWTIE2_BUILD.out.index
         }else{
             ch_index = channel.fromPath( bwt2_index , checkIfExists: true)
-                .map { it -> [[:], it]}
+                .map { it -> [[id:genomeName], it]}
                 .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwt2_index}" }
         }
     }
@@ -51,7 +51,7 @@ workflow PREPARE_GENOME {
             ch_index = BWA_INDEX.out.index
         }else{
             ch_index = channel.fromPath( bwa_index , checkIfExists: true)
-                .map { it -> [[:], it]}
+                .map { it -> [[id:genomeName], it]}
                 .ifEmpty { exit 1, "Genome index: Provided index not found: ${params.bwa_index}" }
         }
     }
