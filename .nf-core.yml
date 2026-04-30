@@ -1,6 +1,6 @@
 lint:
   schema_params: false
-nf_core_version: 4.0.0
+nf_core_version: 4.0.2
 repository_type: pipeline
 template:
   author: Nicolas Servant
