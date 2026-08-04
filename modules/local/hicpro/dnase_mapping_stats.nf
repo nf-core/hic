@@ -1,5 +1,4 @@
 process MAPPING_STATS_DNASE {
-    tag "$sample = $bam"
     label 'process_medium'
 
     conda "bioconda::samtools=1.15.1"

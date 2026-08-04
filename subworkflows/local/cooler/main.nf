@@ -40,8 +40,8 @@ workflow COOLER {
     // BUILD COOL FILE PER RESOLUTION
     pairs_res = pairs.combine(cool_bins)
 
-    cload_inputs = pairs_res.multiMap { meta, pairs, index, cool_bin ->
-        pairs: [meta, pairs, index]
+    cload_inputs = pairs_res.multiMap { meta, pairs_files, index, cool_bin ->
+        pairs: [meta, pairs_files, index]
         res: cool_bin
     }
 

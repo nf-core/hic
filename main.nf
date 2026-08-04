@@ -66,7 +66,11 @@ workflow NFCORE_HIC {
         PREPARE_GENOME.out.chromosome_size,
         PREPARE_GENOME.out.res_frag,
         PREPARE_GENOME.out.restriction_site,
-        PREPARE_GENOME.out.ligation_site
+        PREPARE_GENOME.out.ligation_site,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
+        params.outdir
     )
 
     emit:
@@ -111,7 +115,6 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
         NFCORE_HIC.out.multiqc_report
     )
 }
