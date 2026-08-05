@@ -14,7 +14,6 @@ include { completionSummary         } from '../../../subworkflows/nf-core/utils_
 include { completionEmail           } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
 include { samplesheetToList         } from 'plugin/nf-schema'
 include { paramsSummaryMap         } from 'plugin/nf-schema'
-include { paramsHelp                } from 'plugin/nf-schema'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SUBWORKFLOW TO INITIALISE PIPELINE

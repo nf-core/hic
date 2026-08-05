@@ -1,0 +1,22 @@
+Mar-10 11:47:34.073 [main] INFO  com.askimed.nf.test.App - nf-test 0.9.3
+Mar-10 11:47:34.082 [main] INFO  com.askimed.nf.test.App - Arguments: [test, --profile, test,singularity, --update-snapshot]
+Mar-10 11:47:34.638 [main] INFO  com.askimed.nf.test.App - Nextflow Version: 25.10.4
+Mar-10 11:47:34.639 [main] INFO  com.askimed.nf.test.commands.RunTestsCommand - Load config from file /home/thibaultp/hic/nf-test.config...
+Mar-10 11:47:34.912 [main] WARN  com.askimed.nf.test.nextflow.NextflowScript - Module /home/thibaultp/hic/subworkflows/local/pairtools/main.nf: Dependency '/home/thibaultp/hic/subworkflows/local/pairtools/../../../modules/nf-core/bwamem2/mem/main.nf' not found.
+Mar-10 11:47:34.948 [main] INFO  com.askimed.nf.test.lang.dependencies.DependencyResolver - Loaded 62 files from directory /home/thibaultp/hic in 0.045 sec
+Mar-10 11:47:34.949 [main] INFO  com.askimed.nf.test.lang.dependencies.DependencyResolver - Found 1 files containing tests.
+Mar-10 11:47:34.949 [main] DEBUG com.askimed.nf.test.lang.dependencies.DependencyResolver - Found files: [/home/thibaultp/hic/tests/default.nf.test]
+Mar-10 11:47:35.076 [main] INFO  com.askimed.nf.test.commands.RunTestsCommand - Found 2 tests to execute.
+Mar-10 11:47:35.076 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Started test plan
+Mar-10 11:47:35.076 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Running testsuite 'Test pipeline' from file '/home/thibaultp/hic/tests/default.nf.test'.
+Mar-10 11:47:35.076 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Run test 'bd737a72: -profile test'. type: com.askimed.nf.test.lang.pipeline.PipelineTest
+Mar-10 11:48:53.855 [main] DEBUG com.askimed.nf.test.lang.extensions.SnapshotFile - Load snapshots from file '/home/thibaultp/hic/tests/default.nf.test.snap'
+Mar-10 11:48:53.908 [main] DEBUG com.askimed.nf.test.lang.extensions.Snapshot - Snapshots '-profile test' match.
+Mar-10 11:48:53.909 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Test 'bd737a72: -profile test' finished. status: PASSED
+Mar-10 11:48:53.910 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Run test 'c9e7bac3: Should split fastqs'. type: com.askimed.nf.test.lang.pipeline.PipelineTest
+Mar-10 11:50:05.416 [main] DEBUG com.askimed.nf.test.lang.extensions.Snapshot - Snapshots 'Should split fastqs' do not match. Update snapshots flag set.
+Mar-10 11:50:05.416 [main] DEBUG com.askimed.nf.test.lang.extensions.SnapshotFile - Updated snapshot 'Should split fastqs'
+Mar-10 11:50:05.526 [main] DEBUG com.askimed.nf.test.lang.extensions.SnapshotFile - Wrote snapshots to file '/home/thibaultp/hic/tests/default.nf.test.snap'
+Mar-10 11:50:05.527 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Test 'c9e7bac3: Should split fastqs' finished. status: PASSED
+Mar-10 11:50:05.527 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Testsuite 'Test pipeline' finished. snapshot file: true, skipped tests: false, failed tests: false
+Mar-10 11:50:05.528 [main] INFO  com.askimed.nf.test.core.TestExecutionEngine - Executed 2 tests. 0 tests failed. Done!
