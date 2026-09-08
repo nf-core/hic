@@ -46,7 +46,7 @@ workflow HIC {
 
     def ch_versions = channel.empty()
     def ch_multiqc_files = channel.empty()
-    
+
     //****************************************
     // Combine all maps resolution for downstream analysis
 
@@ -88,7 +88,7 @@ workflow HIC {
     }
 
     ch_map_res = ch_map_res.unique()
-    
+
     //
     // MODULE: Run trimgalore
     //
