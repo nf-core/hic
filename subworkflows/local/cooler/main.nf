@@ -67,10 +67,10 @@ workflow COOLER {
         ch_res_zoomify = channel.from(params.res_zoomify).splitCsv().flatten().unique().toInteger()
     }
 
-    ch_cool
+    COOLER_BALANCE.out.cool
         .combine(ch_res_zoomify)
-        .filter{ it[2] == it[3] }
-        .map{ it->[it[0], it[1]] }
+        .filter{ it -> it[0].resolution == it[2] }
+        .map{ it -> [it[0], it[1]] }
         .set{ ch_cool_zoomify }
 
     COOLER_ZOOMIFY(
