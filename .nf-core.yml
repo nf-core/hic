@@ -1,6 +1,6 @@
 lint:
   schema_params: false
-nf_core_version: 3.5.1
+nf_core_version: 4.1.0
 repository_type: pipeline
 template:
   author: Nicolas Servant
@@ -10,4 +10,4 @@ template:
   name: hic
   org: nf-core
   outdir: .
-  version: 2.2.0
+  version: 2.2.0dev
