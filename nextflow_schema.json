@@ -308,6 +308,10 @@
             "default": "",
             "fa_icon": "fas fa-random",
             "properties": {
+                "skip_fastqc": {
+                    "type": "boolean",
+                    "description": "Do not perform FastQC"
+                },
                 "skip_maps": {
                     "type": "boolean",
                     "description": "Do not build contact maps"
