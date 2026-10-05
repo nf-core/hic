@@ -10,6 +10,17 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_hic_pipeline'
 
+// MODULE: Local to the pipeline
+include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts'
+
+// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
+include { HICPRO } from '../subworkflows/local/hicpro'
+include { PAIRTOOLS } from '../subworkflows/local/pairtools'
+include { COOLER } from '../subworkflows/local/cooler'
+include { COMPARTMENTS } from '../subworkflows/local/compartments'
+include { TADS } from '../subworkflows/local/tads'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main.nf'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -20,31 +31,178 @@ workflow HIC {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
-    multiqc_config
-    multiqc_logo
-    multiqc_methods_description
-    outdir
+    ch_fasta
+    ch_index
+    ch_chromosome_size
+    ch_res_frag
+    ch_restriction_site
+    ch_ligation_site
 
     main:
 
-    def ch_versions = channel.empty()
-    def ch_multiqc_files = channel.empty()
+    //****************************************
+    // Combine all maps resolution for downstream analysis
+
+    ch_map_res = channel.from( params.bin_size.toString()).splitCsv().flatten().toInteger()
+
+    if (params.res_zoomify){
+        ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_zoom_res)
+    }
+
+    if (params.res_tads && !params.skip_tads){
+        ch_tads_res = channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_tads_res)
+    }else{
+        ch_tads_res=channel.empty()
+        if (!params.skip_tads){
+            log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
+        }
+    }
+
+    if (params.res_dist_decay && !params.skip_dist_decay){
+        ch_ddecay_res = channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_ddecay_res)
+    }else{
+        ch_ddecay_res = channel.empty()
+        if (!params.skip_dist_decay){
+            log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay"
+        }
+    }
+
+    if (params.res_compartments && !params.skip_compartments){
+        ch_comp_res = channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_comp_res)
+    }else{
+        ch_comp_res = channel.empty()
+        if (!params.skip_compartments){
+            log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
+        }
+    }
+
+    ch_map_res = ch_map_res.unique()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
+
+    //
+    // MODULE: Run trimgalore
+    //
+    if (params.digestion == 'arimaV2'){
+        TRIMGALORE (
+            ch_samplesheet
+        )
+        ch_samplesheet = TRIMGALORE.out.reads
+            .map { meta, files ->
+            // keep only the _val_1.fq.gz and _val_2.fq.gz files
+            def paired = files.findAll { it.name =~ /_val_[12]\.fq\.gz$/ }
+            // sort to ensure R1 first, R2 second
+            paired.sort()
+            tuple(meta, paired)
+            }
+    }
+
     //
     // MODULE: Run FastQC
     //
-    FASTQC(ch_samplesheet)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{ _meta, file -> file })
+    FASTQC (
+        ch_samplesheet
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+
+
+    //
+    // SUB-WORFLOW: HiC-Pro
+    //
+    if (params.processing == 'hicpro'){
+        HICPRO (
+            ch_samplesheet,
+            ch_fasta,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size,
+            ch_ligation_site,
+            ch_map_res
+        )
+        ch_pairs = HICPRO.out.pairs
+        ch_process_mqc = HICPRO.out.mqc
+    }else if (params.processing == 'pairtools'){
+        PAIRTOOLS(
+            ch_samplesheet,
+            ch_fasta,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size
+        )
+        ch_pairs = PAIRTOOLS.out.pairs
+        ch_process_mqc = PAIRTOOLS.out.stats
+    }
+
+    //
+    // SUB-WORKFLOW: COOLER
+    //
+    COOLER (
+        ch_pairs,
+        ch_chromosome_size,
+        ch_map_res
+    )
+
+    //
+    // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS
+    //
+    if (!params.skip_dist_decay){
+        COOLER.out.cool
+            .combine(ch_ddecay_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_distdecay }
+
+        HIC_PLOT_DIST_VS_COUNTS(
+            ch_distdecay
+        )
+    }
+
+    //
+    // SUB-WORKFLOW: COMPARTMENT CALLING
+    //
+    if (!params.skip_compartments){
+        COOLER.out.cool
+            .combine(ch_comp_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1], it[2]]}
+            .set{ ch_cool_compartments }
+
+        COMPARTMENTS (
+            ch_cool_compartments,
+            ch_fasta,
+            ch_chromosome_size
+        )
+    }
+
+    //
+    // SUB-WORKFLOW : TADS CALLING
+    //
+    if (!params.skip_tads){
+        COOLER.out.cool
+            .combine(ch_tads_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_cool_tads }
+
+        TADS(
+            ch_cool_tads
+        )
+    }
 
     //
     // Collate and save software versions
     //
+
     def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
             versions_tuple: true
         }
-
     def topic_versions_string = topic_versions.versions_tuple
         .map { process, tool, version ->
             [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
@@ -54,44 +212,47 @@ workflow HIC {
             tool_versions.unique().sort()
             "${process}:\n${tool_versions.join('\n')}"
         }
-
-    def ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+    ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
         .mix(topic_versions_string)
-        .collectFile(
-            storeDir: "${outdir}/pipeline_info",
-            name: 'nf_core_'  +  'hic_software_'  + 'mqc_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        )
 
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+
+    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions.collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_hic_software_mqc_versions.yml', sort: true, newLine: true))
+
     def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
     def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    def ch_multiqc_custom_methods_description = multiqc_methods_description
-        ? file(multiqc_methods_description, checkIfExists: true)
+
+    def ch_multiqc_custom_methods_description = params.multiqc_methods_description
+        ? file(params.multiqc_methods_description, checkIfExists: true)
         : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
     def ch_methods_description = channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
+
+    if (params.processing == 'hicpro'){
+        ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
+    }
+
     MULTIQC(
         ch_multiqc_files.flatten().collect().map { files ->
             [
                 [id: 'hic'],
                 files,
-                multiqc_config
-                    ? file(multiqc_config, checkIfExists: true)
+                params.multiqc_config
+                    ? file(params.multiqc_config, checkIfExists: true)
                     : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
-                multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
+                params.multiqc_logo ? file(params.multiqc_logo, checkIfExists: true) : [],
                 [],
                 [],
             ]
         }
     )
-    emit:multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
+    emit:
+    multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
+
 }
 
 /*

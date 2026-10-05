@@ -16,6 +16,7 @@
 */
 
 include { HIC  } from './workflows/hic'
+include { PREPARE_GENOME          } from './subworkflows/local/prepare_genome'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_hic_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_hic_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_hic_pipeline'
@@ -26,10 +27,9 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_hic_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
 params.fasta = getGenomeAttribute('fasta')
+params.bwt2_index = getGenomeAttribute('bowtie2')
+params.bwa_index = getGenomeAttribute('bwa')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,15 +48,27 @@ workflow NFCORE_HIC {
     main:
 
     //
+    // SUBWORKFLOW: prepare genome annotation
+    //
+    PREPARE_GENOME(
+        params.fasta,
+        params.bwt2_index,
+        params.bwa_index
+    )
+
+    //
     // WORKFLOW: Run pipeline
     //
     HIC (
         samplesheet,
-        params.multiqc_config,
-        params.multiqc_logo,
-        params.multiqc_methods_description,
-        params.outdir,
+        PREPARE_GENOME.out.fasta,
+        PREPARE_GENOME.out.index,
+        PREPARE_GENOME.out.chromosome_size,
+        PREPARE_GENOME.out.res_frag,
+        PREPARE_GENOME.out.restriction_site,
+        PREPARE_GENOME.out.ligation_site
     )
+
     emit:
     multiqc_report = HIC.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
