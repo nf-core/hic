@@ -1,5 +1,21 @@
 # nf-core/hic: Citations
 
+## [pairtoorls](https://github.com/open2c/pairtools)
+
+> Open2C, Abdennur N, Fudenberg G, Flyamer IM, Galitsyna AA, Goloborodko A, et al. (2024) Pairtools: From sequencing data to chromosome contacts. PLoS Comput Biol 20(5): e1012164. https://doi.org/10.1371/journal.pcbi.1012164
+
+## [cooltools](https://github.com/open2c/cooltools)
+
+> Open2C, Abdennur N, Abraham S, Fudenberg G, Flyamer IM, Galitsyna AA, et al. (2024) Cooltools: Enabling high-resolution Hi-C analysis in Python. PLoS Comput Biol 20(5): e1012067. https://doi.org/10.1371/journal.pcbi.1012067
+
+## [cooler](https://github.com/open2c/cooler)
+
+> Abdennur N, Mirny LA. Cooler: scalable storage for Hi-C data and other genomically labeled arrays, Bioinformatics. 2020 36(1):311–316, https://doi.org/10.1093/bioinformatics/btz540
+
+## [HiC-Pro](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0831-x)
+
+> Servant N, Varoquaux N, Lajoie BR, Viara E, Chen C, Vert JP, Dekker J, Heard E, Barillot E. HiC-Pro: An optimized and flexible pipeline for Hi-C processing. Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
+
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.
