@@ -1,6 +1,6 @@
 {
     "@context": [
-        "https://w3id.org/ro/crate/1.1/context",
+        "https://w3id.org/ro/crate/1.2/context",
         {
             "GithubService": "https://w3id.org/ro/terms/test#GithubService",
             "JenkinsService": "https://w3id.org/ro/terms/test#JenkinsService",
@@ -105,7 +105,7 @@
             },
             "mentions": [
                 {
-                    "@id": "#c3a4a6a0-f74c-4e9e-a117-cedb5a45be3e"
+                    "@id": "#7868596e-2b08-4115-a64f-f983604ac31a"
                 }
             ],
             "name": "nf-core/hic"
@@ -118,7 +118,7 @@
             },
             "conformsTo": [
                 {
-                    "@id": "https://w3id.org/ro/crate/1.1"
+                    "@id": "https://w3id.org/ro/crate/1.2"
                 },
                 {
                     "@id": "https://w3id.org/workflowhub/workflow-ro-crate/1.0"
@@ -133,7 +133,7 @@
                 "ComputationalWorkflow"
             ],
             "dateCreated": "",
-            "dateModified": "2025-11-20T09:31:58Z",
+            "dateModified": "2026-04-28T11:20:53Z",
             "dct:conformsTo": "https://bioschemas.org/profiles/ComputationalWorkflow/1.0-RELEASE/",
             "keywords": [
                 "nf-core",
@@ -171,14 +171,14 @@
             "url": {
                 "@id": "https://www.nextflow.io/"
             },
-            "version": "!>=25.04.0"
+            "version": "!>=25.10.4"
         },
         {
-            "@id": "#c3a4a6a0-f74c-4e9e-a117-cedb5a45be3e",
+            "@id": "#7868596e-2b08-4115-a64f-f983604ac31a",
             "@type": "TestSuite",
             "instance": [
                 {
-                    "@id": "#d2d0f766-0bd1-4986-9101-dcee09b47034"
+                    "@id": "#e74cafb9-9595-409d-8551-9bcd24c25ea1"
                 }
             ],
             "mainEntity": {
@@ -187,7 +187,7 @@
             "name": "Test suite for nf-core/hic"
         },
         {
-            "@id": "#d2d0f766-0bd1-4986-9101-dcee09b47034",
+            "@id": "#e74cafb9-9595-409d-8551-9bcd24c25ea1",
             "@type": "TestInstance",
             "name": "GitHub Actions workflow for testing nf-core/hic",
             "resource": "repos/nf-core/hic/actions/workflows/nf-test.yml",
@@ -324,6 +324,11 @@
             "@type": "Organization",
             "name": "nf-core",
             "url": "https://nf-co.re/"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-1678-7410",
+            "@type": "Person",
+            "name": "Nicolas Servant"
         }
     ]
 }

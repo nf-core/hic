@@ -196,7 +196,6 @@ workflow HIC {
     //
     // Collate and save software versions
     //
-
     def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
