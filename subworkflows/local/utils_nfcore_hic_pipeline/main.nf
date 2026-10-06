@@ -11,6 +11,7 @@ include { UTILS_NEXTFLOW_PIPELINE     } from '../../../subworkflows/nf-core/util
 include { UTILS_NFCORE_PIPELINE     } from '../../../subworkflows/nf-core/utils_nfcore_pipeline/main.nf'
 include { UTILS_NFSCHEMA_PLUGIN     } from '../../../subworkflows/nf-core/utils_nfschema_plugin/main.nf'
 include { completionSummary         } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
+include { completionEmail           } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
 include { samplesheetToList         } from 'plugin/nf-schema'
 include { paramsSummaryMap         } from 'plugin/nf-schema'
 
@@ -286,7 +287,7 @@ def setMetaChunk(row){
     def map = []
     row[1].eachWithIndex() { file, i ->
         println row[0]
-        meta = row[0].clone()
+        def meta = row[0].clone()
         meta.chunk = i
         meta.part = row[1].size()
         map += [meta, file]
