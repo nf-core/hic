@@ -2,7 +2,7 @@ process TRIM_READS {
     tag "$meta.id"
     label 'process_low'
 
-    conda "conda-forge::python=3.10, conda-forge::pyahocorasick, conda-forge::sed=4.7"
+    conda "conda-forge::python=3.10 conda-forge::pyahocorasick conda-forge::sed=4.7"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'oras://community.wave.seqera.io/library/pyahocorasick_sed:0125bb306ee03ca4'  :
         'community.wave.seqera.io/library/pyahocorasick_sed:dc5c90f342b65a2a' }"
