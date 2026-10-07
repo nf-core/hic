@@ -152,7 +152,7 @@ workflow HIC {
     if (!params.skip_dist_decay){
         COOLER.out.cool
             .combine(ch_ddecay_res)
-            .filter{ it[0].resolution == it[2] }
+            .filter{ entry -> entry[0].resolution == entry[2] }
             .map { it -> [it[0], it[1]]}
             .set{ ch_distdecay }
 
@@ -167,7 +167,7 @@ workflow HIC {
     if (!params.skip_compartments){
         COOLER.out.cool
             .combine(ch_comp_res)
-            .filter{ it[0].resolution == it[2] }
+            .filter{ entry -> entry[0].resolution == entry[2] }
             .map { it -> [it[0], it[1], it[2]]}
             .set{ ch_cool_compartments }
 
@@ -184,7 +184,7 @@ workflow HIC {
     if (!params.skip_tads){
         COOLER.out.cool
             .combine(ch_tads_res)
-            .filter{ it[0].resolution == it[2] }
+            .filter{ entry -> entry[0].resolution == entry[2] }
             .map { it -> [it[0], it[1]]}
             .set{ ch_cool_tads }
 
