@@ -1,5 +1,10 @@
 lint:
   schema_params: false
+  # linting.yml pins Nextflow 25.10.4: 26.04.6 `config -o json` fails with
+  # "No such variable: meta", breaking tools 4.1.0 fetch_wf_config (unpin
+  # and remove this exclusion once fixed upstream)
+  files_unchanged:
+    - .github/workflows/linting.yml
 nf_core_version: 4.1.0
 repository_type: pipeline
 template:

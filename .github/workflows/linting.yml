@@ -15,6 +15,12 @@ jobs:
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@893c28b667aedeba26e37f296d260ccc5bc4d914 # v3
+        with:
+          # Pinned: Nextflow 26.04.6 `config -o json` fails with "No such
+          # variable: meta" on minimal configs, breaking nf-core/tools 4.1.0
+          # fetch_wf_config. Matches the version pinned in the nf-test matrix.
+          # Revert to latest once fixed upstream.
+          version: "25.10.4"
 
       - name: Run prek
         uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2
@@ -27,6 +33,12 @@ jobs:
 
       - name: Install Nextflow
         uses: nf-core/setup-nextflow@893c28b667aedeba26e37f296d260ccc5bc4d914 # v3
+        with:
+          # Pinned: Nextflow 26.04.6 `config -o json` fails with "No such
+          # variable: meta" on minimal configs, breaking nf-core/tools 4.1.0
+          # fetch_wf_config. Matches the version pinned in the nf-test matrix.
+          # Revert to latest once fixed upstream.
+          version: "25.10.4"
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
