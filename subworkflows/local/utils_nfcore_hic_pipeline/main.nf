@@ -11,6 +11,7 @@ include { UTILS_NEXTFLOW_PIPELINE     } from '../../../subworkflows/nf-core/util
 include { UTILS_NFCORE_PIPELINE     } from '../../../subworkflows/nf-core/utils_nfcore_pipeline/main.nf'
 include { UTILS_NFSCHEMA_PLUGIN     } from '../../../subworkflows/nf-core/utils_nfschema_plugin/main.nf'
 include { completionSummary         } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
+include { completionEmail           } from '../../../subworkflows/nf-core/utils_nfcore_pipeline'
 include { samplesheetToList         } from 'plugin/nf-schema'
 include { paramsSummaryMap         } from 'plugin/nf-schema'
 
@@ -125,7 +126,6 @@ workflow PIPELINE_COMPLETION {
     plaintext_email // boolean: Send plain-text email instead of HTML
     outdir          //    path: Path to output directory where results will be published
     monochrome_logs // boolean: Disable ANSI colour codes in log output
-    hook_url        //  string: hook URL for notifications
     multiqc_report  //  string: Path to MultiQC report
 
     main:
@@ -149,13 +149,11 @@ workflow PIPELINE_COMPLETION {
         }
 
         completionSummary(monochrome_logs)
-        if (hook_url) {
-            imNotification(summary_params, hook_url)
-        }
+
     }
 
     workflow.onError {
-        log.error "Pipeline failed. Please refer to troubleshooting docs: https://nf-co.re/docs/usage/troubleshooting"
+        log.error "Pipeline failed. Please refer to troubleshooting docs for common issues: https://nf-co.re/docs/running/troubleshooting"
     }
 }
 
@@ -289,7 +287,7 @@ def setMetaChunk(row){
     def map = []
     row[1].eachWithIndex() { file, i ->
         println row[0]
-        meta = row[0].clone()
+        def meta = row[0].clone()
         meta.chunk = i
         meta.part = row[1].size()
         map += [meta, file]

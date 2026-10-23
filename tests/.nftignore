@@ -38,3 +38,6 @@ multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
 multiqc/multiqc_report.html
 pipeline_info/*.{html,json,txt,yml}
 tads/hicExplorer/*_balanced_hicfindtads_zscore_matrix.cool
+tads/insulation/*_insulation.tsv
+distance_decay/*_distcount.png
+hicpro/valid_pairs/pairix/*_contacts.pairs.gz.px2
