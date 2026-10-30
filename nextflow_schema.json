@@ -346,9 +346,7 @@
                 },
                 "loops_caller": {
                     "type": "string",
-                    "enum": [
-                        "fithichip"
-                    ],
+                    "enum": ["fithichip"],
                     "fa_icon": "fas fa-project-diagram",
                     "description": "Call chromatin loops (HiChIP / PLAC-seq data). Currently 'fithichip'. Loops are not called when unset."
                 },
@@ -394,23 +392,14 @@
                 "fithichip_inttype": {
                     "type": "integer",
                     "default": 3,
-                    "enum": [
-                        1,
-                        2,
-                        3,
-                        4,
-                        5
-                    ],
+                    "enum": [1, 2, 3, 4, 5],
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "FitHiChIP: interactions tested (IntType). 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type"
                 },
                 "fithichip_bias": {
                     "type": "integer",
                     "default": 1,
-                    "enum": [
-                        1,
-                        2
-                    ],
+                    "enum": [1, 2],
                     "fa_icon": "fas fa-balance-scale",
                     "description": "FitHiChIP: bias regression (BiasType). 1 = coverage bias, 2 = ICE bias"
                 },
