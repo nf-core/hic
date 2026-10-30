@@ -29,7 +29,7 @@ process FITHICHIP {
     tuple val(meta), path("${prefix}/Summary_results_FitHiChIP.html")                                              , emit: summary , optional: true
     tuple val(meta), path("${prefix}/Parameters.txt")                                                              , emit: params  , optional: true
     tuple val(meta), path("${prefix}.fithichip.config")                                                            , emit: config
-    path("versions.yml"), emit: versions
+    path("versions.yml"), topic: versions, emit: versions
 
     when:
     task.ext.when == null || task.ext.when

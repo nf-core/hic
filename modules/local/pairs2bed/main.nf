@@ -2,17 +2,18 @@ process PAIRS2BED {
     tag "$meta.id"
     label 'process_low'
 
-    conda "conda-forge::gawk=5.1.0"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/ubuntu:20.04' :
-        'nf-core/ubuntu:20.04' }"
+    // same gawk environment and images as the nf-core gawk module
+    conda "conda-forge::gawk=5.3.1"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/a1/a125c778baf3865331101a104b60d249ee15fe1dca13bdafd888926cc5490a34/data' :
+        'community.wave.seqera.io/library/gawk:5.3.1--e09efb5dfc4b8156' }"
 
     input:
     tuple val(meta), path(pairs), path(index)
 
     output:
     tuple val(meta), path("*.reads.bed.gz"), emit: bed
-    path("versions.yml"), emit: versions
+    path("versions.yml"), topic: versions, emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,7 +33,7 @@ process PAIRS2BED {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        gawk: \$(awk --version | head -1 | cut -f1 -d, | sed -e 's/GNU Awk //')
+        gawk: \$(awk -Wversion | sed '1!d; s/.*Awk //; s/,.*//')
     END_VERSIONS
     """
 }
