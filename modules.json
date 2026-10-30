@@ -60,6 +60,11 @@
                         "git_sha": "3009f27c4e4b6e99da4eeebe82799e13924a4a1f",
                         "installed_by": ["modules"]
                     },
+                    "macs3/callpeak": {
+                        "branch": "master",
+                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "installed_by": ["modules"]
+                    },
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "2c73cc8fa92cf48de3da0b643fdf357a8a290b36",

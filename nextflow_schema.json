@@ -343,6 +343,81 @@
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "250000",
                     "description": "Resolution for compartments calling"
+                },
+                "loops_caller": {
+                    "type": "string",
+                    "enum": [
+                        "fithichip"
+                    ],
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Call chromatin loops (HiChIP / PLAC-seq data). Currently 'fithichip'. Loops are not called when unset."
+                },
+                "res_loops": {
+                    "type": "string",
+                    "pattern": "^(\\d+)(,\\d+)*$",
+                    "default": "5000",
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Resolution(s) of the contact maps used for loop calling (comma separated)"
+                },
+                "loops_peaks": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.(bed|narrowPeak|broadPeak)(\\.gz)?$",
+                    "fa_icon": "fas fa-file",
+                    "description": "BED file of 1D anchor peaks (e.g. ChIP-seq peaks of the HiChIP target) used by FitHiChIP. When unset, anchors are inferred from the valid pairs with MACS3."
+                },
+                "macs_gsize": {
+                    "type": "number",
+                    "fa_icon": "fas fa-dna",
+                    "description": "Effective genome size for MACS3 peak calling (e.g. 2.7e9 for human). Default: the total length of the chromosome sizes file."
+                },
+                "fithichip_lower_dist": {
+                    "type": "integer",
+                    "default": 20000,
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "FitHiChIP: lower distance threshold (bp) of the interactions tested (LowDistThr)"
+                },
+                "fithichip_upper_dist": {
+                    "type": "integer",
+                    "default": 2000000,
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "FitHiChIP: upper distance threshold (bp) of the interactions tested (UppDistThr)"
+                },
+                "fithichip_qvalue": {
+                    "type": "number",
+                    "default": 0.01,
+                    "fa_icon": "fas fa-filter",
+                    "description": "FitHiChIP: FDR threshold of the significant interactions (QVALUE)"
+                },
+                "fithichip_inttype": {
+                    "type": "integer",
+                    "default": 3,
+                    "enum": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5
+                    ],
+                    "fa_icon": "fas fa-bezier-curve",
+                    "description": "FitHiChIP: interactions tested (IntType). 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type"
+                },
+                "fithichip_bias": {
+                    "type": "integer",
+                    "default": 1,
+                    "enum": [
+                        1,
+                        2
+                    ],
+                    "fa_icon": "fas fa-balance-scale",
+                    "description": "FitHiChIP: bias regression (BiasType). 1 = coverage bias, 2 = ICE bias"
+                },
+                "fithichip_p2p_background": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-layer-group",
+                    "description": "FitHiChIP: use the stringent peak-to-peak background (UseP2PBackgrnd, FitHiChIP(S)) instead of the loose background (FitHiChIP(L))"
                 }
             }
         },

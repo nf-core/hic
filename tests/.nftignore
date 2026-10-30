@@ -38,3 +38,10 @@ multiqc/multiqc_plots/{svg,pdf,png}/*.{svg,pdf,png}
 multiqc/multiqc_report.html
 pipeline_info/*.{html,json,txt,yml}
 tads/hicExplorer/*_balanced_hicfindtads_zscore_matrix.cool
+loops/peaks/*_peaks.xls
+loops/fithichip/*.fithichip.config
+loops/fithichip/*/Parameters.txt
+loops/fithichip/*/Summary_results_FitHiChIP.html
+loops/fithichip/*/*/*/*/FitHiC_BiasCorr/Plots/*
+loops/fithichip/*/*/*/*/FitHiC_BiasCorr/*_WashU.bed.gz*
+loops/fithichip/*/*/*/*/FitHiC_BiasCorr/Merge_Nearby_Interactions/*_WashU.bed.gz*
