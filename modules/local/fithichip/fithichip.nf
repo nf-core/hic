@@ -3,11 +3,12 @@ process FITHICHIP {
     label 'process_medium'
     label 'process_long'
 
-    // FitHiChIP has no Bioconda recipe. The image is pinned by digest: FitHiChIP 11.0 (December 2022)
-    // on the HiC-Pro 3.0.0 environment (python3, R, bedtools, samtools, bc).
+    // FitHiChIP has no Bioconda recipe. The image is pinned by digest: FitHiChIP 11.0 (December 2022) with its
+    // dependencies from conda-forge/Bioconda, built from https://github.com/birkiy/fithichip-container
+    // (ghcr.io/birkiy/fithichip:11.0; the Dockerfile, the conda lock file and the build workflow are in that repository).
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://riasc/fithichip@sha256:af69295105cecfd2001e4f8f090a4ff60c0f62c234a92f771863dd32ad22d802' :
-        'riasc/fithichip@sha256:af69295105cecfd2001e4f8f090a4ff60c0f62c234a92f771863dd32ad22d802' }"
+        'docker://ghcr.io/birkiy/fithichip@sha256:ae01888ea5c881470b8e0a225c8b7ba48a9e1c40aba6e984c61c87d3222b16d3' :
+        'ghcr.io/birkiy/fithichip@sha256:ae01888ea5c881470b8e0a225c8b7ba48a9e1c40aba6e984c61c87d3222b16d3' }"
 
     input:
     tuple val(meta), path(bins), path(matrix), path(peaks), path(chromsize)
@@ -43,7 +44,8 @@ process FITHICHIP {
     // FitHiChIP reads a key=value configuration file (FitHiChIP_HiCPro.sh -C) with absolute paths.
     // Interval/Matrix: HiC-Pro style bins and raw contact counts at the loop resolution; PeakFile: the 1D anchors.
     // The script changes into its own code directory and R writes Rplots.pdf there, which fails in a read-only
-    // container (Singularity): a writable copy of the code is used instead (test data and docs left out).
+    // container (Singularity): a writable copy of the code is used instead (test data left out). The code
+    // directory is taken from FITHICHIP_HOME when the image sets it, else from the /root/FitHiChIP of older images.
     """
     cat > ${prefix}.fithichip.config <<-FITHICHIP_CONFIG
     Interval=\$PWD/${bins}
@@ -64,10 +66,14 @@ process FITHICHIP {
     OverWrite=1
     FITHICHIP_CONFIG
 
+    FITHICHIP_HOME=\${FITHICHIP_HOME:-/root/FitHiChIP}
     mkdir -p fithichip_code
-    cp -r /root/FitHiChIP/src /root/FitHiChIP/Analysis /root/FitHiChIP/Imp_Scripts /root/FitHiChIP/UtilScript fithichip_code/
-    cp /root/FitHiChIP/*.sh /root/FitHiChIP/Release_Notes.txt /root/FitHiChIP/interact.as /root/FitHiChIP/bedToBigBed fithichip_code/
+    for entry in "\$FITHICHIP_HOME"/*; do
+        [ "\$(basename "\$entry")" = "TestData" ] || cp -r "\$entry" fithichip_code/
+    done
     export PATH=\$PWD/fithichip_code:\$PATH
+    # writable font cache for the R plots (the home directory can be read-only in a container)
+    export XDG_CACHE_HOME=\$PWD/.cache
 
     bash fithichip_code/FitHiChIP_HiCPro.sh -C \$PWD/${prefix}.fithichip.config
 
@@ -75,7 +81,7 @@ process FITHICHIP {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        fithichip: \$(grep -m1 -oE 'Version [0-9.]+' /root/FitHiChIP/Release_Notes.txt | sed 's/Version //')
+        fithichip: \$(grep -m1 -oE 'Version [0-9.]+' "\$FITHICHIP_HOME"/Release_Notes.txt | sed 's/Version //')
     END_VERSIONS
     """
 }

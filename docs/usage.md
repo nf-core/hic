@@ -651,6 +651,11 @@ In addition, chromatin loops anchored at the 1D peaks of the targeted protein or
 called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) from the raw contact counts at the
 `--res_loops` resolution(s).
 
+`FitHiChIP` has no Bioconda recipe. It runs in the container image `ghcr.io/birkiy/fithichip:11.0`
+(FitHiChIP 11.0 with its dependencies from conda-forge/Bioconda, built from
+[birkiy/fithichip-container](https://github.com/birkiy/fithichip-container)), so loop calling needs a
+container engine (`docker`, `singularity`, `apptainer`, `podman`, ...) and is not available with `-profile conda`.
+
 #### `--loops_caller`
 
 Call chromatin loops. Currently only `fithichip` is available. Default: not set (no loop calling).
