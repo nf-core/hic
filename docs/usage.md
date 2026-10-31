@@ -643,6 +643,68 @@ Default: '40000,20000'
 --res_tads '[string]'
 ```
 
+### Loop calling (HiChIP / PLAC-seq)
+
+HiChIP and PLAC-seq data are processed exactly like Hi-C data up to the contact maps, with
+the `pairtools` or `HiC-Pro` workflow and the digestion protocol of the library (e.g. `--digestion mboi`).
+In addition, chromatin loops anchored at the 1D peaks of the targeted protein or histone mark can be
+called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) from the raw contact counts at the
+`--res_loops` resolution(s).
+
+`FitHiChIP` has no Bioconda recipe. It runs in the container image `ghcr.io/birkiy/fithichip:11.0`
+(FitHiChIP 11.0 with its dependencies from conda-forge/Bioconda, built from
+[birkiy/fithichip-container](https://github.com/birkiy/fithichip-container)), so loop calling needs a
+container engine (`docker`, `singularity`, `apptainer`, `podman`, ...) and is not available with `-profile conda`.
+
+#### `--loops_caller`
+
+Call chromatin loops. Currently only `fithichip` is available. Default: not set (no loop calling).
+
+```bash
+--loops_caller 'fithichip'
+```
+
+#### `--res_loops`
+
+Resolution(s) of the contact maps used for loop calling (comma-separated). Default: '5000'
+
+```bash
+--res_loops '[string]'
+```
+
+#### `--loops_peaks`
+
+BED file of the 1D anchor peaks used by `FitHiChIP`, for instance the ChIP-seq peaks of the HiChIP target.
+When this option is not set, the anchors are inferred from the HiChIP reads themselves: the 5' position of
+every read end of the valid pairs is given to `MACS3` as single-end reads (`--nomodel --extsize 147 -q 0.01`),
+the approach of FitHiChIP's `PeakInferHiChIP`. The inferred peaks are exported in `results/loops/peaks`.
+
+```bash
+--loops_peaks '[path to BED file]'
+```
+
+#### `--macs_gsize`
+
+Effective genome size given to `MACS3` when the anchors are inferred: a number, scientific notation (e.g. `2.7e9` for human,
+`1.87e9` for mouse) or one of the `MACS3` shortcuts `hs`, `mm`, `ce`, `dm`.
+Default: the total length of the chromosomes in the chromosome sizes file.
+
+```bash
+--macs_gsize 2.7e9
+```
+
+#### FitHiChIP options
+
+- `--fithichip_lower_dist` / `--fithichip_upper_dist`: distance range (bp) of the interactions tested. Default: 20000 / 2000000
+- `--fithichip_qvalue`: FDR threshold of the significant interactions. Default: 0.01
+- `--fithichip_inttype`: interactions tested, 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type. Default: 3
+- `--fithichip_bias`: bias regression, 1 = coverage bias, 2 = ICE bias. Default: 1
+- `--fithichip_p2p_background`: use the stringent peak-to-peak background (FitHiChIP(S)) instead of the loose one (FitHiChIP(L)). Default: false
+
+```bash
+--fithichip_lower_dist '[numeric]' --fithichip_upper_dist '[numeric]' --fithichip_qvalue '[numeric]' --fithichip_inttype '[numeric]' --fithichip_bias '[numeric]' --fithichip_p2p_background
+```
+
 ## Inputs/Outputs
 
 ### `--split_fastq`

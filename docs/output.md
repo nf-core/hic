@@ -270,6 +270,28 @@ Currently, the pipeline proposes two approaches :
 
 Usually, TADs results are presented as simple BED files, or bigWig files, with the position of boundaries along the genome.
 
+### Loop calling
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `loops/peaks/`
+  - `*_peaks.narrowPeak`, `*_summits.bed`, `*_peaks.xls`: 1D anchor peaks inferred from the valid pairs with `MACS3` (only when `--loops_peaks` is not set).
+- `loops/fithichip/<sample>_<resolution>/`
+  - `FitHiChIP_*/P2PBckgr_*/*/FitHiC_BiasCorr/*.interactions_FitHiC_Q<qvalue>.bed`: significant interactions with their contact counts, expected counts, bias, p-value and q-value.
+  - `*_IGV.bedpe`, `*_WashU.bed.gz`: the same interactions for genome browsers.
+  - `Merge_Nearby_Interactions/`: significant interactions after merging adjacent bin pairs into single loops.
+  - `Statistics_Dist.txt`, `Plots/`: distance statistics and spline fits.
+  - `Summary_results_FitHiChIP.html`, `Parameters.txt`: run summary and the parameters used.
+- `loops/fithichip/<sample>_<resolution>.fithichip.config`: the FitHiChIP configuration file.
+
+</details>
+
+For HiChIP and PLAC-seq data (`--loops_caller fithichip`), chromatin loops are called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/)
+from the raw contact counts at the `--res_loops` resolution(s). FitHiChIP tests the bin pairs anchored at 1D peaks of the targeted protein or
+histone mark against a distance-dependent background corrected for coverage (or ICE) bias, and reports the interactions below the FDR threshold.
+The anchors are either provided with `--loops_peaks` (e.g. ChIP-seq peaks of the same target) or inferred from the HiChIP reads with `MACS3`.
+
 ### MultiQC
 
 <details markdown="1">
