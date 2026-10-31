@@ -685,11 +685,12 @@ the approach of FitHiChIP's `PeakInferHiChIP`. The inferred peaks are exported i
 
 #### `--macs_gsize`
 
-Effective genome size given to `MACS3` when the anchors are inferred (e.g. `2.7e9` for human, `1.87e9` for mouse).
+Effective genome size given to `MACS3` when the anchors are inferred: a number, scientific notation (e.g. `2.7e9` for human,
+`1.87e9` for mouse) or one of the `MACS3` shortcuts `hs`, `mm`, `ce`, `dm`.
 Default: the total length of the chromosomes in the chromosome sizes file.
 
 ```bash
---macs_gsize '[numeric]'
+--macs_gsize 2.7e9
 ```
 
 #### FitHiChIP options

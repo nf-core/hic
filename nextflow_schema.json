@@ -367,9 +367,10 @@
                     "description": "BED file of 1D anchor peaks (e.g. ChIP-seq peaks of the HiChIP target) used by FitHiChIP. When unset, anchors are inferred from the valid pairs with MACS3."
                 },
                 "macs_gsize": {
-                    "type": "number",
+                    "type": ["number", "string"],
+                    "pattern": "^([0-9]*\\.?[0-9]+([eE][+-]?[0-9]+)?|hs|mm|ce|dm)$",
                     "fa_icon": "fas fa-dna",
-                    "description": "Effective genome size for MACS3 peak calling (e.g. 2.7e9 for human). Default: the total length of the chromosome sizes file."
+                    "description": "Effective genome size for MACS3 peak calling: a number, scientific notation (e.g. 2.7e9 for human) or one of the MACS3 shortcuts hs, mm, ce, dm. Default: the total length of the chromosome sizes file."
                 },
                 "fithichip_lower_dist": {
                     "type": "integer",
