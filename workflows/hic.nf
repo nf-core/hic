@@ -210,8 +210,7 @@ workflow HIC {
     if (params.loops_caller){
         COOLER.out.cool
             .combine(ch_loops_res)
-            .filter{ it[0].resolution == it[2] }
-            .map { it -> [it[0], it[1], it[2]]}
+            .filter { meta, _cool, res -> meta.resolution == res }   // [meta, cool, resolution]
             .set{ ch_cool_loops }
 
         LOOPS(

@@ -29,6 +29,7 @@ process FITHICHIP {
     tuple val(meta), path("${prefix}/Summary_results_FitHiChIP.html")                                              , emit: summary , optional: true
     tuple val(meta), path("${prefix}/Parameters.txt")                                                              , emit: params  , optional: true
     tuple val(meta), path("${prefix}.fithichip.config")                                                            , emit: config
+    tuple val(meta), path("${prefix}.fithichip.log")                                                               , emit: log
     path("versions.yml"), topic: versions, emit: versions
 
     when:
@@ -75,9 +76,27 @@ process FITHICHIP {
     # writable font cache for the R plots (the home directory can be read-only in a container)
     export XDG_CACHE_HOME=\$PWD/.cache
 
-    bash fithichip_code/FitHiChIP_HiCPro.sh -C \$PWD/${prefix}.fithichip.config
+    bash fithichip_code/FitHiChIP_HiCPro.sh -C \$PWD/${prefix}.fithichip.config 2>&1 | tee ${prefix}.fithichip.log
 
     rm -rf fithichip_code
+
+    # FitHiChIP_HiCPro.sh exits 0 when one of its steps fails, so check the run here. The task fails when FitHiChIP
+    # reported an error, or when its model step (src/FitHiC_SigInt.r) did not write the table of tested interactions:
+    # a missing input of an earlier R step (e.g. the bias file) stops that step and every step after it, and the
+    # significant interactions file is then written empty. Other R stops in a complete run come from FitHiChIP's
+    # own plots (hist() in the distance vs contact count plot stops on real data sets) and are only reported.
+    if grep -q 'ERROR ===>>>>' ${prefix}.fithichip.log; then
+        echo "ERROR: FitHiChIP reported an error, see ${prefix}.fithichip.log" >&2
+        exit 1
+    fi
+    if ! ls ${prefix}/FitHiChIP_*/P2PBckgr_*/*/FitHiC_BiasCorr/${prefix}.interactions_FitHiC.bed > /dev/null 2>&1; then
+        echo "ERROR: FitHiChIP did not write its table of tested interactions (one of its R steps stopped), see ${prefix}.fithichip.log" >&2
+        exit 1
+    fi
+    n_halted=\$(grep -c 'Execution halted' ${prefix}.fithichip.log || true)
+    if [ "\$n_halted" -gt 0 ]; then
+        echo "WARNING: FitHiChIP wrote its interactions but \$n_halted of its R steps stopped (usually a plot), see ${prefix}.fithichip.log" >&2
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

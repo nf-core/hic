@@ -284,6 +284,7 @@ Usually, TADs results are presented as simple BED files, or bigWig files, with t
   - `Statistics_Dist.txt`, `Plots/`: distance statistics and spline fits.
   - `Summary_results_FitHiChIP.html`, `Parameters.txt`: run summary and the parameters used.
 - `loops/fithichip/<sample>_<resolution>.fithichip.config`: the FitHiChIP configuration file.
+- `loops/fithichip/<sample>_<resolution>.fithichip.log`: the FitHiChIP log.
 
 </details>
 

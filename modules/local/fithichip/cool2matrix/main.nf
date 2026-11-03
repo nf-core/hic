@@ -19,17 +19,18 @@ process FITHICHIP_COOL2MATRIX {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    // HiC-Pro style matrix for FitHiChIP: bins (chrom start end id) and raw pixels (id1 id2 count).
-    // cooler's pixel ids (bin1_id, bin2_id) are 0-based row numbers of its bin table, so the bin ids written
-    // here are NR-1 to match them. FitHiChIP (src/InteractionHicPro.r) joins the two files by id value, not by
-    // row position, so only the agreement between the two files matters (HiC-Pro's own files are 1-based on
-    // both sides, which works for the same reason).
+    // HiC-Pro style matrix for FitHiChIP: bins (chrom start end id) and raw pixels (id1 id2 count), with the
+    // 1-based bin ids of HiC-Pro. cooler's bin ids are 0-based row numbers of its bin table, hence NR for the bins
+    // and +1 on both pixel ids. FitHiChIP (src/InteractionHicPro.r) joins the two files by id value, and tools that
+    // read HiC-Pro matrices by position (e.g. HiC-Pro's ice) expect 1-based ids.
     """
     cooler dump -t bins ${cool} \\
-        | awk 'BEGIN{OFS="\\t"} {print \$1, \$2, \$3, NR-1}' \\
+        | awk 'BEGIN{OFS="\\t"} {print \$1, \$2, \$3, NR}' \\
         > ${prefix}_abs.bed
 
-    cooler dump -t pixels ${cool} > ${prefix}.matrix
+    cooler dump -t pixels ${cool} \\
+        | awk 'BEGIN{OFS="\\t"} {print \$1 + 1, \$2 + 1, \$3}' \\
+        > ${prefix}.matrix
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

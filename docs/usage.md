@@ -687,7 +687,8 @@ the approach of FitHiChIP's `PeakInferHiChIP`. The inferred peaks are exported i
 
 Effective genome size given to `MACS3` when the anchors are inferred: a number, scientific notation (e.g. `2.7e9` for human,
 `1.87e9` for mouse) or one of the `MACS3` shortcuts `hs`, `mm`, `ce`, `dm`.
-Default: the total length of the chromosomes in the chromosome sizes file.
+Default: the total length of the chromosomes in the chromosome sizes file. This is larger than the effective (mappable) genome
+size `MACS3` expects, which makes the peak calls slightly more conservative, so set `--macs_gsize` for real genomes.
 
 ```bash
 --macs_gsize 2.7e9
@@ -698,7 +699,7 @@ Default: the total length of the chromosomes in the chromosome sizes file.
 - `--fithichip_lower_dist` / `--fithichip_upper_dist`: distance range (bp) of the interactions tested. Default: 20000 / 2000000
 - `--fithichip_qvalue`: FDR threshold of the significant interactions. Default: 0.01
 - `--fithichip_inttype`: interactions tested, 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type. Default: 3
-- `--fithichip_bias`: bias regression, 1 = coverage bias, 2 = ICE bias. Default: 1
+- `--fithichip_bias`: bias regression. Only `1` (coverage bias) is available: FitHiChIP's ICE bias (`2`) runs HiC-Pro's `ice`, which is not in the container. Default: 1
 - `--fithichip_p2p_background`: use the stringent peak-to-peak background (FitHiChIP(S)) instead of the loose one (FitHiChIP(L)). Default: false
 
 ```bash

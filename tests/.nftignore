@@ -40,6 +40,7 @@ pipeline_info/*.{html,json,txt,yml}
 tads/hicExplorer/*_balanced_hicfindtads_zscore_matrix.cool
 loops/peaks/*_peaks.xls
 loops/fithichip/*.fithichip.config
+loops/fithichip/*.fithichip.log
 loops/fithichip/*/Parameters.txt
 loops/fithichip/*/Summary_results_FitHiChIP.html
 loops/fithichip/*/*/*/*/FitHiC_BiasCorr/Plots/*

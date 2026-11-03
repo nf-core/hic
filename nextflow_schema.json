@@ -400,9 +400,9 @@
                 "fithichip_bias": {
                     "type": "integer",
                     "default": 1,
-                    "enum": [1, 2],
+                    "enum": [1],
                     "fa_icon": "fas fa-balance-scale",
-                    "description": "FitHiChIP: bias regression (BiasType). 1 = coverage bias, 2 = ICE bias"
+                    "description": "FitHiChIP: bias regression (BiasType). Only 1 (coverage bias) is available: the ICE bias (2) runs HiC-Pro's ice, which the FitHiChIP container does not include."
                 },
                 "fithichip_p2p_background": {
                     "type": "boolean",

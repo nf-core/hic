@@ -7,8 +7,8 @@
 
 include { PAIRS2BED             } from '../../../modules/local/pairs2bed/main'
 include { MACS3_CALLPEAK        } from '../../../modules/nf-core/macs3/callpeak/main'
-include { FITHICHIP_COOL2MATRIX } from '../../../modules/local/fithichip/cool2matrix'
-include { FITHICHIP             } from '../../../modules/local/fithichip/fithichip'
+include { FITHICHIP_COOL2MATRIX } from '../../../modules/local/fithichip/cool2matrix/main'
+include { FITHICHIP             } from '../../../modules/local/fithichip/main'
 
 workflow LOOPS {
 
@@ -40,7 +40,7 @@ workflow LOOPS {
             ch_gsize = channel.value(params.macs_gsize)
         } else {
             ch_gsize = chromsize
-                .map { _meta, sizes -> sizes.readLines().collect { it.tokenize('\t')[1].toLong() }.sum() }
+                .map { _meta, sizes -> sizes.readLines().collect { line -> line.tokenize('\t')[1].toLong() }.sum() }
                 .first()
         }
 
@@ -63,7 +63,7 @@ workflow LOOPS {
         ch_fithichip_input = FITHICHIP_COOL2MATRIX.out.matrix
             .map { meta, bins, matrix -> [meta.id, meta, bins, matrix] }
             .combine(ch_peaks, by: 0)                       // [id, meta, bins, matrix, peaks]
-            .combine(chromsize.map { it[1] })               // [id, meta, bins, matrix, peaks, chromsize]
+            .combine(chromsize.map { _meta, sizes -> sizes }) // [id, meta, bins, matrix, peaks, chromsize]
             .map { _id, meta, bins, matrix, peaks, sizes -> [meta, bins, matrix, peaks, sizes] }
 
         FITHICHIP(
