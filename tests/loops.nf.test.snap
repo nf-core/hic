@@ -30,8 +30,17 @@
                 "FASTQC": {
                     "fastqc": "0.12.1"
                 },
+                "FITHICHIP": {
+                    "fithichip": 11.0
+                },
+                "FITHICHIP_COOL2MATRIX": {
+                    "cooler": "0.10.3"
+                },
                 "MACS3_CALLPEAK": {
                     "macs3": "3.0.4"
+                },
+                "PAIRS2BED": {
+                    "gawk": "5.3.1"
                 },
                 "SAMTOOLS_FAIDX": {
                     "samtools": "1.22.1"
@@ -81,6 +90,7 @@
                 "loops/fithichip",
                 "loops/fithichip/SRR4292758_2000",
                 "loops/fithichip/SRR4292758_2000.fithichip.config",
+                "loops/fithichip/SRR4292758_2000.fithichip.log",
                 "loops/fithichip/SRR4292758_2000/FitHiChIP_Peak2ALL_b2000_L20000_U2000000",
                 "loops/fithichip/SRR4292758_2000/FitHiChIP_Peak2ALL_b2000_L20000_U2000000/P2PBckgr_0",
                 "loops/fithichip/SRR4292758_2000/FitHiChIP_Peak2ALL_b2000_L20000_U2000000/P2PBckgr_0/Coverage_Bias",
@@ -237,7 +247,7 @@
                 "SRR4292758.1000_balanced_insulation.tsv:md5,e2ce1056f11fc3bf432de642341cc6ab"
             ]
         ],
-        "timestamp": "2026-10-30T13:39:04.109805341",
+        "timestamp": "2026-11-03T08:09:51.007853636",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "26.04.0"
