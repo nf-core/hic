@@ -14,8 +14,8 @@ include { BUILD_CONTACT_MAPS } from '../../../modules/local/hicpro/build_contact
 include { ICE_NORMALIZATION } from '../../../modules/local/hicpro/run_ice'
 
 // Remove meta.chunks
-def removeChunks(row){
-    meta = row[0].clone()
+def removeChunks(row) {
+    def meta = row[0].clone()
     meta.remove('chunk')
     return [meta, row[1]]
 }

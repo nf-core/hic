@@ -39,12 +39,20 @@ workflow COOLER {
 
     //*****************************************
     // BUILD COOL FILE PER RESOLUTION
+    pairs_res = ch_pairs.combine(ch_cools_bins)
+
+    cload_inputs = pairs_res.multiMap { meta, pairs_file, index, cool_bin ->
+        pairs: [meta, pairs_file, index]
+        res: cool_bin
+    }
+
     COOLER_CLOAD(
-        ch_pairs.collect(),
-        ch_chromsize.collect(),
+        cload_inputs.pairs,
+        ch_chromsize.first(),
         "pairs",
-        ch_cools_bins
+        cload_inputs.res
     )
+
 
     // Add resolution in meta
     COOLER_CLOAD.out.cool

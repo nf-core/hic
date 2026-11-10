@@ -16,6 +16,14 @@
 
 > Servant N, Varoquaux N, Lajoie BR, Viara E, Chen C, Vert JP, Dekker J, Heard E, Barillot E. HiC-Pro: An optimized and flexible pipeline for Hi-C processing. Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
 
+## [FitHiChIP](https://github.com/ay-lab/FitHiChIP)
+
+> Bhattacharyya S, Chandra V, Vijayanand P, Ay F. Identification of significant chromatin contacts from HiChIP data by FitHiChIP. Nat Commun. 2019 10:4221. https://doi.org/10.1038/s41467-019-11950-y
+
+## [MACS](https://github.com/macs3-project/MACS)
+
+> Zhang Y, Liu T, Meyer CA, Eeckhoute J, Johnson DS, Bernstein BE, Nusbaum C, Myers RM, Brown M, Li W, Liu XS. Model-based analysis of ChIP-Seq (MACS). Genome Biol. 2008 9(9):R137. https://doi.org/10.1186/gb-2008-9-9-r137
+
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.

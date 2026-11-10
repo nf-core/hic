@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## dev
+
+### `Added`
+
+- Loop calling for HiChIP / PLAC-seq data (see #189): 1D anchor peaks inferred from the valid pairs with `MACS3`, or provided with `--loops_peaks`, and significant interactions called with `FitHiChIP` from the raw contact counts (`--loops_caller fithichip`, `--res_loops`, `--macs_gsize`, `--fithichip_*` options). New local modules `PAIRS2BED`, `FITHICHIP_COOL2MATRIX`, `FITHICHIP` (container `ghcr.io/birkiy/fithichip:11.0`) and subworkflow `LOOPS`; nf-core module `macs3/callpeak`.
+
 ## Version 2.2.0 2026-03-02
 
 ### `Added`
@@ -43,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Markdown settings
 - Template files
 - nf-core version to 3.5.0
+- [#250](https://github.com/nf-core/hic/pull/250) - Merge `master` into `dev` to carry the #243 and #247 workflow fixes
 
 ## v2.2.0dev
 
