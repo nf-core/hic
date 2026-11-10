@@ -16,9 +16,10 @@ include { SPLIT_COOLER_DUMP } from '../../../modules/local/split_cooler_dump'
 workflow COOLER {
 
     take:
-    pairs // [meta, pairs, index]
-    chromsize // [meta, chromsize]
-    cool_bins
+    ch_pairs // [meta, pairs, index]
+    ch_chromsize // [meta, chromsize]
+    ch_cools_bins
+    ch_zoom_res
 
     main:
 
@@ -26,19 +27,19 @@ workflow COOLER {
     // FILTER CHROMOSOMES ON SIZE
 
     if( params.min_size ) {
-        chromsize = chromsize | FILTER_CHROMSIZE
+        ch_chromsize = ch_chromsize | FILTER_CHROMSIZE
     }
 
     //*****************************************
     // EXPORT BINS
 
     COOLER_MAKEBINS(
-        chromsize.combine(cool_bins)
+        ch_chromsize.combine(ch_cools_bins)
     )
 
     //*****************************************
     // BUILD COOL FILE PER RESOLUTION
-    pairs_res = pairs.combine(cool_bins)
+    pairs_res = ch_pairs.combine(ch_cools_bins)
 
     cload_inputs = pairs_res.multiMap { meta, pairs_file, index, cool_bin ->
         pairs: [meta, pairs_file, index]
@@ -47,7 +48,7 @@ workflow COOLER {
 
     COOLER_CLOAD(
         cload_inputs.pairs,
-        chromsize.first(),
+        ch_chromsize.first(),
         "pairs",
         cload_inputs.res
     )
@@ -65,16 +66,9 @@ workflow COOLER {
         ch_cool.map{[it[0], it[1], ""]}
     )
 
-    // Zoomify at minimum bin resolution
-    if (!params.res_zoomify){
-        ch_res_zoomify = cool_bins.min()
-    }else{
-        ch_res_zoomify = channel.from(params.res_zoomify).splitCsv().flatten().unique().toInteger()
-    }
-
     ch_cool
-        .combine(ch_res_zoomify)
-        .filter{ it[2] == it[3] }
+        .combine(ch_zoom_res)
+        .filter{ meta, cool, zoom_res -> meta.resolution == zoom_res }
         .map{ it->[it[0], it[1]] }
         .set{ ch_cool_zoomify }
 
