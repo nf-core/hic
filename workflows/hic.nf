@@ -119,10 +119,12 @@ workflow HIC {
     //
     // MODULE: Run FastQC
     //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+    if (!params.skip_fastqc){
+        FASTQC (
+            ch_samplesheet
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+    }
 
 
     //
@@ -268,22 +270,27 @@ workflow HIC {
     if (params.processing == 'hicpro'){
         ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
     }
-    MULTIQC(
-        ch_multiqc_files.flatten().collect().map { files ->
-            [
-                [id: 'hic'],
-                files,
-                multiqc_config
-                    ? file(multiqc_config, checkIfExists: true)
-                    : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
-                multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
-                [],
-                [],
-            ]
-        }
-    )
+    ch_multiqc_report = channel.empty()
+    if (!params.skip_multiqc){
+        MULTIQC(
+            ch_multiqc_files.flatten().collect().map { files ->
+                [
+                    [id: 'hic'],
+                    files,
+                    multiqc_config
+                        ? file(multiqc_config, checkIfExists: true)
+                        : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
+                    multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
+                    [],
+                    [],
+                ]
+            }
+        )
+        ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList()
+    }
+
     emit:
-    multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList() // channel: /path/to/multiqc_report.html
+    multiqc_report = ch_multiqc_report // channel: /path/to/multiqc_report.html
 }
 
 /*
