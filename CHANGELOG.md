@@ -19,13 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#174](https://github.com/nf-core/hic/pull/174) - HiC-Pro default mapping options, closer to BWA-MEM/pairtools results
 - [#181](https://github.com/nf-core/hic/pull/181) - COOLTOOLS_EIGSCIS orients A/B compartments with a GC content phasing track
-- [#194](https://github.com/nf-core/hic/pull/194), [#200](https://github.com/nf-core/hic/pull/200), [#226](https://github.com/nf-core/hic/pull/226), [#230](https://github.com/nf-core/hic/pull/230), [#231](https://github.com/nf-core/hic/pull/231), [#233](https://github.com/nf-core/hic/pull/233), [#234](https://github.com/nf-core/hic/pull/234), [#248](https://github.com/nf-core/hic/pull/248) - Template update to nf-core/tools 4.2.1
+- [#194](https://github.com/nf-core/hic/pull/194) - Template update to nf-core/tools 2.13.1
 - [#195](https://github.com/nf-core/hic/pull/195) - Code style follows `.editorconfig`
 - [#197](https://github.com/nf-core/hic/pull/197) - Samplesheet validated against `assets/schema_input.json` instead of `bin/check_samplesheet.py`
+- [#200](https://github.com/nf-core/hic/pull/200) - Template update to nf-core/tools 2.14.1
 - [#204](https://github.com/nf-core/hic/pull/204) - `--dnase` renamed to `--no_digestion`
+- [#226](https://github.com/nf-core/hic/pull/226), [#230](https://github.com/nf-core/hic/pull/230) - Template update to nf-core/tools 3.3.1
+- [#231](https://github.com/nf-core/hic/pull/231) - Template update to nf-core/tools 3.3.2
+- [#233](https://github.com/nf-core/hic/pull/233) - Template update to nf-core/tools 3.4.1
+- [#234](https://github.com/nf-core/hic/pull/234) - Template update to nf-core/tools 3.5.1
 - [#236](https://github.com/nf-core/hic/pull/236) - Chromosome sizes computed with SAMTOOLS_FAIDX instead of CUSTOM_GETCHROMSIZES
 - [#236](https://github.com/nf-core/hic/pull/236) - `cutsite_trimming` rewritten in Python
 - [#236](https://github.com/nf-core/hic/pull/236) - nf-core modules updated, tool versions collected from topic channels
+- [#248](https://github.com/nf-core/hic/pull/248) - Template update to nf-core/tools 4.2.1
 
 ### `Removed`
 
