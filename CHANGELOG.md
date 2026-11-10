@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#236](https://github.com/nf-core/hic/pull/236) - COOLER_CLOAD deprecated `pairs` arguments, and the cooler add resolution step after the COOLER_CLOAD update
 - [#236](https://github.com/nf-core/hic/pull/236) - Pipeline logo
 - [#243](https://github.com/nf-core/hic/pull/243), [#247](https://github.com/nf-core/hic/pull/247), [#250](https://github.com/nf-core/hic/pull/250) - CI: remove the vulnerable PR-comment artifact pattern, run `fix-linting` from the `nf-core/actions` reusable workflow
+- [#251](https://github.com/nf-core/hic/pull/251) - GET_RESTRICTION_FRAGMENTS tag no longer contains `^` or `,`, which AWS Batch rejects as tag values ([#224](https://github.com/nf-core/hic/issues/224))
 
 ## v2.1.0 - 2023-06-01
 
