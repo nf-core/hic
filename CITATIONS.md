@@ -1,8 +1,28 @@
 # nf-core/hic: Citations
 
+## [pairtoorls](https://github.com/open2c/pairtools)
+
+> Open2C, Abdennur N, Fudenberg G, Flyamer IM, Galitsyna AA, Goloborodko A, et al. (2024) Pairtools: From sequencing data to chromosome contacts. PLoS Comput Biol 20(5): e1012164. https://doi.org/10.1371/journal.pcbi.1012164
+
+## [cooltools](https://github.com/open2c/cooltools)
+
+> Open2C, Abdennur N, Abraham S, Fudenberg G, Flyamer IM, Galitsyna AA, et al. (2024) Cooltools: Enabling high-resolution Hi-C analysis in Python. PLoS Comput Biol 20(5): e1012067. https://doi.org/10.1371/journal.pcbi.1012067
+
+## [cooler](https://github.com/open2c/cooler)
+
+> Abdennur N, Mirny LA. Cooler: scalable storage for Hi-C data and other genomically labeled arrays, Bioinformatics. 2020 36(1):311–316, https://doi.org/10.1093/bioinformatics/btz540
+
 ## [HiC-Pro](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0831-x)
 
-> Servant N, Varoquaux N, Lajoie BR, Viara E, Chen C, Vert JP, Dekker J, Heard E, Barillot E. Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
+> Servant N, Varoquaux N, Lajoie BR, Viara E, Chen C, Vert JP, Dekker J, Heard E, Barillot E. HiC-Pro: An optimized and flexible pipeline for Hi-C processing. Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
+
+## [FitHiChIP](https://github.com/ay-lab/FitHiChIP)
+
+> Bhattacharyya S, Chandra V, Vijayanand P, Ay F. Identification of significant chromatin contacts from HiChIP data by FitHiChIP. Nat Commun. 2019 10:4221. https://doi.org/10.1038/s41467-019-11950-y
+
+## [MACS](https://github.com/macs3-project/MACS)
+
+> Zhang Y, Liu T, Meyer CA, Eeckhoute J, Johnson DS, Bernstein BE, Nusbaum C, Myers RM, Brown M, Li W, Liu XS. Model-based analysis of ChIP-Seq (MACS). Genome Biol. 2008 9(9):R137. https://doi.org/10.1186/gb-2008-9-9-r137
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
@@ -16,8 +36,11 @@
 
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
+> Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
+
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
-  > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
+
+> Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
 ## Software packaging/containerisation tools
 
@@ -35,5 +58,8 @@
 
 - [Docker](https://dl.acm.org/doi/10.5555/2600239.2600241)
 
+  > Merkel, D. (2014). Docker: lightweight linux containers for consistent development and deployment. Linux Journal, 2014(239), 2. doi: 10.5555/2600239.2600241.
+
 - [Singularity](https://pubmed.ncbi.nlm.nih.gov/28494014/)
+
   > Kurtzer GM, Sochat V, Bauer MW. Singularity: Scientific containers for mobility of compute. PLoS One. 2017 May 11;12(5):e0177459. doi: 10.1371/journal.pone.0177459. eCollection 2017. PubMed PMID: 28494014; PubMed Central PMCID: PMC5426675.

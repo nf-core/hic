@@ -1,139 +1,26 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
+    IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { FASTQC                 } from '../modules/nf-core/fastqc/main'
+include { MULTIQC                } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMap       } from 'plugin/nf-schema'
+include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_hic_pipeline'
 
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
-
-// Validate input parameters
-WorkflowHic.initialise(params, log)
-
-// Check input path parameters to see if they exist
-def checkPathParamList = [ params.input ]
-checkPathParamList = [
-    params.input, params.multiqc_config,
-    params.fasta, params.bwt2_index
-]
-
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
-//*****************************************
-// Digestion parameters
-if (params.digestion){
-  restriction_site = params.digestion ? params.digest[ params.digestion ].restriction_site ?: false : false
-  ch_restriction_site = Channel.value(restriction_site)
-  ligation_site = params.digestion ? params.digest[ params.digestion ].ligation_site ?: false : false
-  ch_ligation_site = Channel.value(ligation_site)
-}else if (params.restriction_site && params.ligation_site){
-  ch_restriction_site = Channel.value(params.restriction_site)
-  ch_ligation_site = Channel.value(params.ligation_site)
-}else if (params.dnase){
-  ch_restriction_site = Channel.empty()
-  ch_ligation_site = Channel.empty()
-}else{
-   exit 1, "Ligation motif not found. Please either use the `--digestion` parameters or specify the `--restriction_site` and `--ligation_site`. For DNase Hi-C, please use '--dnase' option"
-}
-
-//****************************************
-// Combine all maps resolution for downstream analysis
-
-ch_map_res = Channel.from( params.bin_size ).splitCsv().flatten().toInteger()
-
-if (params.res_zoomify){
-  ch_zoom_res = Channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
-  ch_map_res = ch_map_res.concat(ch_zoom_res)
-}
-
-if (params.res_tads && !params.skip_tads){
-  ch_tads_res = Channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
-  ch_map_res = ch_map_res.concat(ch_tads_res)
-}else{
-  ch_tads_res=Channel.empty()
-  if (!params.skip_tads){
-    log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads" 
-  }
-}
-
-if (params.res_dist_decay && !params.skip_dist_decay){
-  ch_ddecay_res = Channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
-  ch_map_res = ch_map_res.concat(ch_ddecay_res)
-}else{
-  ch_ddecay_res = Channel.empty()
-  if (!params.skip_dist_decay){
-    log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay" 
-  }
-}
-
-if (params.res_compartments && !params.skip_compartments){
-  ch_comp_res = Channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
-  ch_map_res = ch_map_res.concat(ch_comp_res)
-}else{
-  ch_comp_res = Channel.empty()
-  if (!params.skip_compartments){
-    log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments" 
-  }
-}
-
-ch_map_res = ch_map_res.unique()
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CONFIG FILES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
-ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT LOCAL MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
 // MODULE: Local to the pipeline
-//
-include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts' 
-include { MULTIQC } from '../modules/local/multiqc'
+include { HIC_PLOT_DIST_VS_COUNTS } from '../modules/local/hicexplorer/hicPlotDistVsCounts'
 
-//
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-//
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
-include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { HICPRO } from '../subworkflows/local/hicpro'
+include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT NF-CORE MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-//
-// MODULE: Installed directly from nf-core/modules
-//
-include { FASTQC                      } from '../modules/nf-core/fastqc/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  CHANNELS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-Channel.fromPath( params.fasta )
-       .ifEmpty { exit 1, "Genome index: Fasta file not found: ${params.fasta}" }
-       .map{it->[[:],it]}
-       .set { ch_fasta }
+include { LOOPS } from '../subworkflows/local/loops'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -141,160 +28,269 @@ Channel.fromPath( params.fasta )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Info required for completion email and summary
-def multiqc_report = []
-
 workflow HIC {
 
-  ch_versions = Channel.empty()
-
-  //
-  // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-  //
-  INPUT_CHECK (
-    ch_input
-  )
-
-  //
-  // SUBWORKFLOW: Prepare genome annotation
-  //
-  PREPARE_GENOME(
-    ch_fasta,
+    take:
+    ch_samplesheet // channel: samplesheet read in from --input
+    ch_fasta
+    ch_index
+    ch_chromosome_size
+    ch_res_frag
     ch_restriction_site
-  )
-  ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
+    ch_ligation_site
+    multiqc_config
+    multiqc_logo
+    multiqc_methods_description
+    outdir
 
-  //
-  // MODULE: Run FastQC
-  //
-  if (!params.skip_fastqc){
-    FASTQC (
-      INPUT_CHECK.out.reads
+    main:
+
+    //****************************************
+    // Combine all maps resolution for downstream analysis
+
+    ch_map_res = channel.from( params.bin_size.toString()).splitCsv().flatten().toInteger()
+
+    if (params.res_zoomify){
+        ch_zoom_res = channel.from( params.res_zoomify ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_zoom_res)
+    }
+
+    if (params.res_tads && !params.skip_tads){
+        ch_tads_res = channel.from( "${params.res_tads}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_tads_res)
+    }else{
+        ch_tads_res=channel.empty()
+        if (!params.skip_tads){
+            log.warn "[nf-core/hic] Hi-C resolution for TADs calling not specified. See --res_tads"
+        }
+    }
+
+    if (params.res_dist_decay && !params.skip_dist_decay){
+        ch_ddecay_res = channel.from( "${params.res_dist_decay}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_ddecay_res)
+    }else{
+        ch_ddecay_res = channel.empty()
+        if (!params.skip_dist_decay){
+            log.warn "[nf-core/hic] Hi-C resolution for distance decay not specified. See --res_dist_decay"
+        }
+    }
+
+    if (params.res_compartments && !params.skip_compartments){
+        ch_comp_res = channel.from( "${params.res_compartments}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_comp_res)
+    }else{
+        ch_comp_res = channel.empty()
+        if (!params.skip_compartments){
+            log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
+        }
+    }
+
+    if (params.loops_caller && params.res_loops){
+        ch_loops_res = channel.from( "${params.res_loops}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_loops_res)
+    }else{
+        ch_loops_res = channel.empty()
+        if (params.loops_caller){
+            log.warn "[nf-core/hic] Hi-C resolution for loop calling not specified. See --res_loops"
+        }
+    }
+
+    ch_map_res = ch_map_res.unique()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
+
+    //
+    // MODULE: Run trimgalore
+    //
+    if (params.digestion == 'arimaV2'){
+        TRIMGALORE (
+            ch_samplesheet
+        )
+        ch_samplesheet = TRIMGALORE.out.reads
+            .map { meta, files ->
+            // keep only the _val_1.fq.gz and _val_2.fq.gz files
+            def paired = files.findAll { it.name =~ /_val_[12]\.fq\.gz$/ }
+            // sort to ensure R1 first, R2 second
+            paired.sort()
+            tuple(meta, paired)
+            }
+    }
+
+    //
+    // MODULE: Run FastQC
+    //
+    if (!params.skip_fastqc){
+        FASTQC (
+            ch_samplesheet
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
+    }
+
+
+    //
+    // SUB-WORFLOW: HiC-Pro
+    //
+    if (params.processing == 'hicpro'){
+        HICPRO (
+            ch_samplesheet,
+            ch_fasta,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size,
+            ch_ligation_site,
+            ch_map_res
+        )
+        ch_pairs = HICPRO.out.pairs
+        ch_process_mqc = HICPRO.out.mqc
+    }else if (params.processing == 'pairtools'){
+        PAIRTOOLS(
+            ch_samplesheet,
+            ch_fasta,
+            ch_index,
+            ch_res_frag,
+            ch_chromosome_size
+        )
+        ch_pairs = PAIRTOOLS.out.pairs
+        ch_process_mqc = PAIRTOOLS.out.stats
+    }
+
+    //
+    // SUB-WORKFLOW: COOLER
+    //
+    COOLER (
+        ch_pairs,
+        ch_chromosome_size,
+        ch_map_res
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions)
-  }
 
-  //
-  // SUB-WORFLOW: HiC-Pro
-  //
-  INPUT_CHECK.out.reads.view()
-  HICPRO (
-    INPUT_CHECK.out.reads,
-    PREPARE_GENOME.out.index,
-    PREPARE_GENOME.out.res_frag,
-    PREPARE_GENOME.out.chromosome_size,
-    ch_ligation_site,
-    ch_map_res
-  )
-  ch_versions = ch_versions.mix(HICPRO.out.versions)
+    //
+    // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS
+    //
+    if (!params.skip_dist_decay){
+        COOLER.out.cool
+            .combine(ch_ddecay_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_distdecay }
 
-  //
-  // SUB-WORKFLOW: COOLER
-  //
-  COOLER (
-    HICPRO.out.pairs,
-    PREPARE_GENOME.out.chromosome_size,
-    ch_map_res
-  )
-  ch_versions = ch_versions.mix(COOLER.out.versions)
+        HIC_PLOT_DIST_VS_COUNTS(
+            ch_distdecay
+        )
+    }
 
-  //
-  // MODULE: HICEXPLORER/HIC_PLOT_DIST_VS_COUNTS
-  //
-  if (!params.skip_dist_decay){
-    COOLER.out.cool
-      .combine(ch_ddecay_res)
-      .filter{ it[0].resolution == it[2] }
-      .map { it -> [it[0], it[1]]}
-      .set{ ch_distdecay }
+    //
+    // SUB-WORKFLOW: COMPARTMENT CALLING
+    //
+    if (!params.skip_compartments){
+        COOLER.out.cool
+            .combine(ch_comp_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1], it[2]]}
+            .set{ ch_cool_compartments }
 
-    HIC_PLOT_DIST_VS_COUNTS(
-      ch_distdecay
-    )
-    ch_versions = ch_versions.mix(HIC_PLOT_DIST_VS_COUNTS.out.versions)
-  }
+        COMPARTMENTS (
+            ch_cool_compartments,
+            ch_fasta,
+            ch_chromosome_size
+        )
+    }
 
-  //
-  // SUB-WORKFLOW: COMPARTMENT CALLING
-  //
-  if (!params.skip_compartments){
-    COOLER.out.cool
-      .combine(ch_comp_res)
-      .filter{ it[0].resolution == it[2] }
-      .map { it -> [it[0], it[1], it[2]]}
-      .set{ ch_cool_compartments }
+    //
+    // SUB-WORKFLOW : TADS CALLING
+    //
+    if (!params.skip_tads){
+        COOLER.out.cool
+            .combine(ch_tads_res)
+            .filter{ it[0].resolution == it[2] }
+            .map { it -> [it[0], it[1]]}
+            .set{ ch_cool_tads }
 
-    COMPARTMENTS (
-      ch_cool_compartments,
-      ch_fasta,
-      PREPARE_GENOME.out.chromosome_size
-    )
-    ch_versions = ch_versions.mix(COMPARTMENTS.out.versions)
-  }
+        TADS(
+            ch_cool_tads
+        )
+    }
 
-  //
-  // SUB-WORKFLOW : TADS CALLING
-  //
-  if (!params.skip_tads){
-    COOLER.out.cool
-      .combine(ch_tads_res)
-      .filter{ it[0].resolution == it[2] }
-      .map { it -> [it[0], it[1]]}
-      .set{ ch_cool_tads }
-                                                                                                                                                                                                            
-    TADS(
-      ch_cool_tads
-    )
-    ch_versions = ch_versions.mix(TADS.out.versions)
-  }
 
-  //
-  // SOFTWARE VERSION
-  //
-  CUSTOM_DUMPSOFTWAREVERSIONS(
-    ch_versions.unique().collectFile(name: 'collated_versions.yml')
-  )
+    //
+    // SUB-WORKFLOW : LOOP CALLING (HiChIP / PLAC-seq)
+    //
+    if (params.loops_caller){
+        COOLER.out.cool
+            .combine(ch_loops_res)
+            .filter { meta, _cool, res -> meta.resolution == res }   // [meta, cool, resolution]
+            .set{ ch_cool_loops }
 
-  //
-  // MODULE: MultiQC
-  //
-  if (!params.skip_multiqc && !params.skip_fastqc){
-    workflow_summary    = WorkflowHic.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
+        LOOPS(
+            ch_pairs,
+            ch_cool_loops,
+            ch_chromosome_size
+        )
+    }
 
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_config)
-    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+    //
+    // Collate and save software versions
+    //
+    def topic_versions = channel.topic("versions")
+        .distinct()
+        .branch { entry ->
+            versions_file: entry instanceof Path
+            versions_tuple: true
+        }
+    def topic_versions_string = topic_versions.versions_tuple
+        .map { process, tool, version ->
+            [ process[process.lastIndexOf(':')+1..-1], "  ${tool}: ${version}" ]
+        }
+        .groupTuple(by:0)
+        .map { process, tool_versions ->
+            tool_versions.unique().sort()
+            "${process}:\n${tool_versions.join('\n')}"
+        }
+    def ch_collated_versions = softwareVersionsToYAML(ch_versions.mix(topic_versions.versions_file))
+        .mix(topic_versions_string)
+        .collectFile(
+            storeDir: "${outdir}/pipeline_info",
+            name: 'nf_core_hic_software_mqc_versions.yml',
+            sort: true,
+            newLine: true
+        )
+
+    //
+    // MODULE: MultiQC
+    //
+    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
+    def ch_summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def ch_workflow_summary = channel.value(paramsSummaryMultiqc(ch_summary_params))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.map{it->it[1]})
-    ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
+    def ch_multiqc_custom_methods_description = multiqc_methods_description
+        ? file(multiqc_methods_description, checkIfExists: true)
+        : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
+    def ch_methods_description = channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: true))
 
-    MULTIQC (
-      ch_multiqc_config,
-      ch_multiqc_custom_config.collect().ifEmpty([]),
-      ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'),
-      FASTQC.out.zip.map{it->it[1]},
-      HICPRO.out.mqc.collect()
-    )
-    multiqc_report = MULTIQC.out.report.toList()
-  }
-  
-}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    COMPLETION EMAIL AND SUMMARY
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
+    if (params.processing == 'hicpro'){
+        ch_multiqc_files = ch_multiqc_files.mix(HICPRO.out.mqc)
     }
-    NfcoreTemplate.summary(workflow, params, log)
-    if (params.hook_url) {
-        NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
+    ch_multiqc_report = channel.empty()
+    if (!params.skip_multiqc){
+        MULTIQC(
+            ch_multiqc_files.flatten().collect().map { files ->
+                [
+                    [id: 'hic'],
+                    files,
+                    multiqc_config
+                        ? file(multiqc_config, checkIfExists: true)
+                        : file("${projectDir}/assets/multiqc_config.yml", checkIfExists: true),
+                    multiqc_logo ? file(multiqc_logo, checkIfExists: true) : [],
+                    [],
+                    [],
+                ]
+            }
+        )
+        ch_multiqc_report = MULTIQC.out.report.map { _meta, report -> [report] }.toList()
     }
+
+    emit:
+    multiqc_report = ch_multiqc_report // channel: /path/to/multiqc_report.html
 }
 
 /*

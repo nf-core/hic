@@ -18,7 +18,7 @@ You will need to create a samplesheet with information about the samples you wou
 
 The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. Below is an example for the same sample sequenced across 3 lanes:
 
-```console
+```csv title="samplesheet.csv"
 sample,fastq_1,fastq_2
 CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
@@ -29,7 +29,7 @@ CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
 
 The `nf-core-hic` pipeline is designed to work only with paired-end data. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
 
-```console
+```csv title="samplesheet.csv"
 sample,fastq_1,fastq_2
 SAMPLE_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 SAMPLE_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
@@ -49,7 +49,7 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/hic --input samplesheet.csv --outdir <OUTDIR> --genome GRCh37 -profile docker
+nextflow run nf-core/hic --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile.
@@ -68,20 +68,21 @@ If you wish to repeatedly use the same parameters for multiple runs, rather than
 
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
-> ⚠️ Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
-> The above pipeline run specified with a params file in yaml format:
+> [!WARNING]
+> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/running/run-pipelines#configuring-pipelines), other infrastructural tweaks (such as output directories), or module arguments (args).
+
+The above pipeline run specified with a params file in yaml format:
 
 ```bash
 nextflow run nf-core/hic -profile docker -params-file params.yaml
 ```
 
-with `params.yaml` containing:
+with:
 
-```yaml
+```yaml title="params.yaml"
 input: './samplesheet.csv'
 outdir: './results/'
 genome: 'GRCh37'
-input: 'data'
 <...>
 ```
 
@@ -97,20 +98,21 @@ nextflow pull nf-core/hic
 
 ### Reproducibility
 
-It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
+It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
 First, go to the [nf-core/hic releases page](https://github.com/nf-core/hic/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
 
-To further assist in reproducbility, you can use share and re-use [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
+To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
 
-> 💡 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+> [!TIP]
+> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
 
 ## Core Nextflow arguments
 
-> **NB:** These options are part of Nextflow and use a _single_ hyphen
-> (pipeline parameters use a double-hyphen).
+> [!NOTE]
+> These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen)
 
 ### `-profile`
 
@@ -119,23 +121,17 @@ configuration presets for different compute environments.
 
 Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Apptainer, Conda) - see below.
 
-> We highly recommend the use of Docker or Singularity containers for full
-> pipeline reproducibility, however when this is not possible, Conda is also supported.
+> [!IMPORTANT]
+> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
 
-The pipeline also dynamically loads configurations from
-[https://github.com/nf-core/configs](https://github.com/nf-core/configs)
-when it runs, making multiple config profiles for various institutional
-clusters available at run time.
-For more information and to see if your system is available in these
-configs please see
-the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
+The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to check if your system is supported, please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
 
 Note that multiple profiles can be loaded, for example: `-profile test,docker` -
 the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite
 earlier profiles.
 
-If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer enviroment.
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
 
 - `test`
   - A profile with a complete configuration for automated testing
@@ -149,9 +145,11 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 - `shifter`
   - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
 - `charliecloud`
-  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+  - A generic configuration profile to be used with [Charliecloud](https://charliecloud.io/)
 - `apptainer`
   - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
+- `wave`
+  - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow `24.03.0-edge` or later).
 - `conda`
   - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
 
@@ -171,21 +169,21 @@ for more information.
 
 ### Resource requests
 
-Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the steps in the pipeline, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher requests (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher resources request (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
 
-To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website.
+To change the resource requests, please see the [max resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#set-max-resources) and [customise process resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#customize-process-resources) section of the nf-core website.
 
 ### Custom Containers
 
-In some cases you may wish to change which container or conda environment a step of the pipeline uses for a particular tool. By default nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However in some cases the pipeline specified version maybe out of date.
+In some cases, you may wish to change the container or conda environment used by a pipeline steps for a particular tool. By default, nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However, in some cases the pipeline specified version maybe out of date.
 
-To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section of the nf-core website.
+To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#update-tool-versions) section of the nf-core website.
 
 ### Custom Tool Arguments
 
 A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
 
-To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/usage/configuration#customising-tool-arguments) section of the nf-core website.
+To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#modifying-tool-arguments) section of the nf-core website.
 
 ### nf-core/configs
 
@@ -196,14 +194,6 @@ See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config
 If you have any questions or issues please send us a message on
 [Slack](https://nf-co.re/join/slack) on the
 [`#configs` channel](https://nfcore.slack.com/channels/configs).
-
-## Azure Resource Requests
-
-To be used with the `azurebatch` profile by specifying the `-profile azurebatch`.
-We recommend providing a compute `params.vm_type` of `Standard_D16_v3` VMs by default but these options can be changed if required.
-
-Note that the choice of VM size depends on your quota and the overall workload during the analysis.
-For a thorough list, please refer the [Azure Sizes for virtual machines in Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes).
 
 ## Running in the background
 
@@ -243,15 +233,15 @@ Note that by default, no filters are applied on DNA and restriction fragment siz
 nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
 ```
 
-### DNase Hi-C protocol
+### DNase Hi-C / Micro-C protocol
 
-Here is an command line example for DNase protocol.
+Here is an command line example for DNase or Micro-C protocol.
 Alignment will be performed on the `mm10` genome with default paramters.
 Multi-hits will not be considered and duplicates will be removed.
 Contacts involving fragments separated by less than 1000bp will be discarded.
 
 ```bash
-nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --dnase --min_cis 1000
+nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --no_digestion --min_cis 1000
 ```
 
 ## Inputs
@@ -448,9 +438,9 @@ Default: 'AAGCTAGCTT'
 
 Exemple of the ARIMA kit: GATCGATC,GANTGATC,GANTANTC,GATCANTC
 
-### DNAse Hi-C
+### DNAse/Micro-C
 
-#### `--dnase`
+#### `--no_digestion`
 
 In DNAse Hi-C mode, all options related to digestion Hi-C
 (see previous section) are ignored.
@@ -458,7 +448,7 @@ In this case, it is highly recommended to use the `--min_cis_dist` parameter
 to remove spurious ligation products.
 
 ```bash
---dnase
+--no_digestion
 ```
 
 ### HiC-pro processing
@@ -502,7 +492,7 @@ Default: '0' - no filter
 #### `--min_cis_dist`
 
 Filter short range contact below the specified distance.
-Mainly useful for DNase Hi-C. Default: '0'
+Mainly useful for DNAse/Micro-C. Default: '0'
 
 ```bash
 --min_cis_dist '[numeric]'
@@ -615,7 +605,12 @@ Several resolutions can be specified (comma-separeted). Default: '250000'
 
 ### Compartment calling
 
-Call open/close compartments for each chromosome, using the `cooltools` command.
+Call open/close compartments for each chromosome, using the `cooltools` or `calder2` tools.
+
+#### `--compartments_caller`
+
+Compartments calling can be performed with either `cooltools`
+or `calder2`. Multiple choices are possible (comma-separated).
 
 #### `--res_compartments`
 
@@ -646,6 +641,69 @@ Default: '40000,20000'
 
 ```bash
 --res_tads '[string]'
+```
+
+### Loop calling (HiChIP / PLAC-seq)
+
+HiChIP and PLAC-seq data are processed exactly like Hi-C data up to the contact maps, with
+the `pairtools` or `HiC-Pro` workflow and the digestion protocol of the library (e.g. `--digestion mboi`).
+In addition, chromatin loops anchored at the 1D peaks of the targeted protein or histone mark can be
+called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) from the raw contact counts at the
+`--res_loops` resolution(s).
+
+`FitHiChIP` has no Bioconda recipe. It runs in the container image `ghcr.io/birkiy/fithichip:11.0`
+(FitHiChIP 11.0 with its dependencies from conda-forge/Bioconda, built from
+[birkiy/fithichip-container](https://github.com/birkiy/fithichip-container)), so loop calling needs a
+container engine (`docker`, `singularity`, `apptainer`, `podman`, ...) and is not available with `-profile conda`.
+
+#### `--loops_caller`
+
+Call chromatin loops. Currently only `fithichip` is available. Default: not set (no loop calling).
+
+```bash
+--loops_caller 'fithichip'
+```
+
+#### `--res_loops`
+
+Resolution(s) of the contact maps used for loop calling (comma-separated). Default: '5000'
+
+```bash
+--res_loops '[string]'
+```
+
+#### `--loops_peaks`
+
+BED file of the 1D anchor peaks used by `FitHiChIP`, for instance the ChIP-seq peaks of the HiChIP target.
+When this option is not set, the anchors are inferred from the HiChIP reads themselves: the 5' position of
+every read end of the valid pairs is given to `MACS3` as single-end reads (`--nomodel --extsize 147 -q 0.01`),
+the approach of FitHiChIP's `PeakInferHiChIP`. The inferred peaks are exported in `results/loops/peaks`.
+
+```bash
+--loops_peaks '[path to BED file]'
+```
+
+#### `--macs_gsize`
+
+Effective genome size given to `MACS3` when the anchors are inferred: a number, scientific notation (e.g. `2.7e9` for human,
+`1.87e9` for mouse) or one of the `MACS3` shortcuts `hs`, `mm`, `ce`, `dm`.
+Default: the total length of the chromosomes in the chromosome sizes file. This is larger than the effective (mappable) genome
+size `MACS3` expects, which makes the peak calls slightly more conservative, so set `--macs_gsize` for real genomes.
+
+```bash
+--macs_gsize 2.7e9
+```
+
+#### FitHiChIP options
+
+- `--fithichip_lower_dist` / `--fithichip_upper_dist`: distance range (bp) of the interactions tested. Default: 20000 / 2000000
+- `--fithichip_qvalue`: FDR threshold of the significant interactions. Default: 0.01
+- `--fithichip_inttype`: interactions tested, 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type. Default: 3
+- `--fithichip_bias`: bias regression. Only `1` (coverage bias) is available: FitHiChIP's ICE bias (`2`) runs HiC-Pro's `ice`, which is not in the container. Default: 1
+- `--fithichip_p2p_background`: use the stringent peak-to-peak background (FitHiChIP(S)) instead of the loose one (FitHiChIP(L)). Default: false
+
+```bash
+--fithichip_lower_dist '[numeric]' --fithichip_upper_dist '[numeric]' --fithichip_qvalue '[numeric]' --fithichip_inttype '[numeric]' --fithichip_bias '[numeric]' --fithichip_p2p_background
 ```
 
 ## Inputs/Outputs

@@ -16,8 +16,10 @@ process GET_RESTRICTION_FRAGMENTS {
     path("versions.yml"), emit: versions
 
     script:
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "restriction_fragments"
     """
-    digest_genome.py -r ${res_site} -o restriction_fragments.bed ${fasta}
+    digest_genome.py ${args} -r ${res_site} -o ${prefix}.bed ${fasta}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

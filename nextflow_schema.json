@@ -1,10 +1,10 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/nf-core/hic/master/nextflow_schema.json",
     "title": "nf-core/hic pipeline parameters",
     "description": "Analysis of Chromosome Conformation Capture data (Hi-C)",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -15,9 +15,10 @@
                 "input": {
                     "type": "string",
                     "format": "file-path",
+                    "exists": true,
+                    "schema": "assets/schema_input.json",
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
-                    "schema": "assets/schema_input.json",
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/hic/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
@@ -57,19 +58,12 @@
                 "fasta": {
                     "type": "string",
                     "format": "file-path",
+                    "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?s?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have an index available this will be generated for you automatically. Combine with `--save_reference` to save the mapping index for future runs.",
                     "fa_icon": "far fa-file-code"
-                },
-                "igenomes_base": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "description": "Directory / URL base for iGenomes references.",
-                    "default": "s3://ngi-igenomes/igenomes",
-                    "fa_icon": "fas fa-cloud-download-alt",
-                    "hidden": true
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -78,10 +72,36 @@
                     "hidden": true,
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 },
+                "igenomes_base": {
+                    "type": "string",
+                    "description": "The base path to the igenomes reference files",
+                    "fa_icon": "fas fa-ban",
+                    "hidden": true,
+                    "default": "s3://ngi-igenomes/igenomes/"
+                },
                 "bwt2_index": {
                     "type": "string",
-                    "description": "Full path to directory containing Bowtie index including base name. i.e. `/path/to/index/base`.",
+                    "description": "Full path to directory containing Bowtie index",
                     "fa_icon": "far fa-file-alt"
+                },
+                "bwa_index": {
+                    "type": "string",
+                    "description": "Full path to directory containing Bwa-mem index",
+                    "fa_icon": "far fa-file-alt"
+                }
+            }
+        },
+        "hic_processing": {
+            "title": "Hi-C processing",
+            "type": "object",
+            "description": "Define the Hi-C processing subworkflow to use to extract the valid pairs from raw data",
+            "default": "",
+            "properties": {
+                "processing": {
+                    "type": "string",
+                    "description": "Hi-C processing method",
+                    "default": "hicpro",
+                    "enum": ["hicpro", "pairtools"]
                 }
             }
         },
@@ -94,7 +114,7 @@
                 "digestion": {
                     "type": "string",
                     "description": "Name of restriction enzyme to automatically set the restriction_site and ligation_site options (hindiii, mboi, dpnii, arima)",
-                    "enum": ["hindiii", "mboi", "dpnii", "arima"]
+                    "enum": ["hindiii", "mboi", "dpnii", "arima", "arimaV2"]
                 },
                 "restriction_site": {
                     "type": "string",
@@ -128,19 +148,19 @@
                 }
             }
         },
-        "dnase_hi_c": {
-            "title": "DNAse Hi-C",
+        "no_digestion_hi_c": {
+            "title": "Micro-C/DNAse Hi-C",
             "type": "object",
-            "description": "Parameters for protocols based on DNAse digestion",
+            "description": "Parameters for protocols which are not based on restriction enzymes",
             "default": "",
             "properties": {
-                "dnase": {
+                "no_digestion": {
                     "type": "boolean",
-                    "description": "For Hi-C protocols which are not based on enzyme digestion such as DNase Hi-C"
+                    "description": "For Hi-C protocols which are not based on enzyme digestion such as DNAse Hi-C or Micro-C"
                 },
                 "min_cis_dist": {
                     "type": "integer",
-                    "description": "Minimum distance between loci to consider. Useful for --dnase mode to remove spurious ligation products. Only values > 0 are considered"
+                    "description": "Minimum distance between loci to consider. Useful for --no-digestion mode to remove spurious ligation products. Only values > 0 are considered"
                 }
             }
         },
@@ -168,13 +188,18 @@
                 },
                 "bwt2_opts_end2end": {
                     "type": "string",
-                    "default": "'--very-sensitive -L 30 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
+                    "default": "--very-sensitive --end-to-end --reorder",
                     "description": "Option for HiC-Pro end-to-end bowtie mapping"
                 },
                 "bwt2_opts_trimmed": {
                     "type": "string",
-                    "default": "'--very-sensitive -L 20 --score-min L,-0.6,-0.2 --end-to-end --reorder'",
+                    "default": "--very-sensitive --end-to-end --reorder",
                     "description": "Option for HiC-Pro trimmed reads mapping"
+                },
+                "bwa_opts": {
+                    "type": "string",
+                    "default": "-5SP -T0",
+                    "description": "Option for Bwa-mem mapping"
                 },
                 "save_aligned_intermediates": {
                     "type": "boolean",
@@ -213,6 +238,11 @@
                     "type": "integer",
                     "description": "Minimum restriction fragment size to consider. Only values > 0 are considered"
                 },
+                "pairtools_parse_opts": {
+                    "type": "string",
+                    "description": "Update 'pairtools parse' options",
+                    "default": "--walks-policy 5unique"
+                },
                 "save_interaction_bam": {
                     "type": "boolean",
                     "description": "Save a BAM file where all reads are flagged by their interaction classes"
@@ -231,9 +261,9 @@
             "fa_icon": "fas fa-chess-board",
             "properties": {
                 "bin_size": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "1000000,500000",
+                    "default": "1000000",
                     "description": "Resolution to build the maps (comma separated)"
                 },
                 "hicpro_maps": {
@@ -259,9 +289,13 @@
                     "default": 100,
                     "description": "Maximum number of iteraction for HiC-Pro ICE normalization"
                 },
+                "balancing_opts": {
+                    "type": "string",
+                    "description": "Update 'cooler balance' options",
+                    "default": "--force"
+                },
                 "res_zoomify": {
                     "type": "string",
-                    "default": "5000",
                     "description": "Maximum resolution to build mcool file"
                 },
                 "save_raw_maps": {
@@ -276,21 +310,31 @@
             "description": "Set up downstream analysis from contact maps",
             "default": "",
             "properties": {
+                "min_size": {
+                    "type": "integer",
+                    "description": "Minimum chromosome size to be retained. Useful for Calder2, which cannot be applied to chromosomes that do not have a sufficient number of bins.",
+                    "default": 0
+                },
                 "res_dist_decay": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "1000000",
+                    "default": "250000",
                     "description": "Resolution to build count/distance plot"
                 },
                 "tads_caller": {
                     "type": "string",
-                    "default": "hicexplorer,insulation",
+                    "default": "insulation",
                     "description": "Define methods for TADs calling"
+                },
+                "compartments_caller": {
+                    "type": "string",
+                    "default": "cooltools",
+                    "description": "Define methods for compartments calling"
                 },
                 "res_tads": {
                     "type": "string",
                     "pattern": "^(\\d+)(,\\d+)*$",
-                    "default": "40000,20000",
+                    "default": "40000",
                     "description": "Resolution to run TADs callers (comma separated)"
                 },
                 "res_compartments": {
@@ -298,6 +342,71 @@
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "250000",
                     "description": "Resolution for compartments calling"
+                },
+                "loops_caller": {
+                    "type": "string",
+                    "enum": ["fithichip"],
+                    "fa_icon": "fas fa-project-diagram",
+                    "description": "Call chromatin loops (HiChIP / PLAC-seq data). Currently 'fithichip'. Loops are not called when unset."
+                },
+                "res_loops": {
+                    "type": "string",
+                    "pattern": "^(\\d+)(,\\d+)*$",
+                    "default": "5000",
+                    "fa_icon": "fas fa-ruler",
+                    "description": "Resolution(s) of the contact maps used for loop calling (comma separated)"
+                },
+                "loops_peaks": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.(bed|narrowPeak|broadPeak)(\\.gz)?$",
+                    "fa_icon": "fas fa-file",
+                    "description": "BED file of 1D anchor peaks (e.g. ChIP-seq peaks of the HiChIP target) used by FitHiChIP. When unset, anchors are inferred from the valid pairs with MACS3."
+                },
+                "macs_gsize": {
+                    "type": ["number", "string"],
+                    "pattern": "^([0-9]*\\.?[0-9]+([eE][+-]?[0-9]+)?|hs|mm|ce|dm)$",
+                    "fa_icon": "fas fa-dna",
+                    "description": "Effective genome size for MACS3 peak calling: a number, scientific notation (e.g. 2.7e9 for human) or one of the MACS3 shortcuts hs, mm, ce, dm. Default: the total length of the chromosome sizes file."
+                },
+                "fithichip_lower_dist": {
+                    "type": "integer",
+                    "default": 20000,
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "FitHiChIP: lower distance threshold (bp) of the interactions tested (LowDistThr)"
+                },
+                "fithichip_upper_dist": {
+                    "type": "integer",
+                    "default": 2000000,
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "FitHiChIP: upper distance threshold (bp) of the interactions tested (UppDistThr)"
+                },
+                "fithichip_qvalue": {
+                    "type": "number",
+                    "default": 0.01,
+                    "fa_icon": "fas fa-filter",
+                    "description": "FitHiChIP: FDR threshold of the significant interactions (QVALUE)"
+                },
+                "fithichip_inttype": {
+                    "type": "integer",
+                    "default": 3,
+                    "enum": [1, 2, 3, 4, 5],
+                    "fa_icon": "fas fa-bezier-curve",
+                    "description": "FitHiChIP: interactions tested (IntType). 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type"
+                },
+                "fithichip_bias": {
+                    "type": "integer",
+                    "default": 1,
+                    "enum": [1],
+                    "fa_icon": "fas fa-balance-scale",
+                    "description": "FitHiChIP: bias regression (BiasType). Only 1 (coverage bias) is available: the ICE bias (2) runs HiC-Pro's ice, which the FitHiChIP container does not include."
+                },
+                "fithichip_p2p_background": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-layer-group",
+                    "description": "FitHiChIP: use the stringent peak-to-peak background (UseP2PBackgrnd, FitHiChIP(S)) instead of the loose background (FitHiChIP(L))"
                 }
             }
         },
@@ -389,41 +498,6 @@
                 }
             }
         },
-        "max_job_request_options": {
-            "title": "Max job request options",
-            "type": "object",
-            "fa_icon": "fab fa-acquisitions-incorporated",
-            "description": "Set the top limit for requested resources for any single job.",
-            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
-            "properties": {
-                "max_cpus": {
-                    "type": "integer",
-                    "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
-                    "fa_icon": "fas fa-microchip",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
-                },
-                "max_memory": {
-                    "type": "string",
-                    "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
-                    "fa_icon": "fas fa-memory",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
-                },
-                "max_time": {
-                    "type": "string",
-                    "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
-                    "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
-                }
-            }
-        },
         "generic_options": {
             "title": "Generic options",
             "type": "object",
@@ -431,12 +505,6 @@
             "description": "Less common options for the pipeline, typically set in a config file.",
             "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
             "properties": {
-                "help": {
-                    "type": "boolean",
-                    "description": "Display help text.",
-                    "fa_icon": "fas fa-question-circle",
-                    "hidden": true
-                },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
@@ -480,15 +548,9 @@
                     "fa_icon": "fas fa-palette",
                     "hidden": true
                 },
-                "hook_url": {
-                    "type": "string",
-                    "description": "Incoming hook URL for messaging service",
-                    "fa_icon": "fas fa-people-group",
-                    "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
-                    "hidden": true
-                },
                 "multiqc_config": {
                     "type": "string",
+                    "format": "file-path",
                     "description": "Custom config file to supply to MultiQC.",
                     "fa_icon": "fas fa-cog",
                     "hidden": true
@@ -504,13 +566,6 @@
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
                     "fa_icon": "fas fa-cog"
                 },
-                "tracedir": {
-                    "type": "string",
-                    "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "${params.outdir}/pipeline_info",
-                    "fa_icon": "fas fa-cogs",
-                    "hidden": true
-                },
                 "validate_params": {
                     "type": "boolean",
                     "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -518,55 +573,73 @@
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
                 },
-                "show_hidden_params": {
+                "pipelines_testdata_base_path": {
+                    "type": "string",
+                    "fa_icon": "far fa-check-circle",
+                    "description": "Base URL or local path to location of pipeline test dataset files",
+                    "default": "https://raw.githubusercontent.com/nf-core/test-datasets/",
+                    "hidden": true
+                },
+                "trace_report_suffix": {
+                    "type": "string",
+                    "fa_icon": "far fa-calendar",
+                    "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
+                    "hidden": true
+                },
+                "help": {
+                    "type": ["boolean", "string"],
+                    "description": "Display the help message."
+                },
+                "help_full": {
                     "type": "boolean",
-                    "fa_icon": "far fa-eye-slash",
-                    "description": "Show all params when using `--help`",
-                    "hidden": true,
-                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                    "description": "Display the full detailed help message."
+                },
+                "show_hidden": {
+                    "type": "boolean",
+                    "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
         }
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/$defs/reference_genome_options"
         },
         {
-            "$ref": "#/definitions/digestion_hi_c"
+            "$ref": "#/$defs/hic_processing"
         },
         {
-            "$ref": "#/definitions/dnase_hi_c"
+            "$ref": "#/$defs/digestion_hi_c"
         },
         {
-            "$ref": "#/definitions/alignments"
+            "$ref": "#/$defs/no_digestion_hi_c"
         },
         {
-            "$ref": "#/definitions/valid_pairs_detection"
+            "$ref": "#/$defs/alignments"
         },
         {
-            "$ref": "#/definitions/contact_maps"
+            "$ref": "#/$defs/valid_pairs_detection"
         },
         {
-            "$ref": "#/definitions/downstream_analysis"
+            "$ref": "#/$defs/contact_maps"
         },
         {
-            "$ref": "#/definitions/skip_options"
+            "$ref": "#/$defs/downstream_analysis"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/skip_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/$defs/generic_options"
         },
         {
-            "$ref": "#/definitions/max_job_request_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ]
 }
