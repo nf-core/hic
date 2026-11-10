@@ -3,17 +3,17 @@
         "content": [
             {
                 "BOWTIE2_ALIGN": {
-                    "bowtie2": "2.5.4",
+                    "bowtie2": "2.5.5",
                     "pigz": 2.8,
-                    "samtools": 1.21
+                    "samtools": 1.24
                 },
                 "BOWTIE2_ALIGN_TRIMMED": {
-                    "bowtie2": "2.5.4",
+                    "bowtie2": "2.5.5",
                     "pigz": 2.8,
-                    "samtools": 1.21
+                    "samtools": 1.24
                 },
                 "BOWTIE2_BUILD": {
-                    "bowtie2": "2.5.4"
+                    "bowtie2": "2.5.5"
                 },
                 "COOLER_BALANCE": {
                     "cooler": "0.10.4"
@@ -28,7 +28,7 @@
                     "cooler": "0.10.4"
                 },
                 "FASTQC": {
-                    "fastqc": "0.12.1"
+                    "fastqc": "0.13.0"
                 },
                 "FITHICHIP": {
                     "fithichip": 11.0
@@ -43,7 +43,7 @@
                     "gawk": "5.3.1"
                 },
                 "SAMTOOLS_FAIDX": {
-                    "samtools": "1.22.1"
+                    "samtools": 1.25
                 },
                 "Workflow": {
                     "nf-core/hic": "v2.2.0dev"
