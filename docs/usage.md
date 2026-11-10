@@ -69,7 +69,7 @@ If you wish to repeatedly use the same parameters for multiple runs, rather than
 Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
 > [!WARNING]
-> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
+> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/running/run-pipelines#configuring-pipelines), other infrastructural tweaks (such as output directories), or module arguments (args).
 
 The above pipeline run specified with a params file in yaml format:
 
@@ -149,7 +149,7 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 - `apptainer`
   - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
 - `wave`
-  - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow ` 24.03.0-edge` or later).
+  - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow `24.03.0-edge` or later).
 - `conda`
   - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
 
@@ -171,19 +171,19 @@ for more information.
 
 Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher resources request (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
 
-To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website.
+To change the resource requests, please see the [max resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#set-max-resources) and [customise process resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#customize-process-resources) section of the nf-core website.
 
 ### Custom Containers
 
 In some cases, you may wish to change the container or conda environment used by a pipeline steps for a particular tool. By default, nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However, in some cases the pipeline specified version maybe out of date.
 
-To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section of the nf-core website.
+To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#update-tool-versions) section of the nf-core website.
 
 ### Custom Tool Arguments
 
 A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
 
-To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/usage/configuration#customising-tool-arguments) section of the nf-core website.
+To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#modifying-tool-arguments) section of the nf-core website.
 
 ### nf-core/configs
 
@@ -645,24 +645,82 @@ Default: '40000,20000'
 
 ### Loop calling
 
-#### `--loop_caller`
+Chromatin loops can be called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) (HiChIP / PLAC-seq data) or with
+[`HiCExplorer hicDetectLoops`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicDetectLoops.html) (Hi-C data).
 
-Loop calling can be performed using different approaches (WIP).
-Currently available options are `hicexplorer` (hicDetectLoops). Note that all options can be specified (comma-separated).
-Default: 'hicexplorer'
+HiChIP and PLAC-seq data are processed exactly like Hi-C data up to the contact maps, with
+the `pairtools` or `HiC-Pro` workflow and the digestion protocol of the library (e.g. `--digestion mboi`).
+In addition, chromatin loops anchored at the 1D peaks of the targeted protein or histone mark can be
+called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) from the raw contact counts at the
+`--res_loops` resolution(s).
+
+`FitHiChIP` has no Bioconda recipe. It runs in the container image `ghcr.io/birkiy/fithichip:11.0`
+(FitHiChIP 11.0 with its dependencies from conda-forge/Bioconda, built from
+[birkiy/fithichip-container](https://github.com/birkiy/fithichip-container)), so loop calling needs a
+container engine (`docker`, `singularity`, `apptainer`, `podman`, ...) and `fithichip` is not available with `-profile conda`.
+
+#### `--loops_caller`
+
+Call chromatin loops with `fithichip` and/or `hicexplorer` (comma-separated). Default: not set (no loop calling).
 
 ```bash
---loop_caller '[string]'
+--loops_caller 'fithichip,hicexplorer'
 ```
 
 #### `--res_loops`
 
-Resolution to run the loop calling analysis (comma-separated).
-Default: '20000'
+Resolution(s) of the contact maps used for loop calling (comma-separated). Default: '5000'
 
 ```bash
 --res_loops '[string]'
 ```
+
+#### `--loops_peaks`
+
+BED file of the 1D anchor peaks used by `FitHiChIP`, for instance the ChIP-seq peaks of the HiChIP target.
+When this option is not set, the anchors are inferred from the HiChIP reads themselves: the 5' position of
+every read end of the valid pairs is given to `MACS3` as single-end reads (`--nomodel --extsize 147 -q 0.01`),
+the approach of FitHiChIP's `PeakInferHiChIP`. The inferred peaks are exported in `results/loops/peaks`.
+
+```bash
+--loops_peaks '[path to BED file]'
+```
+
+#### `--macs_gsize`
+
+Effective genome size given to `MACS3` when the anchors are inferred: a number, scientific notation (e.g. `2.7e9` for human,
+`1.87e9` for mouse) or one of the `MACS3` shortcuts `hs`, `mm`, `ce`, `dm`.
+Default: the total length of the chromosomes in the chromosome sizes file. This is larger than the effective (mappable) genome
+size `MACS3` expects, which makes the peak calls slightly more conservative, so set `--macs_gsize` for real genomes.
+
+```bash
+--macs_gsize 2.7e9
+```
+
+#### FitHiChIP options
+
+- `--fithichip_lower_dist` / `--fithichip_upper_dist`: distance range (bp) of the interactions tested. Default: 20000 / 2000000
+- `--fithichip_qvalue`: FDR threshold of the significant interactions. Default: 0.01
+- `--fithichip_inttype`: interactions tested, 1 = peak-to-peak, 2 = peak-to-non-peak, 3 = peak-to-all, 4 = all-to-all, 5 = every type. Default: 3
+- `--fithichip_bias`: bias regression. Only `1` (coverage bias) is available: FitHiChIP's ICE bias (`2`) runs HiC-Pro's `ice`, which is not in the container. Default: 1
+- `--fithichip_p2p_background`: use the stringent peak-to-peak background (FitHiChIP(S)) instead of the loose one (FitHiChIP(L)). Default: false
+
+```bash
+--fithichip_lower_dist '[numeric]' --fithichip_upper_dist '[numeric]' --fithichip_qvalue '[numeric]' --fithichip_inttype '[numeric]' --fithichip_bias '[numeric]' --fithichip_p2p_background
+```
+
+#### hicDetectLoops options
+
+- `--maxloopdistance`: maximum genomic distance (bp) of a loop. Default: 2000000
+- `--peakwidth`: width of the peak region in bins. Default: 2
+- `--windowsize`: size of the neighborhood region in bins. Default: 5
+- `--pvaluepreselection`: p-value threshold of the candidate pixels. Default: 0.1
+- `--peakinteractionsthreshold`: minimum number of interactions of a peak. Default: 10
+- `--obsexpthreshold`: minimum obs/exp ratio of a peak. Default: 1.5
+- `--pvalue`: rejection level of the peak versus neighborhood test. Default: 0.025
+- `--expected`: expected value per distance, `mean`, `mean_nonzero` or `mean_nonzero_ligation`. Default: 'mean'
+- `--loop_plot_ytransform`: transformation of the `hicPlotMatrix` values, `log1p` or `log`. Default: 'log1p'
+- `--loop_plot_region` / `--loop_plot_region2`: region(s) of the `hicPlotMatrix` plot (e.g. `chr1:10000-20000`). Default: whole genome
 
 ## Inputs/Outputs
 

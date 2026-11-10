@@ -12,7 +12,7 @@ process HICDETECTLOOPS {
 
     output:
     tuple val(meta), path('*.bedGraph') , emit: bedgraph
-    path("versions.yml")                , emit:versions
+    path("versions.yml"), topic: versions, emit: versions
 
     script:
     def args = task.ext.args ?: ''
@@ -29,7 +29,7 @@ process HICDETECTLOOPS {
         hicexplorer: \$(hicDetectLoops --version 2>&1 | sed 's/hicDetectLoops //')
     END_VERSIONS
     """
-    
+
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}.hicdetectloops"
     """

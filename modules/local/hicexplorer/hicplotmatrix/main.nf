@@ -12,7 +12,7 @@ process HICPLOTMATRIX {
 
     output:
     tuple val(meta), path('*.png') , emit: png
-    path("versions.yml")           , emit:versions
+    path("versions.yml"), topic: versions, emit: versions
 
     script:
     def args = task.ext.args ?: ''
@@ -34,7 +34,7 @@ process HICPLOTMATRIX {
         hicexplorer: \$(hicPlotMatrix --version 2>&1 | sed 's/hicPlotMatrix //')
     END_VERSIONS
     """
-    
+
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}.hicplotmatrix"
     """

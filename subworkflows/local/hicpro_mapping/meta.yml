@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "HICPRO_MAPPING"
+description: |
+  Workflow to map raw Hi-C sequencing reads to a reference genome using Bowtie2.
+  Handles digestion protocols by trimming reads at ligation sites, merging mapping
+  steps, and computing mapping statistics. For DNase-like protocols, generates
+  mapping statistics directly from aligned reads. Produces paired-end BAM files
+  and mapping/interaction statistics.
+keywords:
+  - Hi-C
+  - Hic-Pro
+  - Mapping
+  - Bowtie2
+  - Genomics
+components:
+  - bowtie2/align
+  - trim/reads
+  - merge/bowtie2
+  - hicpro/combine/mates
+  - mapping/stats/dnase
+  - combine/mates
+input:
+  - reads:
+      type: file
+      description: |
+        Raw sequencing reads (paired-end FASTQ files)
+      pattern: "*.fastq.gz"
+  - fasta:
+      type: file
+      description: |
+        Reference genome FASTA file
+      pattern: "*.fa"
+  - index:
+      type: directory
+      description: |
+        Path to the genome index for Bowtie2 mapping
+  - ligation_site:
+      type: string
+      description: |
+        Ligation site sequence used for trimming in digestion protocols
+output:
+  - bam:
+      type: file
+      description: |
+        Paired-end BAM files after mapping and mate combination
+      pattern: "*.bam"
+  - mapstats:
+      type: file
+      description: |
+        Mapping statistics from Bowtie2 or DNase mapping
+      pattern: "*.txt"
+  - pairstats:
+      type: file
+      description: |
+        Pairing statistics from mate combination
+      pattern: "*.txt"
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@nservant"
+maintainers:
+  - "@nservant"
+  - "@Thibault-Poinsignon"

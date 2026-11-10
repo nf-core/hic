@@ -47,8 +47,6 @@ workflow NFCORE_HIC {
 
     main:
 
-    ch_versions = Channel.empty()
-
     //
     // SUBWORKFLOW: prepare genome annotation
     //
@@ -57,7 +55,6 @@ workflow NFCORE_HIC {
         params.bwt2_index,
         params.bwa_index
     )
-    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
     //
     // WORKFLOW: Run pipeline
@@ -69,7 +66,11 @@ workflow NFCORE_HIC {
         PREPARE_GENOME.out.chromosome_size,
         PREPARE_GENOME.out.res_frag,
         PREPARE_GENOME.out.restriction_site,
-        PREPARE_GENOME.out.ligation_site
+        PREPARE_GENOME.out.ligation_site,
+        params.multiqc_config,
+        params.multiqc_logo,
+        params.multiqc_methods_description,
+        params.outdir
     )
 
     emit:
@@ -114,7 +115,6 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
         NFCORE_HIC.out.multiqc_report
     )
 }
