@@ -19,6 +19,7 @@ include { PAIRTOOLS } from '../subworkflows/local/pairtools'
 include { COOLER } from '../subworkflows/local/cooler'
 include { COMPARTMENTS } from '../subworkflows/local/compartments'
 include { TADS } from '../subworkflows/local/tads'
+include { LOOPS } from '../subworkflows/local/loops'
 include { TRIMGALORE } from '../modules/nf-core/trimgalore/main.nf'
 
 /*
@@ -81,6 +82,16 @@ workflow HIC {
         ch_comp_res = channel.empty()
         if (!params.skip_compartments){
             log.warn "[nf-core/hic] Hi-C resolution for compartment calling not specified. See --res_compartments"
+        }
+    }
+
+    if (params.loops_caller && params.res_loops){
+        ch_loops_res = channel.from( "${params.res_loops}" ).splitCsv().flatten().toInteger()
+        ch_map_res = ch_map_res.concat(ch_loops_res)
+    }else{
+        ch_loops_res = channel.empty()
+        if (params.loops_caller){
+            log.warn "[nf-core/hic] Hi-C resolution for loop calling not specified. See --res_loops"
         }
     }
 
@@ -197,6 +208,22 @@ workflow HIC {
         )
     }
 
+
+    //
+    // SUB-WORKFLOW : LOOP CALLING (HiChIP / PLAC-seq)
+    //
+    if (params.loops_caller){
+        COOLER.out.cool
+            .combine(ch_loops_res)
+            .filter { meta, _cool, res -> meta.resolution == res }   // [meta, cool, resolution]
+            .set{ ch_cool_loops }
+
+        LOOPS(
+            ch_pairs,
+            ch_cool_loops,
+            ch_chromosome_size
+        )
+    }
 
     //
     // Collate and save software versions
