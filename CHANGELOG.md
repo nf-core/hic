@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Markdown settings
 - Template files
 - nf-core version to 3.5.0
+- [#250](https://github.com/nf-core/hic/pull/250) - Merge `master` into `dev` to carry the #243 and #247 workflow fixes
 
 ## v2.2.0dev
 
