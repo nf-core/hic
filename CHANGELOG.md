@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#236](https://github.com/nf-core/hic/pull/236) - TRIMGALORE 5' clipping, and Arima/ArimaV2 defaults for fragment and insert size filters ([#225](https://github.com/nf-core/hic/issues/225))
 - [#236](https://github.com/nf-core/hic/pull/236) - `--min_size` to filter chromosomes (local module FILTER_CHROMSIZE)
 - [#236](https://github.com/nf-core/hic/pull/236) - Subworkflows `meta.yml`
+- [#246](https://github.com/nf-core/hic/pull/246) - `--skip_fastqc` to skip FastQC, and `--skip_multiqc` now skips MultiQC
 - [#249](https://github.com/nf-core/hic/pull/249) - HiChIP / PLAC-seq loop calling (`--loops_caller fithichip`): MACS3 anchor peaks (or `--loops_peaks`) and FitHiChIP significant interactions ([#189](https://github.com/nf-core/hic/issues/189))
 
 ### `Changed`
