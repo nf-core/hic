@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Fixed`
 
 - #227: MPLCONFIGDIR is set to "${baseDir}/mplconfig"
+- #224: GET_RESTRICTION_FRAGMENTS tag no longer contains `^` or `,`, which AWS Batch rejects as tag values
 - #62: a single number can be given as BIN_SIZES without error
 - #225:TRIMGALORE remove the first 5 bases of the 5' end and
   fragments and inserts size min/max settings are set to recommended values if Arima/ArimaV2 is used
