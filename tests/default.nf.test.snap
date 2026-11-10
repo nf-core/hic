@@ -27,6 +27,9 @@
                 "COOLER_MAKEBINS": {
                     "cooler": "0.10.4"
                 },
+                "COOLER_ZOOMIFY": {
+                    "cooler": "0.10.4"
+                },
                 "FASTQC": {
                     "fastqc": "0.13.0"
                 },
@@ -49,6 +52,7 @@
                 "contact_maps/cool",
                 "contact_maps/cool/SRR4292758.1000_balanced.cool",
                 "contact_maps/cool/SRR4292758.2000_balanced.cool",
+                "contact_maps/cool/SRR4292758.mcool",
                 "contact_maps/txt",
                 "contact_maps/txt/SRR4292758.1000_balanced.txt",
                 "contact_maps/txt/SRR4292758.2000_balanced.txt",
@@ -206,15 +210,15 @@
                 "SRR4292758.1000_balanced_insulation.tsv:md5,e2ce1056f11fc3bf432de642341cc6ab"
             ]
         ],
+        "timestamp": "2026-11-10T14:22:21.084250293",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-03-10T10:53:26.768807069"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.0"
+        }
     },
     "Should split fastqs": {
         "content": [
-            68,
+            69,
             {
                 "BOWTIE2_ALIGN": {
                     "bowtie2": "2.5.5",
@@ -241,6 +245,9 @@
                 "COOLER_MAKEBINS": {
                     "cooler": "0.10.4"
                 },
+                "COOLER_ZOOMIFY": {
+                    "cooler": "0.10.4"
+                },
                 "FASTQC": {
                     "fastqc": "0.13.0"
                 },
@@ -260,6 +267,7 @@
                 "contact_maps/cool",
                 "contact_maps/cool/SRR4292758.1000_balanced.cool",
                 "contact_maps/cool/SRR4292758.2000_balanced.cool",
+                "contact_maps/cool/SRR4292758.mcool",
                 "contact_maps/txt",
                 "contact_maps/txt/SRR4292758.1000_balanced.txt",
                 "contact_maps/txt/SRR4292758.2000_balanced.txt",
@@ -420,10 +428,10 @@
                 "SRR4292758.1000_balanced_insulation.tsv:md5,e2ce1056f11fc3bf432de642341cc6ab"
             ]
         ],
+        "timestamp": "2026-11-10T14:23:25.162598176",
         "meta": {
-            "nf-test": "0.9.3",
-            "nextflow": "25.10.4"
-        },
-        "timestamp": "2026-03-10T11:50:05.416293782"
+            "nf-test": "0.9.5",
+            "nextflow": "26.10.0"
+        }
     }
 }

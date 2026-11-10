@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#236](https://github.com/nf-core/hic/pull/236) - TRIMGALORE 5' clipping, and Arima/ArimaV2 defaults for fragment and insert size filters ([#225](https://github.com/nf-core/hic/issues/225))
 - [#236](https://github.com/nf-core/hic/pull/236) - `--min_size` to filter chromosomes (local module FILTER_CHROMSIZE)
 - [#236](https://github.com/nf-core/hic/pull/236) - Subworkflows `meta.yml`
+- [#246](https://github.com/nf-core/hic/pull/246) - `--skip_fastqc` to skip FastQC, and `--skip_multiqc` now skips MultiQC
 - [#237](https://github.com/nf-core/hic/pull/237) - Hi-C loop calling (`--loops_caller hicexplorer`): HiCExplorer hicDetectLoops loops plotted with hicPlotMatrix ([#189](https://github.com/nf-core/hic/issues/189))
 - [#249](https://github.com/nf-core/hic/pull/249) - HiChIP / PLAC-seq loop calling (`--loops_caller fithichip`): MACS3 anchor peaks (or `--loops_peaks`) and FitHiChIP significant interactions ([#189](https://github.com/nf-core/hic/issues/189))
 
@@ -47,7 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#236](https://github.com/nf-core/hic/pull/236) - `MPLCONFIGDIR` set to `${baseDir}/mplconfig`, so Matplotlib warnings no longer break version parsing ([#227](https://github.com/nf-core/hic/issues/227))
 - [#236](https://github.com/nf-core/hic/pull/236) - COOLER_CLOAD deprecated `pairs` arguments, and the cooler add resolution step after the COOLER_CLOAD update
 - [#236](https://github.com/nf-core/hic/pull/236) - Pipeline logo
+- [#238](https://github.com/nf-core/hic/pull/238) - `--res_zoomify` builds the mcool file again, and accepts an integer ([#229](https://github.com/nf-core/hic/issues/229))
 - [#243](https://github.com/nf-core/hic/pull/243), [#247](https://github.com/nf-core/hic/pull/247), [#250](https://github.com/nf-core/hic/pull/250) - CI: remove the vulnerable PR-comment artifact pattern, run `fix-linting` from the `nf-core/actions` reusable workflow
+- [#251](https://github.com/nf-core/hic/pull/251) - GET_RESTRICTION_FRAGMENTS tag no longer contains `^` or `,`, which AWS Batch rejects as tag values ([#224](https://github.com/nf-core/hic/issues/224))
 
 ## v2.1.0 - 2023-06-01
 
