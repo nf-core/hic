@@ -21,9 +21,9 @@ workflow COMPARTMENTS {
         ch_comp = COOLTOOLS_EIGSCIS.out.results
     }
 
-    if (params.compartments_caller =~ 'calder2'){
+    if (params.compartments_caller =~ 'calder2') {
         CALDER2(
-            cool.map{meta, cool, res -> [meta, cool] },
+            cool.map { meta, cool_file, res -> [meta, cool_file] },
             channel.value([])
         )
         ch_versions = ch_versions.mix(CALDER2.out.versions)
