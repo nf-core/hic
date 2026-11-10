@@ -49,7 +49,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 6. Quality controls ([`HiC-Pro`](https://github.com/nservant/HiC-Pro), [`HiCExplorer`](https://github.com/deeptools/HiCExplorer))
 7. Compartments calling ([`cooltools`](https://cooltools.readthedocs.io/en/latest/), [`Calder2`](https://github.com/CSOgroup/CALDER2))
 8. TADs calling ([`HiCExplorer`](https://github.com/deeptools/HiCExplorer), [`cooltools`](https://cooltools.readthedocs.io/en/latest/))
-9. Quality control report ([`MultiQC`](https://multiqc.info/))
+9. Loop calling for HiChIP / PLAC-seq data: 1D anchor peaks ([`MACS3`](https://github.com/macs3-project/MACS)) and significant interactions ([`FitHiChIP`](https://github.com/ay-lab/FitHiChIP))
+10. Quality control report ([`MultiQC`](https://multiqc.info/))
 
 ## Usage
 
