@@ -314,7 +314,7 @@ def setMetaChunk(row){
     def map = []
     row[1].eachWithIndex() { file, i ->
         println row[0]
-        meta = row[0].clone()
+        def meta = row[0].clone()
         meta.chunk = i
         meta.part = row[1].size()
         map += [meta, file]
