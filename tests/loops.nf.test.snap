@@ -207,7 +207,6 @@
                 "SRR4292758.allValidPairs:md5,824f389cb55656139a56d8185ea3f0f4",
                 "SRR4292758_contacts.pairs.gz:md5,27eabbaedf0b55d675addf05e165eda2",
                 "SRR4292758_contacts.pairs.gz.px2:md5,db3653be8c0229a0f32d6d0f0e7fcf24",
-                "SRR4292758_10000.hicdetectloops.bedGraph:md5,c49998efa87c5a18561360bf85e701bb",
                 "fastqc-status-check-heatmap.txt:md5,755d1909854791c227d1000b38c977e9",
                 "hicpro_contact_plot.txt:md5,026bd3f93ce85d7b695f2cc332ef1551",
                 "hicpro_pairing_stats_plot.txt:md5,b2f918d8f9919aaa30a0ea15f4522876",
