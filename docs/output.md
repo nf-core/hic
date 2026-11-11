@@ -285,6 +285,9 @@ Usually, TADs results are presented as simple BED files, or bigWig files, with t
   - `Summary_results_FitHiChIP.html`, `Parameters.txt`: run summary and the parameters used.
 - `loops/fithichip/<sample>_<resolution>.fithichip.config`: the FitHiChIP configuration file.
 - `loops/fithichip/<sample>_<resolution>.fithichip.log`: the FitHiChIP log.
+- `loops/hicDetectLoops/`
+  - `<sample>_<resolution>.hicdetectloops.bedGraph`: loops detected with `hicDetectLoops`, the x and y positions of each loop and the p-value of the statistical test.
+  - `<sample>_<resolution>.hicplotmatrix.png`: the contact map with the loops, plotted with `hicPlotMatrix`.
 
 </details>
 
@@ -292,6 +295,10 @@ For HiChIP and PLAC-seq data (`--loops_caller fithichip`), chromatin loops are c
 from the raw contact counts at the `--res_loops` resolution(s). FitHiChIP tests the bin pairs anchored at 1D peaks of the targeted protein or
 histone mark against a distance-dependent background corrected for coverage (or ICE) bias, and reports the interactions below the FDR threshold.
 The anchors are either provided with `--loops_peaks` (e.g. ChIP-seq peaks of the same target) or inferred from the HiChIP reads with `MACS3`.
+
+For Hi-C data (`--loops_caller hicexplorer`), [`HiCExplorer hicDetectLoops`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicDetectLoops.html)
+detects enriched interaction regions (peaks / loops) at the `--res_loops` resolution(s), based on a strict candidate selection, negative binomial
+distributions and Wilcoxon rank-sum tests. The loops are then plotted on the contact map with `hicPlotMatrix`.
 
 ### MultiQC
 

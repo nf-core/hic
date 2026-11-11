@@ -32,7 +32,7 @@
                     },
                     "cooler/balance": {
                         "branch": "master",
-                        "git_sha": "7b3452a23773f687ededb4befd037920e5a51341",
+                        "git_sha": "ca91895e96f7b0367be01aa3b418f59289227314",
                         "installed_by": ["modules"]
                     },
                     "cooler/cload": {

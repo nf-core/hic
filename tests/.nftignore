@@ -46,3 +46,4 @@ loops/fithichip/*/Summary_results_FitHiChIP.html
 loops/fithichip/*/*/*/*/FitHiC_BiasCorr/Plots/*
 loops/fithichip/*/*/*/*/FitHiC_BiasCorr/*_WashU.bed.gz*
 loops/fithichip/*/*/*/*/FitHiC_BiasCorr/Merge_Nearby_Interactions/*_WashU.bed.gz*
+loops/hicDetectLoops/*.png

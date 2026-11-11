@@ -643,7 +643,10 @@ Default: '40000,20000'
 --res_tads '[string]'
 ```
 
-### Loop calling (HiChIP / PLAC-seq)
+### Loop calling
+
+Chromatin loops can be called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) (HiChIP / PLAC-seq data) or with
+[`HiCExplorer hicDetectLoops`](https://hicexplorer.readthedocs.io/en/latest/content/tools/hicDetectLoops.html) (Hi-C data).
 
 HiChIP and PLAC-seq data are processed exactly like Hi-C data up to the contact maps, with
 the `pairtools` or `HiC-Pro` workflow and the digestion protocol of the library (e.g. `--digestion mboi`).
@@ -654,14 +657,14 @@ called with [`FitHiChIP`](https://ay-lab.github.io/FitHiChIP/) from the raw cont
 `FitHiChIP` has no Bioconda recipe. It runs in the container image `ghcr.io/birkiy/fithichip:11.0`
 (FitHiChIP 11.0 with its dependencies from conda-forge/Bioconda, built from
 [birkiy/fithichip-container](https://github.com/birkiy/fithichip-container)), so loop calling needs a
-container engine (`docker`, `singularity`, `apptainer`, `podman`, ...) and is not available with `-profile conda`.
+container engine (`docker`, `singularity`, `apptainer`, `podman`, ...) and `fithichip` is not available with `-profile conda`.
 
 #### `--loops_caller`
 
-Call chromatin loops. Currently only `fithichip` is available. Default: not set (no loop calling).
+Call chromatin loops with `fithichip` and/or `hicexplorer` (comma-separated). Default: not set (no loop calling).
 
 ```bash
---loops_caller 'fithichip'
+--loops_caller 'fithichip,hicexplorer'
 ```
 
 #### `--res_loops`
@@ -705,6 +708,19 @@ size `MACS3` expects, which makes the peak calls slightly more conservative, so 
 ```bash
 --fithichip_lower_dist '[numeric]' --fithichip_upper_dist '[numeric]' --fithichip_qvalue '[numeric]' --fithichip_inttype '[numeric]' --fithichip_bias '[numeric]' --fithichip_p2p_background
 ```
+
+#### hicDetectLoops options
+
+- `--maxloopdistance`: maximum genomic distance (bp) of a loop. Default: 2000000
+- `--peakwidth`: width of the peak region in bins. Default: 2
+- `--windowsize`: size of the neighborhood region in bins. Default: 5
+- `--pvaluepreselection`: p-value threshold of the candidate pixels. Default: 0.1
+- `--peakinteractionsthreshold`: minimum number of interactions of a peak. Default: 10
+- `--obsexpthreshold`: minimum obs/exp ratio of a peak. Default: 1.5
+- `--pvalue`: rejection level of the peak versus neighborhood test. Default: 0.025
+- `--expected`: expected value per distance, `mean`, `mean_nonzero` or `mean_nonzero_ligation`. Default: 'mean'
+- `--loop_plot_ytransform`: transformation of the `hicPlotMatrix` values, `log1p` or `log`. Default: 'log1p'
+- `--loop_plot_region` / `--loop_plot_region2`: region(s) of the `hicPlotMatrix` plot (e.g. `chr1:10000-20000`). Default: whole genome
 
 ## Inputs/Outputs
 

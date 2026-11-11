@@ -215,7 +215,7 @@ workflow HIC {
 
 
     //
-    // SUB-WORKFLOW : LOOP CALLING (HiChIP / PLAC-seq)
+    // SUB-WORKFLOW : LOOP CALLING
     //
     if (params.loops_caller){
         COOLER.out.cool
@@ -223,9 +223,16 @@ workflow HIC {
             .filter { meta, _cool, res -> meta.resolution == res }   // [meta, cool, resolution]
             .set{ ch_cool_loops }
 
+        COOLER.out.cool_raw
+            .combine(ch_loops_res)
+            .filter { meta, _cool, res -> meta.resolution == res }
+            .map { meta, cool, _res -> [meta, cool] }
+            .set{ ch_cool_raw_loops }
+
         LOOPS(
             ch_pairs,
             ch_cool_loops,
+            ch_cool_raw_loops,
             ch_chromosome_size
         )
     }

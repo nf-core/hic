@@ -90,5 +90,6 @@ workflow COOLER {
 
     emit:
     cool = COOLER_BALANCE.out.cool
+    cool_raw = ch_cool.map{ it -> [it[0], it[1]] }
     mcool = COOLER_ZOOMIFY.out.mcool
 }
