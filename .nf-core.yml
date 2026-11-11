@@ -1,6 +1,8 @@
 lint:
+  files_unchanged:
+    - .gitattributes
   schema_params: false
-nf_core_version: 4.2.1
+nf_core_version: 4.2.2
 repository_type: pipeline
 template:
   author: Nicolas Servant
