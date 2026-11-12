@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#236](https://github.com/nf-core/hic/pull/236) - nf-core modules updated, tool versions collected from topic channels
 - [#248](https://github.com/nf-core/hic/pull/248) - Template update to nf-core/tools 4.2.1
 - [#252](https://github.com/nf-core/hic/pull/252) - CHANGELOG: one entry per PR since v2.1.0
+- [#255](https://github.com/nf-core/hic/pull/255) - Template update to nf-core/tools 4.2.2
 
 ### `Removed`
 
