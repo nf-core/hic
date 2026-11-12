@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "LOOPS"
+description: |
+  Workflow to call chromatin loops from HiChIP / PLAC-seq data.
+  The 1D anchor peaks are either provided (--loops_peaks) or inferred from the
+  5' ends of the valid pairs with MACS3, and the statistically significant
+  interactions are called with FitHiChIP from the raw contact counts of the
+  .cool file at the loop resolution.
+keywords:
+  - HiChIP
+  - PLAC-seq
+  - loops
+  - FitHiChIP
+  - MACS3
+  - Genomics
+components:
+  - pairs2bed
+  - macs3/callpeak
+  - fithichip/cool2matrix
+  - fithichip
+input:
+  - pairs:
+      type: file
+      description: |
+        Valid pairs in .pairs format with their pairix index, structure [meta, pairs, index]
+      pattern: "*.pairs.gz"
+  - cool:
+      type: file
+      description: |
+        Hi-C contact map in .cool format at the loop resolution, structure [meta, cool, resolution]
+      pattern: "*.cool"
+  - chromsize:
+      type: file
+      description: |
+        Chromosome sizes file, structure [meta, chromsize]
+      pattern: "*.{sizes,txt,tsv}"
+output:
+  - peaks:
+      type: file
+      description: |
+        1D anchor peaks inferred with MACS3 (empty when --loops_peaks is given)
+      pattern: "*.narrowPeak"
+  - interactions:
+      type: file
+      description: |
+        Statistically significant interactions called by FitHiChIP
+      pattern: "*.interactions_FitHiC_Q*.bed"
+  - bedpe:
+      type: file
+      description: |
+        Significant interactions in BEDPE format for genome browsers
+      pattern: "*_IGV.bedpe"
+authors:
+  - "@birkiy"
+maintainers:
+  - "@birkiy"

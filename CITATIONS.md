@@ -1,5 +1,37 @@
 # nf-core/hic: Citations
 
+## [pairtoorls](https://github.com/open2c/pairtools)
+
+> Open2C, Abdennur N, Fudenberg G, Flyamer IM, Galitsyna AA, Goloborodko A, et al. (2024) Pairtools: From sequencing data to chromosome contacts. PLoS Comput Biol 20(5): e1012164. https://doi.org/10.1371/journal.pcbi.1012164
+
+## [cooltools](https://github.com/open2c/cooltools)
+
+> Open2C, Abdennur N, Abraham S, Fudenberg G, Flyamer IM, Galitsyna AA, et al. (2024) Cooltools: Enabling high-resolution Hi-C analysis in Python. PLoS Comput Biol 20(5): e1012067. https://doi.org/10.1371/journal.pcbi.1012067
+
+## [cooler](https://github.com/open2c/cooler)
+
+> Abdennur N, Mirny LA. Cooler: scalable storage for Hi-C data and other genomically labeled arrays, Bioinformatics. 2020 36(1):311–316, https://doi.org/10.1093/bioinformatics/btz540
+
+## [HiC-Pro](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0831-x)
+
+> Servant N, Varoquaux N, Lajoie BR, Viara E, Chen C, Vert JP, Dekker J, Heard E, Barillot E. HiC-Pro: An optimized and flexible pipeline for Hi-C processing. Genome Biology 2015, 16:259 doi: [10.1186/s13059-015-0831-x](https://dx.doi.org/10.1186/s13059-015-0831-x)
+
+## [FitHiChIP](https://github.com/ay-lab/FitHiChIP)
+
+> Bhattacharyya S, Chandra V, Vijayanand P, Ay F. Identification of significant chromatin contacts from HiChIP data by FitHiChIP. Nat Commun. 2019 10:4221. https://doi.org/10.1038/s41467-019-11950-y
+
+## [HiCExplorer](https://hicexplorer.readthedocs.io/en/latest/index.html)
+
+> Joachim Wolff, Leily Rabbani, Ralf Gilsbach, Gautier Richard, Thomas Manke, Rolf Backofen, Björn A Grüning. Galaxy HiCExplorer 3: a web server for reproducible Hi-C, capture Hi-C and single-cell Hi-C data analysis, quality control and visualization, Nucleic Acids Research, Nucleic Acids Research, Volume 48, Issue W1, 02 July 2020, Pages W177–W184, [https://doi.org/10.1093/nar/gkaa220](https://doi.org/10.1093/nar/gkaa220)
+
+> Joachim Wolff, Vivek Bhardwaj, Stephan Nothjunge, Gautier Richard, Gina Renschler, Ralf Gilsbach, Thomas Manke, Rolf Backofen, Fidel Ramírez, Björn A Grüning. Galaxy HiCExplorer: a web server for reproducible Hi-C data analysis, quality control and visualization, Nucleic Acids Research, Volume 46, Issue W1, 2 July 2018, Pages W11–W16, doi: [https://doi.org/10.1093/nar/gky504](https://doi.org/10.1093/nar/gky504)
+
+> Fidel Ramirez, Vivek Bhardwaj, Jose Villaveces, Laura Arrigoni, Bjoern A Gruening,Kin Chung Lam, Bianca Habermann, Asifa Akhtar, Thomas Manke. “High-resolution TADs reveal DNA sequences underlying genome organization in flies”. Nature Communications, Volume 9, Article number: 189 (2018), doi: [https://doi.org/10.1038/s41467-017-02525-w](https://doi.org/10.1038/s41467-017-02525-w)
+
+## [MACS](https://github.com/macs3-project/MACS)
+
+> Zhang Y, Liu T, Meyer CA, Eeckhoute J, Johnson DS, Bernstein BE, Nusbaum C, Myers RM, Brown M, Li W, Liu XS. Model-based analysis of ChIP-Seq (MACS). Genome Biol. 2008 9(9):R137. https://doi.org/10.1186/gb-2008-9-9-r137
+
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
 > Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. Nat Biotechnol. 2020 Mar;38(3):276-278. doi: 10.1038/s41587-020-0439-x. PubMed PMID: 32055031.
