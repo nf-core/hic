@@ -3,6 +3,56 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## dev
+
+### `Added`
+
+- [#174](https://github.com/nf-core/hic/pull/174) - `--processing pairtools`: BWA-MEM mapping and pairtools valid pairs detection (`--bwa_opts`, `--pairtools_parse_opts`)
+- [#174](https://github.com/nf-core/hic/pull/174) - `--balancing_opts` to set `cooler balance` arguments
+- [#196](https://github.com/nf-core/hic/pull/196) - nf-test pipeline test
+- [#204](https://github.com/nf-core/hic/pull/204) - CALDER2 compartments calling (`--compartments_caller calder2`)
+- [#236](https://github.com/nf-core/hic/pull/236) - TRIMGALORE 5' clipping, and Arima/ArimaV2 defaults for fragment and insert size filters ([#225](https://github.com/nf-core/hic/issues/225))
+- [#236](https://github.com/nf-core/hic/pull/236) - `--min_size` to filter chromosomes (local module FILTER_CHROMSIZE)
+- [#236](https://github.com/nf-core/hic/pull/236) - Subworkflows `meta.yml`
+- [#246](https://github.com/nf-core/hic/pull/246) - `--skip_fastqc` to skip FastQC, and `--skip_multiqc` now skips MultiQC
+- [#237](https://github.com/nf-core/hic/pull/237) - Hi-C loop calling (`--loops_caller hicexplorer`): HiCExplorer hicDetectLoops loops plotted with hicPlotMatrix ([#189](https://github.com/nf-core/hic/issues/189))
+- [#249](https://github.com/nf-core/hic/pull/249) - HiChIP / PLAC-seq loop calling (`--loops_caller fithichip`): MACS3 anchor peaks (or `--loops_peaks`) and FitHiChIP significant interactions ([#189](https://github.com/nf-core/hic/issues/189))
+
+### `Changed`
+
+- [#174](https://github.com/nf-core/hic/pull/174) - HiC-Pro default mapping options, closer to BWA-MEM/pairtools results
+- [#181](https://github.com/nf-core/hic/pull/181) - COOLTOOLS_EIGSCIS orients A/B compartments with a GC content phasing track
+- [#194](https://github.com/nf-core/hic/pull/194) - Template update to nf-core/tools 2.13.1
+- [#195](https://github.com/nf-core/hic/pull/195) - Code style follows `.editorconfig`
+- [#197](https://github.com/nf-core/hic/pull/197) - Samplesheet validated against `assets/schema_input.json` instead of `bin/check_samplesheet.py`
+- [#200](https://github.com/nf-core/hic/pull/200) - Template update to nf-core/tools 2.14.1
+- [#204](https://github.com/nf-core/hic/pull/204) - `--dnase` renamed to `--no_digestion`
+- [#226](https://github.com/nf-core/hic/pull/226), [#230](https://github.com/nf-core/hic/pull/230) - Template update to nf-core/tools 3.3.1
+- [#231](https://github.com/nf-core/hic/pull/231) - Template update to nf-core/tools 3.3.2
+- [#233](https://github.com/nf-core/hic/pull/233) - Template update to nf-core/tools 3.4.1
+- [#234](https://github.com/nf-core/hic/pull/234) - Template update to nf-core/tools 3.5.1
+- [#236](https://github.com/nf-core/hic/pull/236) - Chromosome sizes computed with SAMTOOLS_FAIDX instead of CUSTOM_GETCHROMSIZES
+- [#236](https://github.com/nf-core/hic/pull/236) - `cutsite_trimming` rewritten in Python
+- [#236](https://github.com/nf-core/hic/pull/236) - nf-core modules updated, tool versions collected from topic channels
+- [#248](https://github.com/nf-core/hic/pull/248) - Template update to nf-core/tools 4.2.1
+- [#252](https://github.com/nf-core/hic/pull/252) - CHANGELOG: one entry per PR since v2.1.0
+- [#255](https://github.com/nf-core/hic/pull/255) - Template update to nf-core/tools 4.2.2
+
+### `Removed`
+
+- [#170](https://github.com/nf-core/hic/pull/170), [#171](https://github.com/nf-core/hic/pull/171) - `public_aws_ecr` profile
+
+### `Fixed`
+
+- [#173](https://github.com/nf-core/hic/pull/173) - cooltools version parsing in COOLTOOLS_INSULATION and COOLTOOLS_EIGSCIS ([#172](https://github.com/nf-core/hic/issues/172))
+- [#236](https://github.com/nf-core/hic/pull/236) - `--bin_size` accepts a single value ([#62](https://github.com/nf-core/hic/issues/62))
+- [#236](https://github.com/nf-core/hic/pull/236) - `MPLCONFIGDIR` set to `${baseDir}/mplconfig`, so Matplotlib warnings no longer break version parsing ([#227](https://github.com/nf-core/hic/issues/227))
+- [#236](https://github.com/nf-core/hic/pull/236) - COOLER_CLOAD deprecated `pairs` arguments, and the cooler add resolution step after the COOLER_CLOAD update
+- [#236](https://github.com/nf-core/hic/pull/236) - Pipeline logo
+- [#238](https://github.com/nf-core/hic/pull/238) - `--res_zoomify` builds the mcool file again, and accepts an integer ([#229](https://github.com/nf-core/hic/issues/229))
+- [#243](https://github.com/nf-core/hic/pull/243), [#247](https://github.com/nf-core/hic/pull/247), [#250](https://github.com/nf-core/hic/pull/250) - CI: remove the vulnerable PR-comment artifact pattern, run `fix-linting` from the `nf-core/actions` reusable workflow
+- [#251](https://github.com/nf-core/hic/pull/251) - GET_RESTRICTION_FRAGMENTS tag no longer contains `^` or `,`, which AWS Batch rejects as tag values ([#224](https://github.com/nf-core/hic/issues/224))
+
 ## v2.1.0 - 2023-06-01
 
 ### `Added`

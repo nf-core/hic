@@ -1,0 +1,4 @@
+{
+    "markdown.styles": ["https://nf-co.re/vscode_markdown.css"],
+    "nextflow.telemetry.enabled": false
+}

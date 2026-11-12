@@ -26,11 +26,11 @@ process COOLTOOLS_EIGSCIS {
     """
     cooltools genome binnify --all-names ${chrsize} ${resolution} > genome_bins.txt
     cooltools genome gc genome_bins.txt ${fasta} > genome_gc.txt
-    cooltools eigs-cis ${args} -o ${prefix}_compartments ${cool}
+    cooltools eigs-cis ${args} --phasing-track genome_gc.txt -o ${prefix}_compartments ${cool}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cooltools: \$(cooltools --version 2>&1 | grep version | sed 's/cooltools, version //')
+        cooltools: \$(cooltools --version | grep 'cooltools, version ' | sed 's/cooltools, version //')
     END_VERSIONS
     """
 }

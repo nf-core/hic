@@ -10,7 +10,7 @@
 
 """
 Script to pair 2 SAM/BAM files into one PE BAM
-- On 03/05/16 Ferhat made changes starting from ~/bin/HiC-Pro_2.7.2b/scripts/mergeSAM.py 
+- On 03/05/16 Ferhat made changes starting from ~/bin/HiC-Pro_2.7.2b/scripts/mergeSAM.py
 to make singletons possible to be reported
 """
 
