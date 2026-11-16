@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "COMPARTMENTS"
+description: |
+  Subworkflow to call genomic compartments from Hi-C data using either
+  Cooltools Eigscis or Calder2. Takes a .cool file, reference FASTA,
+  and chromosome sizes, then runs the selected caller based on the
+  `params.compartments_caller` parameter. Outputs compartment calls
+  and tool version information.
+keywords:
+  - Eigscis
+  - Calder2
+  - Hi-C
+  - Compartments
+  - Genomics
+components:
+  - cooltools/eigscis
+  - calder2
+input:
+  - cool:
+      type: file
+      description: |
+        Input Hi-C contact map in .cool format
+      pattern: "*.cool"
+  - fasta:
+      type: file
+      description: |
+        Reference genome FASTA file
+      pattern: "*.fa"
+  - chrsize:
+      type: file
+      description: |
+        Chromosome sizes file
+      pattern: "*.txt"
+output:
+  - compartments:
+      type: directory
+      description: |
+        Directory containing compartment calls from the selected caller
+  - versions:
+      type: file
+      description: |
+        Versions of tools used in the workflow
+authors:
+  - "@nservant"
+maintainers:
+  - "@nservant"
+  - "@Thibault-Poinsignon"
