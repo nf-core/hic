@@ -37,7 +37,7 @@
                     "samtools": 1.25
                 },
                 "Workflow": {
-                    "nf-core/hic": "v2.2.0dev"
+                    "nf-core/hic": "v3.0.0"
                 }
             },
             [

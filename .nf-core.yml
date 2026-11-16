@@ -12,4 +12,4 @@ template:
   name: hic
   org: nf-core
   outdir: .
-  version: 2.2.0
+  version: 3.0.0
