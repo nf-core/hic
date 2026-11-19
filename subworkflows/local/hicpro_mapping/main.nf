@@ -74,8 +74,11 @@ workflow HICPRO_MAPPING {
         ch_bams = MERGE_BOWTIE2.out.bam
             .map{ meta, bam ->
                 def newMeta = [ id: meta.id, single_end:false, chunk:meta.chunk, part:meta.part ]
-                [ newMeta, bam ]
+                [ groupKey(newMeta, 2), [ meta.mates, bam ] ]
             }.groupTuple()
+            .map{ meta, mate_bams ->
+                [ meta, mate_bams.sort { a, b -> a[0] <=> b[0] }.collect { entry -> entry[1] } ]
+            }
 
 
     }else{
@@ -88,8 +91,11 @@ workflow HICPRO_MAPPING {
         ch_bams = BOWTIE2_ALIGN.out.aligned
             .map{ meta, bam ->
                 def newMeta = [ id: meta.id, single_end: false, chunk:meta.chunk, part:meta.part ]
-                [ newMeta, bam ]
+                [ groupKey(newMeta, 2), [ meta.mates, bam ] ]
             }.groupTuple()
+            .map{ meta, mate_bams ->
+                [ meta, mate_bams.sort { a, b -> a[0] <=> b[0] }.collect { entry -> entry[1] } ]
+            }
     }
 
     COMBINE_MATES (
