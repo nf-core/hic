@@ -34,10 +34,10 @@
                     "fastqc": "0.13.0"
                 },
                 "HICDETECTLOOPS": {
-                    "hicexplorer": "3.7.2"
+                    "hicexplorer": "4.0.0"
                 },
                 "HICPLOTMATRIX_LOOPS": {
-                    "hicexplorer": "3.7.2"
+                    "hicexplorer": "4.0.0"
                 },
                 "SAMTOOLS_FAIDX": {
                     "samtools": 1.25
@@ -219,8 +219,8 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,e12e13b248914e62c34aff42204ea262",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,b7dfaa33f19ebea0983e428298317664"
+                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
             ]
         ],
         "timestamp": "2026-11-11T17:49:01.279389598",
@@ -475,8 +475,8 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,e12e13b248914e62c34aff42204ea262",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,b7dfaa33f19ebea0983e428298317664"
+                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
             ]
         ],
         "timestamp": "2026-11-10T15:57:24.699932338",
