@@ -38,6 +38,8 @@ nextflow_pipeline {
 
     test("-profile test --loops_caller hicexplorer") {
 
+        tag "conda"
+
         when {
             params {
                 outdir = "$outputDir"

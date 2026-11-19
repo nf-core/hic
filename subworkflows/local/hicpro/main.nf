@@ -74,6 +74,9 @@ workflow HICPRO {
             def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
             [ groupKey(newMeta, meta.part), valid_pairs ]
         }.groupTuple()
+        .map{ meta, valid_pairs ->
+            [ meta, valid_pairs.sort { f -> f.name } ]
+        }
 
     MERGE_VALID_INTERACTION (
         ch_valid_pairs
@@ -82,21 +85,30 @@ workflow HICPRO {
 
     ch_hicpro_mappingstats = HICPRO_MAPPING.out.mapstats
         .map{ meta, stats ->
-            def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
+            def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part, mates:meta.mates ]
             [ groupKey(newMeta, meta.part), stats ]
         }.groupTuple()
+        .map{ meta, stats ->
+            [ meta, stats.sort { f -> f.name } ]
+        }
 
     ch_hicpro_pairstats = HICPRO_MAPPING.out.pairstats
         .map{ meta, stats ->
             def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
             [ groupKey(newMeta, meta.part), stats ]
         }.groupTuple()
+        .map{ meta, stats ->
+            [ meta, stats.sort { f -> f.name } ]
+        }
 
     ch_hicpro_validstats = ch_valid_stats
         .map{ meta, stats ->
             def newMeta = [ id: meta.id, single_end: meta.singleEnd, part:meta.part ]
             [ groupKey(newMeta, meta.part), stats ]
         }.groupTuple()
+        .map{ meta, stats ->
+            [ meta, stats.sort { f -> f.name } ]
+        }
 
     MERGE_STATS(
         ch_hicpro_mappingstats.concat(ch_hicpro_pairstats, ch_hicpro_validstats)

@@ -34,10 +34,10 @@
                     "fastqc": "0.13.0"
                 },
                 "HICDETECTLOOPS": {
-                    "hicexplorer": "3.7.2"
+                    "hicexplorer": "4.0.0"
                 },
                 "HICPLOTMATRIX_LOOPS": {
-                    "hicexplorer": "3.7.2"
+                    "hicexplorer": "4.0.0"
                 },
                 "SAMTOOLS_FAIDX": {
                     "samtools": 1.25
@@ -78,9 +78,10 @@
                 "hicpro/mapping/SRR4292758_0_bwt2pairs.bam",
                 "hicpro/stats",
                 "hicpro/stats/SRR4292758",
+                "hicpro/stats/SRR4292758/SRR4292758.R1.mmapstat",
+                "hicpro/stats/SRR4292758/SRR4292758.R2.mmapstat",
                 "hicpro/stats/SRR4292758/SRR4292758.mRSstat",
                 "hicpro/stats/SRR4292758/SRR4292758.mpairstat",
-                "hicpro/stats/SRR4292758/SRR4292758.null.mmapstat",
                 "hicpro/stats/SRR4292758/SRR4292758_allValidPairs.mergestat",
                 "hicpro/valid_pairs",
                 "hicpro/valid_pairs/SRR4292758.allValidPairs",
@@ -205,12 +206,10 @@
                 "SRR4292758.10000_balanced.txt:md5,35ce59c7c95a68d57b42e7a3bfc0f4c0",
                 "SRR4292758.1000_balanced.txt:md5,7e6fad9ffca70a6f72c8a8727ca23251",
                 "SRR4292758.2000_balanced.txt:md5,853427e47ba03d0c723c9fba2e7813b3",
-                "SRR4292758_distcount.png:md5,421161f55fc6312dfafcab76ca943d0d",
                 "SRR4292758_distcount.txt:md5,ba63d855abcaab7bd8c93f48f47e6c7c",
                 "SRR4292758_allValidPairs.mergestat:md5,161d7d9c2f63a952edc0d25359015d96",
                 "SRR4292758.allValidPairs:md5,824f389cb55656139a56d8185ea3f0f4",
                 "SRR4292758_contacts.pairs.gz:md5,27eabbaedf0b55d675addf05e165eda2",
-                "SRR4292758_contacts.pairs.gz.px2:md5,db3653be8c0229a0f32d6d0f0e7fcf24",
                 "fastqc-status-check-heatmap.txt:md5,755d1909854791c227d1000b38c977e9",
                 "hicpro_contact_plot.txt:md5,026bd3f93ce85d7b695f2cc332ef1551",
                 "hicpro_pairing_stats_plot.txt:md5,b2f918d8f9919aaa30a0ea15f4522876",
@@ -220,9 +219,8 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,e12e13b248914e62c34aff42204ea262",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,b7dfaa33f19ebea0983e428298317664",
-                "SRR4292758.1000_balanced_insulation.tsv:md5,e2ce1056f11fc3bf432de642341cc6ab"
+                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
             ]
         ],
         "timestamp": "2026-11-11T17:49:01.279389598",
@@ -313,9 +311,10 @@
                 "hicpro/mapping/SRR4292758_0_bwt2pairs.bam",
                 "hicpro/stats",
                 "hicpro/stats/SRR4292758",
+                "hicpro/stats/SRR4292758/SRR4292758.R1.mmapstat",
+                "hicpro/stats/SRR4292758/SRR4292758.R2.mmapstat",
                 "hicpro/stats/SRR4292758/SRR4292758.mRSstat",
                 "hicpro/stats/SRR4292758/SRR4292758.mpairstat",
-                "hicpro/stats/SRR4292758/SRR4292758.null.mmapstat",
                 "hicpro/stats/SRR4292758/SRR4292758_allValidPairs.mergestat",
                 "hicpro/valid_pairs",
                 "hicpro/valid_pairs/SRR4292758.allValidPairs",
@@ -460,12 +459,10 @@
                 "cooler_bins_2000.bed:md5,b5b5c94246c99473376d4cfc4580645d",
                 "SRR4292758.1000_balanced.txt:md5,7e6fad9ffca70a6f72c8a8727ca23251",
                 "SRR4292758.2000_balanced.txt:md5,853427e47ba03d0c723c9fba2e7813b3",
-                "SRR4292758_distcount.png:md5,421161f55fc6312dfafcab76ca943d0d",
                 "SRR4292758_distcount.txt:md5,ba63d855abcaab7bd8c93f48f47e6c7c",
                 "SRR4292758_allValidPairs.mergestat:md5,161d7d9c2f63a952edc0d25359015d96",
                 "SRR4292758.allValidPairs:md5,824f389cb55656139a56d8185ea3f0f4",
                 "SRR4292758_contacts.pairs.gz:md5,27eabbaedf0b55d675addf05e165eda2",
-                "SRR4292758_contacts.pairs.gz.px2:md5,db3653be8c0229a0f32d6d0f0e7fcf24",
                 "SRR4292758_2000.interactions_FitHiC_Q0.01.bed:md5,1730acb6e4ba02324f3537092175fcb4",
                 "SRR4292758_peaks.narrowPeak:md5,7ab97e0d5f3de8b0aab39e2cab6431ad",
                 "SRR4292758_summits.bed:md5,d8f88c7e45d6a59b4c845175fb428a1c",
@@ -478,9 +475,8 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,e12e13b248914e62c34aff42204ea262",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,b7dfaa33f19ebea0983e428298317664",
-                "SRR4292758.1000_balanced_insulation.tsv:md5,e2ce1056f11fc3bf432de642341cc6ab"
+                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
             ]
         ],
         "timestamp": "2026-11-10T15:57:24.699932338",
