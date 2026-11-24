@@ -84,11 +84,11 @@ workflow HICPRO_MAPPING {
     }else{
 
         MAPPING_STATS_DNASE(
-            BOWTIE2_ALIGN.out.aligned
+            BOWTIE2_ALIGN.out.bam
         )
         ch_mapping_stats = MAPPING_STATS_DNASE.out.stats
 
-        ch_bams = BOWTIE2_ALIGN.out.aligned
+        ch_bams = BOWTIE2_ALIGN.out.bam
             .map{ meta, bam ->
                 def newMeta = [ id: meta.id, single_end: false, chunk:meta.chunk, part:meta.part ]
                 [ groupKey(newMeta, 2), [ meta.mates, bam ] ]
