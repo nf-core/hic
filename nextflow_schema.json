@@ -316,7 +316,7 @@
                     "default": 0
                 },
                 "res_dist_decay": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "250000",
                     "description": "Resolution to build count/distance plot"
@@ -332,13 +332,13 @@
                     "description": "Define methods for compartments calling"
                 },
                 "res_tads": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "40000",
                     "description": "Resolution to run TADs callers (comma separated)"
                 },
                 "res_compartments": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "250000",
                     "description": "Resolution for compartments calling"
@@ -350,7 +350,7 @@
                     "pattern": "^(fithichip|hicexplorer)(,(fithichip|hicexplorer))*$"
                 },
                 "res_loops": {
-                    "type": "string",
+                    "type": ["string", "integer"],
                     "pattern": "^(\\d+)(,\\d+)*$",
                     "default": "5000",
                     "fa_icon": "fas fa-ruler",

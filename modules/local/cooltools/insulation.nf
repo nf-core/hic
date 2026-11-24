@@ -6,6 +6,8 @@ process COOLTOOLS_INSULATION {
     tag "${meta.id}"
     label 'process_medium'
 
+    // Pin pandas=1.5.3 (last 1.x release, requires Python >=3.8) so conda does not resolve pandas>=2.0 which breaks cooltools 0.5.1.
+    // The py37 biocontainer bundles an older pandas 1.x, so minor float/formatting differences in insulation.tsv are ignored in tests/.nftignore.
     conda "bioconda::cooltools=0.5.1 bioconda::cooler=0.8.11 conda-forge::pandas=1.5.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/cooltools:0.5.1--py37h37892f8_0' :
