@@ -205,13 +205,14 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a",
+                "SRR4292758.1000_balanced_insulation.tsv:md5,248566273b4c04ea668d0e624d56b382"
             ]
         ],
-        "timestamp": "2026-11-10T14:22:21.084250293",
+        "timestamp": "2026-11-25T13:22:30.481381191",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.10.0"
+            "nextflow": "26.10.7"
         }
     },
     "Should split fastqs": {
@@ -421,13 +422,14 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a",
+                "SRR4292758.1000_balanced_insulation.tsv:md5,248566273b4c04ea668d0e624d56b382"
             ]
         ],
-        "timestamp": "2026-11-10T14:23:25.162598176",
+        "timestamp": "2026-11-25T13:23:59.412380665",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "26.10.0"
+            "nextflow": "26.10.7"
         }
     }
 }

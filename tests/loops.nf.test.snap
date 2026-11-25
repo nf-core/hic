@@ -220,13 +220,14 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a",
+                "SRR4292758.1000_balanced_insulation.tsv:md5,248566273b4c04ea668d0e624d56b382"
             ]
         ],
-        "timestamp": "2026-11-11T17:49:01.279389598",
+        "timestamp": "2026-11-25T13:26:58.63982003",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
+            "nextflow": "26.10.7"
         }
     },
     "-profile test --loops_caller fithichip": {
@@ -476,13 +477,14 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a"
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a",
+                "SRR4292758.1000_balanced_insulation.tsv:md5,248566273b4c04ea668d0e624d56b382"
             ]
         ],
-        "timestamp": "2026-11-10T15:57:24.699932338",
+        "timestamp": "2026-11-25T13:25:35.667771799",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "25.10.4"
+            "nextflow": "26.10.7"
         }
     }
 }

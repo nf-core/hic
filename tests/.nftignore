@@ -48,6 +48,5 @@ loops/fithichip/*/*/*/*/FitHiC_BiasCorr/*_WashU.bed.gz*
 loops/fithichip/*/*/*/*/FitHiC_BiasCorr/Merge_Nearby_Interactions/*_WashU.bed.gz*
 loops/hicDetectLoops/*.bedGraph
 loops/hicDetectLoops/*.png
-tads/insulation/*_insulation.tsv
 distance_decay/*_distcount.png
 hicpro/valid_pairs/pairix/*_contacts.pairs.gz.px2
