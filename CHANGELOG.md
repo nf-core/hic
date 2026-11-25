@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## dev
+
+### `Changed`
+
+- [#259](https://github.com/nf-core/hic/pull/259) - Upgrade HiCExplorer to 4.0.0, `cooltools` to 0.7.1 (`cooler=0.9.3`), and `nf-core/bowtie2` modules; HiC-Pro `mapstat` output filenames changed from `<id>.null.mmapstat` to `<id>.R1/R2.mmapstat`
+
+### `Fixed`
+
+- [#259](https://github.com/nf-core/hic/pull/259) - Fix HiC-Pro channel grouping race conditions, `BOWTIE2_ALIGN.out.bam` emit for `--no_digestion`, and accept integer or string resolution parameters in `nextflow_schema.json`
+
 ## v3.0.0 - 2026-11-12
 
 ### `Added`
