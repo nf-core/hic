@@ -54,7 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#243](https://github.com/nf-core/hic/pull/243), [#247](https://github.com/nf-core/hic/pull/247), [#250](https://github.com/nf-core/hic/pull/250) - CI: remove the vulnerable PR-comment artifact pattern, run `fix-linting` from the `nf-core/actions` reusable workflow
 - [#251](https://github.com/nf-core/hic/pull/251) - GET_RESTRICTION_FRAGMENTS tag no longer contains `^` or `,`, which AWS Batch rejects as tag values ([#224](https://github.com/nf-core/hic/issues/224))
 - [#259](https://github.com/nf-core/hic/pull/259) - Fix HiC-Pro channel grouping race conditions, `BOWTIE2_ALIGN.out.bam` emit for `--no_digestion`, and accept integer or string resolution parameters in `nextflow_schema.json`
-- Arima/ArimaV2 size filter defaults no longer apply to every digestion protocol, only to `--digestion arima`/`arimaV2`; `docs/usage.md` examples and documented defaults match `nextflow.config`
 
 ## v2.1.0 - 2023-06-01
 
