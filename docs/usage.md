@@ -227,10 +227,10 @@ NXF_OPTS='-Xms1g -Xmx4g'
 Here is an command line example for standard DpnII digestion protocols.
 Alignment will be performed on the `mm10` genome with default parameters.
 Multi-hits will not be considered and duplicates will be removed.
-Note that by default, no filters are applied on DNA and restriction fragment sizes.
+Note that by default, no filters are applied on DNA and restriction fragment sizes (except with `--digestion arima` or `arimaV2`, see [HiC-pro processing](#hic-pro-processing)).
 
 ```bash
-nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --digestion 'dnpii'
+nextflow run nf-core/hic --input samplesheet.csv --outdir results --genome 'mm10' --digestion 'dpnii' -profile docker
 ```
 
 ### DNase Hi-C / Micro-C protocol
@@ -241,7 +241,7 @@ Multi-hits will not be considered and duplicates will be removed.
 Contacts involving fragments separated by less than 1000bp will be discarded.
 
 ```bash
-nextflow run main.nf --input './*_R{1,2}.fastq.gz' --genome 'mm10' --no_digestion --min_cis 1000
+nextflow run nf-core/hic --input samplesheet.csv --outdir results --genome 'mm10' --no_digestion --min_cis_dist 1000 -profile docker
 ```
 
 ## Inputs
@@ -396,7 +396,7 @@ Minimum mapping quality. Reads with lower quality are discarded. Default: 10
 
 This parameter allows to automatically set the `--restriction_site` and
 `--ligation_site` parameter according to the restriction enzyme you used.
-Available keywords are 'hindiii', 'dpnii', 'mboi', 'arima'.
+Available keywords are 'hindiii', 'dpnii', 'mboi', 'arima', 'arimaV2'.
 
 ```bash
 --digestion 'hindiii'
@@ -453,10 +453,15 @@ to remove spurious ligation products.
 
 ### HiC-pro processing
 
+With `--digestion arima` or `--digestion arimaV2`, the four size filters below default to
+`--min_restriction_fragment_size 10`, `--max_restriction_fragment_size 100000`,
+`--min_insert_size 100` and `--max_insert_size 1000`. With any other digestion, they default to '0' (no filter).
+Values given on the command line or in a params file always take precedence.
+
 #### `--min_restriction_fragment_size`
 
 Minimum size of restriction fragments to consider for the Hi-C processing.
-Default: '0' - no filter
+Default: '0' - no filter ('10' with Arima)
 
 ```bash
 --min_restriction_fragment_size '[numeric]'
@@ -465,7 +470,7 @@ Default: '0' - no filter
 #### `--max_restriction_fragment_size`
 
 Maximum size of restriction fragments to consider for the Hi-C processing.
-Default: '0' - no filter
+Default: '0' - no filter ('100000' with Arima)
 
 ```bash
 --max_restriction_fragment_size '[numeric]'
@@ -474,7 +479,7 @@ Default: '0' - no filter
 #### `--min_insert_size`
 
 Minimum reads insert size. Shorter 3C products are discarded.
-Default: '0' - no filter
+Default: '0' - no filter ('100' with Arima)
 
 ```bash
 --min_insert_size '[numeric]'
@@ -483,7 +488,7 @@ Default: '0' - no filter
 #### `--max_insert_size`
 
 Maximum reads insert size. Longer 3C products are discarded.
-Default: '0' - no filter
+Default: '0' - no filter ('1000' with Arima)
 
 ```bash
 --max_insert_size '[numeric]'
@@ -525,16 +530,16 @@ framework to build the raw and balanced contact maps in txt and (m)cool formats.
 ### `--bin_size`
 
 Resolution of contact maps to generate (comma-separated).
-Default:'1000000,500000'
+Default:'1000000'
 
 ```bash
---bins_size '[string]'
+--bin_size '[string]'
 ```
 
 ### `--res_zoomify`
 
 Define the maximum resolution to reach when zoomify the cool contact maps.
-Default:'5000'
+Unset by default, in which case the maps are zoomified down to the smallest `--bin_size`.
 
 ```bash
 --res_zoomify '[string]'
@@ -637,7 +642,7 @@ Default: 'insulation'
 #### `--res_tads`
 
 Resolution to run the TADs calling analysis (comma-separated).
-Default: '40000,20000'
+Default: '40000'
 
 ```bash
 --res_tads '[string]'
