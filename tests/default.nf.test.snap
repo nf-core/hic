@@ -189,14 +189,14 @@
             [
                 "cooler_bins_1000.bed:md5,69b3eee6a4826015108e29487cd6288f",
                 "cooler_bins_2000.bed:md5,b5b5c94246c99473376d4cfc4580645d",
-                "SRR4292758.1000_balanced.txt:md5,7e6fad9ffca70a6f72c8a8727ca23251",
-                "SRR4292758.2000_balanced.txt:md5,853427e47ba03d0c723c9fba2e7813b3",
-                "SRR4292758_distcount.txt:md5,ba63d855abcaab7bd8c93f48f47e6c7c",
-                "SRR4292758_allValidPairs.mergestat:md5,161d7d9c2f63a952edc0d25359015d96",
-                "SRR4292758.allValidPairs:md5,824f389cb55656139a56d8185ea3f0f4",
-                "SRR4292758_contacts.pairs.gz:md5,27eabbaedf0b55d675addf05e165eda2",
+                "SRR4292758.1000_balanced.txt:md5,6d6f9dd0e2faef74c6bbcdd8ea8b8907",
+                "SRR4292758.2000_balanced.txt:md5,a868a2aea0b6a194ab19c2d8a72f99f8",
+                "SRR4292758_distcount.txt:md5,bac196d56bcb489c2ef6fe2ea26e07c9",
+                "SRR4292758_allValidPairs.mergestat:md5,b0a81a4d69ea8e44495a714ac87701e8",
+                "SRR4292758.allValidPairs:md5,55e00a772766779f5d5c2bf2b6fcef6d",
+                "SRR4292758_contacts.pairs.gz:md5,201d59212cf443fe5da09dbddeef8677",
                 "fastqc-status-check-heatmap.txt:md5,755d1909854791c227d1000b38c977e9",
-                "hicpro_contact_plot.txt:md5,026bd3f93ce85d7b695f2cc332ef1551",
+                "hicpro_contact_plot.txt:md5,4a0ae6c30b400f3f7e5d14c5b4db0d5c",
                 "hicpro_pairing_stats_plot.txt:md5,b2f918d8f9919aaa30a0ea15f4522876",
                 "multiqc_citations.txt:md5,76bcbb4e4103209b523ed9da8fef74bc",
                 "W303_SGD_2015_JRIU00000000.fsa.fai:md5,85017cce3858d13e8731f776bd639a35",
@@ -204,12 +204,12 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a",
-                "SRR4292758.1000_balanced_insulation.tsv:md5,248566273b4c04ea668d0e624d56b382"
+                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,0b0eaceaf4a3a1e54cbebca04483e024",
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,8051d16460dcca2e00f5724175536e67",
+                "SRR4292758.1000_balanced_insulation.tsv:md5,2ccde826b0ea69d50874f1377d18d161"
             ]
         ],
-        "timestamp": "2026-11-25T13:22:30.481381191",
+        "timestamp": "2026-11-27T10:23:58.126254529",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.7"
@@ -406,14 +406,14 @@
             [
                 "cooler_bins_1000.bed:md5,69b3eee6a4826015108e29487cd6288f",
                 "cooler_bins_2000.bed:md5,b5b5c94246c99473376d4cfc4580645d",
-                "SRR4292758.1000_balanced.txt:md5,7e6fad9ffca70a6f72c8a8727ca23251",
-                "SRR4292758.2000_balanced.txt:md5,853427e47ba03d0c723c9fba2e7813b3",
-                "SRR4292758_distcount.txt:md5,ba63d855abcaab7bd8c93f48f47e6c7c",
-                "SRR4292758_allValidPairs.mergestat:md5,161d7d9c2f63a952edc0d25359015d96",
-                "SRR4292758.allValidPairs:md5,824f389cb55656139a56d8185ea3f0f4",
-                "SRR4292758_contacts.pairs.gz:md5,27eabbaedf0b55d675addf05e165eda2",
+                "SRR4292758.1000_balanced.txt:md5,6d6f9dd0e2faef74c6bbcdd8ea8b8907",
+                "SRR4292758.2000_balanced.txt:md5,a868a2aea0b6a194ab19c2d8a72f99f8",
+                "SRR4292758_distcount.txt:md5,bac196d56bcb489c2ef6fe2ea26e07c9",
+                "SRR4292758_allValidPairs.mergestat:md5,b0a81a4d69ea8e44495a714ac87701e8",
+                "SRR4292758.allValidPairs:md5,55e00a772766779f5d5c2bf2b6fcef6d",
+                "SRR4292758_contacts.pairs.gz:md5,201d59212cf443fe5da09dbddeef8677",
                 "fastqc-status-check-heatmap.txt:md5,755d1909854791c227d1000b38c977e9",
-                "hicpro_contact_plot.txt:md5,026bd3f93ce85d7b695f2cc332ef1551",
+                "hicpro_contact_plot.txt:md5,4a0ae6c30b400f3f7e5d14c5b4db0d5c",
                 "hicpro_pairing_stats_plot.txt:md5,b2f918d8f9919aaa30a0ea15f4522876",
                 "multiqc_citations.txt:md5,76bcbb4e4103209b523ed9da8fef74bc",
                 "W303_SGD_2015_JRIU00000000.fsa.fai:md5,85017cce3858d13e8731f776bd639a35",
@@ -421,12 +421,12 @@
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_boundaries.gff:md5,d41d8cd98f00b204e9800998ecf8427e",
                 "SRR4292758.1000_balanced_hicfindtads_domains.bed:md5,d41d8cd98f00b204e9800998ecf8427e",
-                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,191b7ddb7df92919d94ca38d6bbbe462",
-                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,ae87bf819448025464389a880448445a",
-                "SRR4292758.1000_balanced_insulation.tsv:md5,248566273b4c04ea668d0e624d56b382"
+                "SRR4292758.1000_balanced_hicfindtads_score.bedgraph:md5,0b0eaceaf4a3a1e54cbebca04483e024",
+                "SRR4292758.1000_balanced_hicfindtads_tad_score.bm:md5,8051d16460dcca2e00f5724175536e67",
+                "SRR4292758.1000_balanced_insulation.tsv:md5,2ccde826b0ea69d50874f1377d18d161"
             ]
         ],
-        "timestamp": "2026-11-25T13:23:59.412380665",
+        "timestamp": "2026-11-27T10:25:21.47929467",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.10.7"

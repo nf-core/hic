@@ -3,16 +3,6 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## dev
-
-### `Changed`
-
-- [#259](https://github.com/nf-core/hic/pull/259) - Upgrade HiCExplorer to 4.0.0, `cooltools` to 0.7.1 (`cooler=0.9.3`), and `nf-core/bowtie2` modules; HiC-Pro `mapstat` output filenames changed from `<id>.null.mmapstat` to `<id>.R1/R2.mmapstat`
-
-### `Fixed`
-
-- [#259](https://github.com/nf-core/hic/pull/259) - Fix HiC-Pro channel grouping race conditions, `BOWTIE2_ALIGN.out.bam` emit for `--no_digestion`, and accept integer or string resolution parameters in `nextflow_schema.json`
-
 ## v3.0.0 - 2026-11-12
 
 ### `Added`
@@ -21,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#174](https://github.com/nf-core/hic/pull/174) - `--balancing_opts` to set `cooler balance` arguments
 - [#196](https://github.com/nf-core/hic/pull/196) - nf-test pipeline test
 - [#204](https://github.com/nf-core/hic/pull/204) - CALDER2 compartments calling (`--compartments_caller calder2`)
-- [#236](https://github.com/nf-core/hic/pull/236) - TRIMGALORE 5' clipping, and Arima/ArimaV2 defaults for fragment and insert size filters ([#225](https://github.com/nf-core/hic/issues/225))
+- [#236](https://github.com/nf-core/hic/pull/236) - TRIMGALORE 5' clipping, and Arima/ArimaV2 defaults for fragment and insert size filters with `--digestion arima`/`arimaV2` ([#225](https://github.com/nf-core/hic/issues/225))
 - [#236](https://github.com/nf-core/hic/pull/236) - `--min_size` to filter chromosomes (local module FILTER_CHROMSIZE)
 - [#236](https://github.com/nf-core/hic/pull/236) - Subworkflows `meta.yml`
 - [#246](https://github.com/nf-core/hic/pull/246) - `--skip_fastqc` to skip FastQC, and `--skip_multiqc` now skips MultiQC
@@ -47,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#248](https://github.com/nf-core/hic/pull/248) - Template update to nf-core/tools 4.2.1
 - [#252](https://github.com/nf-core/hic/pull/252) - CHANGELOG: one entry per PR since v2.1.0
 - [#255](https://github.com/nf-core/hic/pull/255) - Template update to nf-core/tools 4.2.2
+- [#259](https://github.com/nf-core/hic/pull/259) - Upgrade HiCExplorer to 4.0.0, `cooltools` to 0.7.1 (`cooler=0.9.3`), and `nf-core/bowtie2` modules; HiC-Pro `mapstat` output filenames changed from `<id>.null.mmapstat` to `<id>.R1/R2.mmapstat`
 
 ### `Removed`
 
@@ -56,12 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#173](https://github.com/nf-core/hic/pull/173) - cooltools version parsing in COOLTOOLS_INSULATION and COOLTOOLS_EIGSCIS ([#172](https://github.com/nf-core/hic/issues/172))
 - [#236](https://github.com/nf-core/hic/pull/236) - `--bin_size` accepts a single value ([#62](https://github.com/nf-core/hic/issues/62))
-- [#236](https://github.com/nf-core/hic/pull/236) - `MPLCONFIGDIR` set to `${baseDir}/mplconfig`, so Matplotlib warnings no longer break version parsing ([#227](https://github.com/nf-core/hic/issues/227))
+- [#236](https://github.com/nf-core/hic/pull/236) - `MPLCONFIGDIR` set to a per-task `./.mplconfig`, so Matplotlib warnings no longer break version parsing ([#227](https://github.com/nf-core/hic/issues/227))
 - [#236](https://github.com/nf-core/hic/pull/236) - COOLER_CLOAD deprecated `pairs` arguments, and the cooler add resolution step after the COOLER_CLOAD update
 - [#236](https://github.com/nf-core/hic/pull/236) - Pipeline logo
 - [#238](https://github.com/nf-core/hic/pull/238) - `--res_zoomify` builds the mcool file again, and accepts an integer ([#229](https://github.com/nf-core/hic/issues/229))
 - [#243](https://github.com/nf-core/hic/pull/243), [#247](https://github.com/nf-core/hic/pull/247), [#250](https://github.com/nf-core/hic/pull/250) - CI: remove the vulnerable PR-comment artifact pattern, run `fix-linting` from the `nf-core/actions` reusable workflow
 - [#251](https://github.com/nf-core/hic/pull/251) - GET_RESTRICTION_FRAGMENTS tag no longer contains `^` or `,`, which AWS Batch rejects as tag values ([#224](https://github.com/nf-core/hic/issues/224))
+- [#259](https://github.com/nf-core/hic/pull/259) - Fix HiC-Pro channel grouping race conditions, `BOWTIE2_ALIGN.out.bam` emit for `--no_digestion`, and accept integer or string resolution parameters in `nextflow_schema.json`
+- Arima/ArimaV2 size filter defaults no longer apply to every digestion protocol, only to `--digestion arima`/`arimaV2`; `docs/usage.md` examples and documented defaults match `nextflow.config`
 
 ## v2.1.0 - 2023-06-01
 
