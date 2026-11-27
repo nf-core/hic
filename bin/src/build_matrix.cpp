@@ -1,5 +1,5 @@
 // HiC-Pro
-// Copyright 2015 Institut Curie                               
+// Copyright 2015 Institut Curie
 // Author(s): Eric Viara
 // Contact: nicolas.servant@curie.fr
 // This software is distributed without any guarantee under the terms of the BSD-3 License
@@ -62,7 +62,7 @@ struct Interval {
 
   Interval(chrsize_t start = 0, chrsize_t end = 0) : start(start), end(end) { }
 };
- 
+
 class ChrRegions {
 
   std::vector<std::string> chr_v;
@@ -85,36 +85,36 @@ public:
       ifs.getline(buffer, sizeof(buffer)-1);
       line_num++;
       if (is_empty_line(buffer)) {
-	continue;
+        continue;
       }
       chrsize_t start = 0;
       chrsize_t end = 0;
       char chr[2048];
       if (bed_line_parse(buffer, chr, start, end, bedfile, line_num)) {
-	return 1;
+        return 1;
       }
       if (intervals.find(chr) == intervals.end()) {
-	intervals[chr] = new std::vector<Interval>();
-	chr_v.push_back(chr);
+        intervals[chr] = new std::vector<Interval>();
+        chr_v.push_back(chr);
       }
       /*
-      if (lastend != 0 && !strcmp(lastchr, chr) && start != lastend) {
-	std::cerr << "warning: discontinuous segment for chromosome " << chr << " at position " << start << " " << end << std::endl;
-      }
-      */
+        if (lastend != 0 && !strcmp(lastchr, chr) && start != lastend) {
+        std::cerr << "warning: discontinuous segment for chromosome " << chr << " at position " << start << " " << end << std::endl;
+        }
+       */
       if (*lastchr && strcmp(lastchr, chr)) {
-	lastend = 0;
+        lastend = 0;
       }
 
       if (lastend != 0 && start < lastend) {
-	std::cerr << "error: bedfile not sorted at line #" << line_num << std::endl;
-	exit(1);
+        std::cerr << "error: bedfile not sorted at line #" << line_num << std::endl;
+        exit(1);
       }
       strcpy(lastchr, chr);
       lastend = end;
       intervals[chr]->push_back(Interval(start, end));
       if (progress && (line_num % 100000) == 0) {
-	std::cerr << '.' << std::flush;
+        std::cerr << '.' << std::flush;
       }
     }
     if (progress) {
@@ -135,13 +135,13 @@ public:
       std::vector<Interval>::const_iterator itv_begin = itv_vect->begin();
       std::vector<Interval>::const_iterator itv_end = itv_vect->end();
       while (itv_begin != itv_end) {
-	const Interval& itv = (*itv_begin);
-	ofs << chrname << '\t' << itv.start << '\t' << itv.end << '\t' << num << '\n';
-	if (progress && (num % 100000) == 0) {
-	  std::cerr << '.' << std::flush;
-	}
-	num++;
-	++itv_begin;
+        const Interval& itv = (*itv_begin);
+        ofs << chrname << '\t' << itv.start << '\t' << itv.end << '\t' << num << '\n';
+        if (progress && (num % 100000) == 0) {
+          std::cerr << '.' << std::flush;
+        }
+        num++;
+        ++itv_begin;
       }
       ++begin;
     }
@@ -184,15 +184,15 @@ public:
       n = (l + r) >> 1;
       const Interval& itv = intervals[n];
       if (value >= itv.start+1 && value <= itv.end) {
-	return n;
+        return n;
       }
 
       int x = middle(itv) - value;
-      
+
       if (x < 0) {
-	l = n + 1;
+        l = n + 1;
       } else {
-	r = n - 1;
+        r = n - 1;
       }
       //std::cout << "l: " << l << '\n';
       //std::cout << "r: " << r << '\n';
@@ -260,10 +260,10 @@ public:
     }
     binend = binstart + chr->getBincount();
     /*
-    if (verbose) {
+      if (verbose) {
       std::cerr << "AxisChromosome: " << chr->getName() << " " << binstart << " " << binend << " " << chr->getBincount() << std::endl;
-    }
-    */
+      }
+     */
   }
 
   chrsize_t getBinstart() const {return binstart;}
@@ -282,15 +282,15 @@ public:
       assert(intervals != NULL);
 
       if (!NO_DICHO) {
-	Dichotomic dicho(*intervals);
-	int where = dicho.find(start);
-	if (where < 0) {
-	  if (!quiet) {
-	    std::cerr << "warning: no bin at position " << chr->getName() << ":" << start << std::endl;
-	  }
-	  return BIN_NOT_FOUND;
-	}
-	return where + getBinstart();
+        Dichotomic dicho(*intervals);
+        int where = dicho.find(start);
+        if (where < 0) {
+          if (!quiet) {
+            std::cerr << "warning: no bin at position " << chr->getName() << ":" << start << std::endl;
+          }
+          return BIN_NOT_FOUND;
+        }
+        return where + getBinstart();
       }
 
       std::vector<Interval>::const_iterator begin = intervals->begin();
@@ -298,14 +298,14 @@ public:
 
       chrsize_t binidx = 1;
       while (begin != end) {
-	const Interval& itv = *begin;
-	if (start >= itv.start+1 && start <= itv.end) {
-	  break;
-	}
-	++binidx;
-	++begin;
+        const Interval& itv = *begin;
+        if (start >= itv.start+1 && start <= itv.end) {
+          break;
+        }
+        ++binidx;
+        ++begin;
       }
-      
+
       return binidx + getBinstart() - 1;
     }
 
@@ -318,7 +318,7 @@ public:
     int chrsize = getChrsize();
     if (cur_binend > chrsize) {
       cur_binend = chrsize;
-    } 
+    }
     return cur_binidx + getBinstart() - 1;
   }
 };
@@ -354,13 +354,13 @@ class Matrix {
       chrsize_t chrsize = axis_chr->getChrsize();
       binend -= binstart;
       for (chrsize_t bin = 0; bin < binend; ++bin) {
-	// bed are 0-based begin, 1-based end
-	chrsize_t beg = bin * binsize;
-	chrsize_t end = beg + binsize - 1;
-	if (end > chrsize) {
-	  end = chrsize-1;
-	}
-	ofs << name << '\t' << beg << '\t' << (end+1) << '\t' << (bin+binstart) << '\n';
+        // bed are 0-based begin, 1-based end
+        chrsize_t beg = bin * binsize;
+        chrsize_t end = beg + binsize - 1;
+        if (end > chrsize) {
+          end = chrsize-1;
+        }
+        ofs << name << '\t' << beg << '\t' << (end+1) << '\t' << (bin+binstart) << '\n';
       }
       ++begin;
     }
@@ -398,9 +398,9 @@ public:
     size_t line_total = 0;
     if (progress) {
       while (begin != end) {
-	const std::map<chrsize_t, chrsize_t>& line = (*begin).second;
-	line_total += line.size();
-	++begin;
+        const std::map<chrsize_t, chrsize_t>& line = (*begin).second;
+        line_total += line.size();
+        ++begin;
       }
       begin = mat.begin();
     }
@@ -418,13 +418,13 @@ public:
       std::map<chrsize_t, chrsize_t>::const_iterator bb = line.begin();
       std::map<chrsize_t, chrsize_t>::const_iterator ee = line.end();
       while (bb != ee) {
-	if (progress && (line_cnt % modulo) == 0) {
-	  double percent = (double(line_cnt)/line_total)*100;
-	  std::cerr << "" << percent << "% " << line_cnt << " / " << line_total << std::endl;
-	}
-	ofs << abs << '\t' << (*bb).first << '\t' << (*bb).second << '\n';
-	line_cnt++;
-	++bb;
+        if (progress && (line_cnt % modulo) == 0) {
+          double percent = (double(line_cnt)/line_total)*100;
+          std::cerr << "" << percent << "% " << line_cnt << " / " << line_total << std::endl;
+        }
+        ofs << abs << '\t' << (*bb).first << '\t' << (*bb).second << '\n';
+        line_cnt++;
+        ++bb;
       }
       ++begin;
     }
@@ -490,10 +490,10 @@ void Chromosome::computeSizes(chrsize_t ori_binsize, chrsize_t step, bool binadj
     assert(intervals != NULL);
     bincount = intervals->size();
     /*
-    if (verbose) {
+      if (verbose) {
       std::cerr << name << " bincount: " << bincount << std::endl;
-    }
-    */
+      }
+     */
   } else {
     if (chrsize < ori_binsize) {
       binsize = chrsize;
@@ -509,10 +509,10 @@ void Chromosome::computeSizes(chrsize_t ori_binsize, chrsize_t step, bool binadj
       bincount = remainder > 0 ? tmp_bincount+1 : tmp_bincount;
     }
     /*
-    if (verbose) {
+      if (verbose) {
       std::cerr << name << " sizes: " << chrsize << " " << binsize << " " << stepsize << " " << bincount << std::endl;
-    }
-    */
+      }
+     */
   }
 }
 
@@ -559,7 +559,7 @@ enum MatrixFormat {
   LOWER_MATRIX,
   COMPLETE_MATRIX
 };
-  
+
 static int get_options(int argc, char* argv[], chrsize_t& binsize, const char*& binfile, const char*& chrsize_file, const char*& ifile, const char*& oprefix, Format& format, std::string& bed_prefix, bool& binadjust, MatrixFormat& matrix_format, chrsize_t& step, bool& whole_genome, int& binoffset, const char*& chrA, const char*& chrB)
 {
   prog = argv[0];
@@ -567,85 +567,85 @@ static int get_options(int argc, char* argv[], chrsize_t& binsize, const char*& 
     const char* opt = argv[ac];
     if (*opt == '-') {
       if (!strcmp(opt, "--binadjust")) {
-	binadjust = true;
+        binadjust = true;
       } else if (!strcmp(opt, "--version")) {
-	std::cout << "build_matrix version " << VERSION << "\n";
-	exit(0);
+        std::cout << "build_matrix version " << VERSION << "\n";
+        exit(0);
       } else if (!strcmp(opt, "--progress")) {
-	progress = true;
+        progress = true;
       } else if (!strcmp(opt, "--quiet")) {
-	quiet = true;
+        quiet = true;
       } else if (!strcmp(opt, "--detail-progress")) {
-	progress = true;
-	detail_progress = true;
+        progress = true;
+        detail_progress = true;
       } else if (!strcmp(opt, "--matrix-format")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	std::string matrix_format_str = argv[++ac];
-	if (matrix_format_str == "asis") {
-	  matrix_format = ASIS_MATRIX;
-	} else if (matrix_format_str == "upper") {
-	  matrix_format = UPPER_MATRIX;
-	} else if (matrix_format_str == "lower") {
-	  matrix_format = LOWER_MATRIX;
-	} else if (matrix_format_str == "complete") {
-	  matrix_format = COMPLETE_MATRIX;
-	} else {
-	  return usage();
-	}
+        if (ac == argc-1) {
+          return usage();
+        }
+        std::string matrix_format_str = argv[++ac];
+        if (matrix_format_str == "asis") {
+          matrix_format = ASIS_MATRIX;
+        } else if (matrix_format_str == "upper") {
+          matrix_format = UPPER_MATRIX;
+        } else if (matrix_format_str == "lower") {
+          matrix_format = LOWER_MATRIX;
+        } else if (matrix_format_str == "complete") {
+          matrix_format = COMPLETE_MATRIX;
+        } else {
+          return usage();
+        }
       } else if (!strcmp(opt, "--step")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	step = atoi(argv[++ac]);
+        if (ac == argc-1) {
+          return usage();
+        }
+        step = atoi(argv[++ac]);
       } else if (!strcmp(opt, "--binfile")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	binfile = argv[++ac];
+        if (ac == argc-1) {
+          return usage();
+        }
+        binfile = argv[++ac];
       } else if (!strcmp(opt, "--binsize")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	binsize = atoi(argv[++ac]);
+        if (ac == argc-1) {
+          return usage();
+        }
+        binsize = atoi(argv[++ac]);
       } else if (!strcmp(opt, "--binoffset")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	binoffset = atoi(argv[++ac]);
+        if (ac == argc-1) {
+          return usage();
+        }
+        binoffset = atoi(argv[++ac]);
       } else if (!strcmp(opt, "--ifile")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	ifile = argv[++ac];
+        if (ac == argc-1) {
+          return usage();
+        }
+        ifile = argv[++ac];
       } else if (!strcmp(opt, "--oprefix")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	oprefix = argv[++ac];
+        if (ac == argc-1) {
+          return usage();
+        }
+        oprefix = argv[++ac];
       } else if (!strcmp(opt, "--chrsizes")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	chrsize_file = argv[++ac];
+        if (ac == argc-1) {
+          return usage();
+        }
+        chrsize_file = argv[++ac];
       } else if (!strcmp(opt, "--chrA")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	chrA = argv[++ac];
-	whole_genome = false;
+        if (ac == argc-1) {
+          return usage();
+        }
+        chrA = argv[++ac];
+        whole_genome = false;
       } else if (!strcmp(opt, "--chrB")) {
-	if (ac == argc-1) {
-	  return usage();
-	}
-	chrB = argv[++ac];
-	whole_genome = false;
+        if (ac == argc-1) {
+          return usage();
+        }
+        chrB = argv[++ac];
+        whole_genome = false;
       } else if (!strcmp(opt, "--help")) {
-	return help();
+        return help();
       } else {
-	std::cerr << '\n' << prog << ": unknown option " << opt << std::endl;
-	return usage();
+        std::cerr << '\n' << prog << ": unknown option " << opt << std::endl;
+        return usage();
       }
     }
   }
@@ -759,19 +759,19 @@ static int build_matrix_init(Matrix& matrix, const char* ifile, std::ifstream& i
     while ((nn = read(fd, p_buffer, sizeof(p_buffer))) > 0) {
       const char *p = p_buffer;
       while (nn-- > 0) {
-	if (*p++ == '\n') {
-	  line_total++;
-	}
+        if (*p++ == '\n') {
+          line_total++;
+        }
       }
       if ((cnt % 200) == 0) {
-	std::cerr << '.' << std::flush;
+        std::cerr << '.' << std::flush;
       }
       cnt++;
     }
     std::cerr << std::endl;
     close(fd);
   }
-  
+
   std::ifstream chrsizefs;
   chrsizefs.open(chrsize_file);
   if (chrsizefs.bad() || chrsizefs.fail()) {
@@ -917,34 +917,34 @@ static int build_matrix(int binoffset, chrsize_t ori_binsize, const char* binfil
 
     case UPPER_MATRIX:
       if (abs_bin < ord_bin) {
-	matrix.add(abs_bin, ord_bin);
+        matrix.add(abs_bin, ord_bin);
       } else {
-	matrix.add(ord_bin, abs_bin);
+        matrix.add(ord_bin, abs_bin);
       }
       break;
 
     case LOWER_MATRIX:
       if (abs_bin > ord_bin) {
-	matrix.add(abs_bin, ord_bin);
+        matrix.add(abs_bin, ord_bin);
       } else {
-	matrix.add(ord_bin, abs_bin);
+        matrix.add(ord_bin, abs_bin);
       }
       break;
 
     case COMPLETE_MATRIX:
       matrix.add(abs_bin, ord_bin);
       if (abs_bin != ord_bin) {
-	matrix.add(ord_bin, abs_bin);
+        matrix.add(ord_bin, abs_bin);
       }
       break;
     }
     line_cnt++;
     if (progress && (line_cnt % 100000) == 0) {
       if (detail_progress) {
-	double percent = (double(line_cnt)/line_total)*100;
-	std::cerr << "" << percent << "% " << line_cnt << " / " << line_total << std::endl;
+        double percent = (double(line_cnt)/line_total)*100;
+        std::cerr << "" << percent << "% " << line_cnt << " / " << line_total << std::endl;
       } else {
-	std::cerr << line_cnt << std::endl;
+        std::cerr << line_cnt << std::endl;
       }
     }
   }

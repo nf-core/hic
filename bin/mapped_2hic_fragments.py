@@ -10,7 +10,7 @@
 
 """
 Script to keep only valid 3C products - DE and SC are removed
-Output is : readname / 
+Output is : readname /
 """
 import time
 import getopt

@@ -4,11 +4,12 @@
 
 process HIC_FIND_TADS {
     label 'process_medium'
+    tag "$meta.id"
 
-    conda "bioconda::hicexplorer=3.7.2"
+    conda "bioconda::hicexplorer=4.0.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/hicexplorer:3.7.2--pyhdfd78af_1' :
-        'biocontainers/hicexplorer:3.7.2--pyhdfd78af_1' }"
+        'https://depot.galaxyproject.org/singularity/hicexplorer:4.0.0--py312hfffc319_0' :
+        'biocontainers/hicexplorer:4.0.0--py312hfffc319_0' }"
 
     input:
     tuple val(meta), path(cool)
